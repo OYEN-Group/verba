@@ -11,6 +11,7 @@ import { evaluateCitationIntegrity, CitationIntegrityResult } from '@/lib/citati
 import { formatInlineCitation } from '@/lib/citations/formatter';
 import { RecoveryMode } from '@/lib/citations/recovery';
 import { CandidateAnalysis, CandidateFit } from '@/lib/citations/candidateMatch';
+import { VerifyEvidencePanel } from './VerifyEvidencePanel';
 
 interface Props {
   documentId: string;
@@ -763,11 +764,23 @@ export function CitationIntegrityTab({ documentId, workId, projectContext, onNav
 
                     {/* Non-recovery actions (OA view only when no recovery) */}
                     {!canRecover && result.evidenceDetail?.oaUrl && (
-                      <div className="pt-2 mt-1 border-t border-border-light">
+                      <div className="pt-2 mt-1 border-t border-border-light flex flex-wrap items-center gap-2">
                         <a href={result.evidenceDetail.oaUrl} target="_blank" rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium bg-black/5 text-foreground-secondary rounded hover:bg-black/10 transition-colors">
                           <ExternalLink size={10} /> View source
                         </a>
+                      </div>
+                    )}
+
+                    {/* Check source evidence */}
+                    {result.evidenceDetail && result.evidenceDetail.level >= 1 && (result.claimSupport.status === 'unclear' || result.claimSupport.status === 'not_checked') && workId && (
+                      <div className="pt-1">
+                        <VerifyEvidencePanel 
+                          citationId={result.citationId} 
+                          contextText={displayClaimText} 
+                          workId={workId} 
+                          result={result} 
+                        />
                       </div>
                     )}
 

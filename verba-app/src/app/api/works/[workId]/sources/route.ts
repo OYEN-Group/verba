@@ -71,55 +71,41 @@ export async function POST(
     }
 
     const sourceData = parseResult.data;
-    
-    // Deduplication logic
-    let existingId: string | null = null;
-    if (sourceData.identifiers && sourceData.identifiers.length > 0) {
-      const normalizedValues = sourceData.identifiers.map((i: any) => i.normalized_value);
-      const { data: matches } = await supabase
-        .from('source_identifiers')
-        .select('source_id, work_sources!inner(id, work_id)')
-        .eq('work_sources.work_id', params.workId)
-        .in('normalized_value', normalizedValues);
-      
-      if (matches && matches.length > 0) {
-        existingId = matches[0].source_id;
+
+    // Relationship Scope Authorization: Verify the claim belongs to this work
+    if (claimId) {
+      const { data: claimData, error: claimError } = await supabase
+        .from('claims')
+        .select('id')
+        .eq('id', claimId)
+        .eq('work_id', params.workId)
+        .eq('user_id', user.id)
+        .single();
+        
+      if (claimError || !claimData) {
+        return NextResponse.json({ error: 'Claim not found in this work' }, { status: 403 });
       }
+    }
+    
+    // Transactional deduplication and creation handled safely in DB RPC
+    const { data: sourceResult, error: rpcError } = await supabase.rpc('create_or_get_source', {
+      p_work_id: params.workId,
+      p_source_data: sourceData
+    });
+
+    if (rpcError) {
+      console.error('[sources API] RPC error:', rpcError.message);
+      return NextResponse.json({ error: 'Failed to save source safely' }, { status: 500 });
+    }
+    if (!sourceResult || !sourceResult.id) {
+      return NextResponse.json({ error: 'Failed to retrieve source' }, { status: 500 });
     }
 
-    if (!existingId && sourceData.doi) {
-      const { data: existing, error: dupError } = await supabase
-        .from('work_sources')
-        .select('id')
-        .eq('work_id', params.workId)
-        .eq('doi', sourceData.doi)
-        .single();
-      if (existing) existingId = existing.id;
-    } 
-    
-    if (!existingId && !sourceData.doi && (!sourceData.identifiers || sourceData.identifiers.length === 0)) {
-      // Probable duplicate check by title & year & first author family
-      const { data: possibleDups } = await supabase
-        .from('work_sources')
-        .select('id, authors')
-        .eq('work_id', params.workId)
-        .eq('title', sourceData.title)
-        .eq('publication_year', sourceData.publication_year);
-        
-      if (possibleDups && possibleDups.length > 0 && sourceData.authors && sourceData.authors.length > 0) {
-        const familyName = sourceData.authors[0].family.toLowerCase();
-        const dup = possibleDups.find((d: any) => 
-          d.authors && d.authors.length > 0 && d.authors[0].family.toLowerCase() === familyName
-        );
-        if (dup) {
-          existingId = dup.id;
-        }
-      }
-    }
+    const existingId = !sourceResult._is_new ? sourceResult.id : null;
 
     if (existingId) {
       if (claimId) {
-        // Source exists, just link it to the claim
+        // Source already existed, link it to the claim
         await supabase.from('claim_source_evidence').upsert({
           claim_id: claimId,
           source_id: existingId,
@@ -142,39 +128,12 @@ export async function POST(
       return NextResponse.json({ error: 'SOURCE_ALREADY_EXISTS', sourceId: existingId }, { status: 409 });
     }
 
-    const { identifiers, locations, ...baseSourceData } = sourceData;
-    
-    const { data: inserted, error } = await supabase
-      .from('work_sources')
-      .insert({
-        ...baseSourceData,
-        work_id: params.workId,
-        user_id: user.id,
-      })
-      .select('*')
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    // Insert identifiers
-    if (identifiers && identifiers.length > 0) {
-      const idRows = identifiers.map((i: any) => ({ ...i, source_id: inserted.id }));
-      await supabase.from('source_identifiers').insert(idRows);
-    }
-
-    // Insert locations
-    if (locations && locations.length > 0) {
-      const locRows = locations.map((l: any) => ({ ...l, source_id: inserted.id }));
-      await supabase.from('source_locations').insert(locRows);
-    }
-
-    // Insert claim evidence mapping if provided
+    // It is a newly inserted source. 
+    // Insert claim evidence mapping if provided.
     if (claimId) {
       await supabase.from('claim_source_evidence').insert({
         claim_id: claimId,
-        source_id: inserted.id,
+        source_id: sourceResult.id,
         user_id: user.id,
         relationship: 'not_checked',
         evidence_level: evidenceLevel || 'metadata_only',
@@ -184,14 +143,14 @@ export async function POST(
       });
     }
 
-    // Return with fetched arrays
+    // Return with fetched arrays matching the format expected by the frontend
     const { data: finalInserted } = await supabase
       .from('work_sources')
       .select('*, identifiers:source_identifiers(*), locations:source_locations(*)')
-      .eq('id', inserted.id)
+      .eq('id', sourceResult.id)
       .single();
 
-    return NextResponse.json(finalInserted || inserted);
+    return NextResponse.json(finalInserted || sourceResult);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

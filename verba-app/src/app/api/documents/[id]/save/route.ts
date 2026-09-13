@@ -55,39 +55,40 @@ export async function POST(
       return NextResponse.json({ error: 'Document not found or unauthorized' }, { status: 404 });
     }
 
-    // 3. Stale-write protection
-    // If the client's expectedVersion is defined, reject writes that are behind
-    // the current DB version. This prevents an older queued save from
-    // overwriting a newer one that already succeeded.
-    if (typeof expectedVersion === 'number' && docData.editor_version > expectedVersion) {
-      // A newer save already succeeded — this request is stale. Return the
-      // current version so the client can update its baseline.
-      return NextResponse.json({
-        success: false,
-        stale: true,
-        currentVersion: docData.editor_version,
-      }, { status: 409 });
-    }
+    // 3. Stale-write protection & Persist (Atomic Update)
+    // The authoritative comparison is against the version the client actually edited.
+    const targetVersion = typeof expectedVersion === 'number' ? expectedVersion : docData.editor_version;
+    const newVersion = targetVersion + 1;
 
-    // 4. Persist
-    const { error: updateError } = await supabase
+    const { data: updateData, error: updateError } = await supabase
       .from('documents')
       .update({
         editor_state: editorState,
         editor_updated_at: new Date().toISOString(),
-        editor_version: docData.editor_version + 1,
+        editor_version: newVersion,
         // Update word_count alongside the save so it always reflects latest content
         ...(typeof wordCount === 'number' && wordCount >= 0 ? { word_count: wordCount } : {}),
       })
       .eq('id', params.id)
-      .eq('user_id', user.id);   // double-check ownership in UPDATE predicate
+      .eq('user_id', user.id)   // double-check ownership in UPDATE predicate
+      .eq('editor_version', targetVersion) // CONCURRENCY LOCK
+      .select('id');
 
     if (updateError) {
       console.error('[save] Supabase update error:', updateError.message);
       return NextResponse.json({ error: 'Failed to save document' }, { status: 500 });
     }
 
-    const newVersion = docData.editor_version + 1;
+    // If no rows were returned by select(), the update failed due to the editor_version mismatch.
+    if (!updateData || updateData.length === 0) {
+      // Fetch the actual current version to return it to the client
+      const { data: currentDoc } = await supabase.from('documents').select('editor_version').eq('id', params.id).single();
+      return NextResponse.json({
+        success: false,
+        stale: true,
+        currentVersion: currentDoc?.editor_version || targetVersion,
+      }, { status: 409 });
+    }
 
     // 4.5. Reconcile Citations (Phase G)
     try {

@@ -288,23 +288,23 @@ export default function WorkspacePage({ params }: { params: { documentId: string
 
   // ─── Core Save ────────────────────────────────────────────────────────────
 
-  const performSave = useCallback(async (json: Record<string, unknown>) => {
+  const performSave = useCallback(async (snapshot: { json: Record<string, unknown>, expectedVersion: number }) => {
     if (savingRef.current) {
-      pendingJsonRef.current = json;
+      pendingJsonRef.current = snapshot;
       return;
     }
 
     savingRef.current = true;
     setSaveStatus('saving');
 
-    const wordCount = countWordsFromTiptapJson(json);
-    const expectedVersion = versionRef.current;
+    const wordCount = countWordsFromTiptapJson(snapshot.json);
+    const expectedVersion = snapshot.expectedVersion;
 
     try {
       const res = await fetch(`/api/documents/${params.documentId}/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ editorState: json, wordCount, expectedVersion }),
+        body: JSON.stringify({ editorState: snapshot.json, wordCount, expectedVersion }),
       });
 
       const data = await res.json();
@@ -326,9 +326,10 @@ export default function WorkspacePage({ params }: { params: { documentId: string
     } finally {
       savingRef.current = false;
       if (pendingJsonRef.current) {
-        const nextJson = pendingJsonRef.current;
+        const nextSnapshot = pendingJsonRef.current;
         pendingJsonRef.current = null;
-        setTimeout(() => performSave(nextJson), 200);
+        // @ts-ignore - pendingJsonRef holds the snapshot object now
+        setTimeout(() => performSave(nextSnapshot), 200);
       }
     }
   }, [params.documentId]);
@@ -342,7 +343,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
       clearTimeout(autosaveTimerRef.current);
       autosaveTimerRef.current = null;
     }
-    performSave(editorRef.current.getJSON());
+    performSave({ json: editorRef.current.getJSON(), expectedVersion: versionRef.current });
   }, [performSave]);
 
   // Keyboard shortcut: Ctrl/Cmd+S
@@ -374,7 +375,8 @@ export default function WorkspacePage({ params }: { params: { documentId: string
     if (autosaveEnabledRef.current !== true) return;
 
     if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
-    autosaveTimerRef.current = setTimeout(() => performSave(json), 1000);
+    const capturedVersion = versionRef.current;
+    autosaveTimerRef.current = setTimeout(() => performSave({ json, expectedVersion: capturedVersion }), 1000);
   }, [performSave]);
 
   // ─── Autosave preference changes ─────────────────────────────────────────
@@ -382,7 +384,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   // When autosave is switched ON and there are unsaved changes → save now
   useEffect(() => {
     if (autosaveEnabled === true && saveStatusRef.current === 'unsaved' && editorRef.current) {
-      performSave(editorRef.current.getJSON());
+      performSave({ json: editorRef.current.getJSON(), expectedVersion: versionRef.current });
     }
     // When switched OFF → cancel pending debounce (in-flight saves complete normally)
     if (autosaveEnabled === false && autosaveTimerRef.current) {

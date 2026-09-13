@@ -12,36 +12,65 @@ export async function searchGoogleBooks(query: string, maxResults: number = 10):
     url.searchParams.append('maxResults', maxResults.toString());
     url.searchParams.append('key', apiKey);
 
-    let res: Response;
-    try {
-      res = await fetch(url.toString(), {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' },
-        signal: AbortSignal.timeout(10000)
-      });
-      if (res.status === 503) {
-        // One short retry for transient 503s
-        await new Promise(r => setTimeout(r, 500));
+    let res: Response | null = null;
+    let attempt = 0;
+    
+    while (attempt < 2) {
+      attempt++;
+      try {
         res = await fetch(url.toString(), {
           method: 'GET',
           headers: { 'Accept': 'application/json' },
           signal: AbortSignal.timeout(10000)
         });
+
+        if (res.status === 502 || res.status === 503 || res.status === 504) {
+          if (attempt === 1) {
+            console.warn(`[research] google_books transient failure status=${res.status} attempt=1`);
+            const delay = 500 + Math.floor(Math.random() * 250);
+            await new Promise(r => setTimeout(r, delay));
+            continue;
+          } else {
+            console.warn(`[research] google_books unavailable after retry status=${res.status}`);
+            throw new Error('temporary_unavailable');
+          }
+        } else if (res.status === 403 || res.status === 429) {
+          console.warn(`[research] google_books rate limit or auth error: ${res.status}`);
+          throw new Error(res.status === 429 ? 'rate_limited' : 'authorization_or_configuration_error');
+        } else if (!res.ok) {
+          throw new Error(`Google Books API error: ${res.status} ${res.statusText}`);
+        }
+
+        if (attempt === 2) {
+          console.log(`[research] google_books recovered attempt=2`);
+        }
+        break; // Success!
+
+      } catch (fetchErr: any) {
+        if (fetchErr.message === 'temporary_unavailable' || 
+            fetchErr.message === 'rate_limited' || 
+            fetchErr.message === 'authorization_or_configuration_error' || 
+            fetchErr.message.includes('Google Books API error')) {
+          throw fetchErr;
+        }
+        
+        // It's a network error, abort, or TimeoutError
+        if (attempt === 1) {
+          console.warn(`[research] google_books transient failure status=network_error attempt=1`);
+          const delay = 500 + Math.floor(Math.random() * 250);
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        } else {
+          console.warn(`[research] google_books unavailable after retry status=network_error`);
+          if (fetchErr.name === 'TimeoutError' || fetchErr.message?.includes('timeout')) {
+            throw new Error('timeout');
+          }
+          throw new Error('temporary_unavailable');
+        }
       }
-    } catch (fetchErr: any) {
-      if (fetchErr.name === 'TimeoutError') {
-        throw new Error('Request timed out');
-      }
-      throw fetchErr;
     }
 
-    if (!res.ok) {
-      if (res.status === 403 || res.status === 429) {
-         console.warn(`Google Books API rate limit or auth error: ${res.status}`);
-         throw new Error(`rate limit or auth error: ${res.status}`);
-      }
-      throw new Error(`Google Books API error: ${res.status} ${res.statusText}`);
-    }
+    if (!res) throw new Error('temporary_unavailable');
 
     const data = await res.json();
     if (!data.items || data.items.length === 0) {
