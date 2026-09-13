@@ -447,9 +447,17 @@ export function ResearchTab({ workId, onSourceSaved, evidenceSelection, onClearE
                     {r.source.authors.map(a => `${a.given} ${a.family}`).join(', ')}
                   </div>
                   <div className="text-foreground-muted text-[11px] mt-0.5">
-                    {r.source.container_title || 'Unknown Venue'} • {r.source.publication_year || 'Unknown Year'} 
+                    {r.source.container_title?.toLowerCase().includes('repository') 
+                      ? 'Publisher unknown' 
+                      : (r.source.publisher || r.source.container_title || 'Unknown Venue')}
+                    {' • '}{r.source.publication_year || 'Unknown Year'} 
                     {r.source.doi && <span> • {r.source.doi}</span>}
                   </div>
+                  {r.source.container_title?.toLowerCase().includes('repository') && (
+                    <div className="text-foreground-muted text-[11px] mt-0.5">
+                      Available through {r.source.container_title}
+                    </div>
+                  )}
                 </div>
 
                 {/* Quick Status Bar */}

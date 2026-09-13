@@ -91,7 +91,13 @@ export function calculateIdentity(
 }
 
 export function calculateRelevance(source: NormalizedSource, query: string): { status: RelevanceStatus, reasons: string[] } {
-  const qTokens = Array.from(new Set(query.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(t => t.length > 2)));
+  const STOPWORDS = new Set([
+    'this', 'that', 'these', 'those', 'different', 'various', 'other', 'same', 'using', 'use', 'used', 'based', 'study', 'paper',
+    'the', 'and', 'for', 'with', 'from', 'are', 'was', 'were', 'been', 'has', 'have', 'had', 'will', 'would', 'could', 'should',
+    'may', 'might', 'must', 'can', 'about', 'which', 'what', 'where', 'when', 'who', 'how', 'why', 'doing', 'done'
+  ]);
+  
+  const qTokens = Array.from(new Set(query.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(t => t.length > 2 && !STOPWORDS.has(t))));
   if (qTokens.length === 0) return { status: 'unknown', reasons: [] };
 
   const reasons: string[] = [];

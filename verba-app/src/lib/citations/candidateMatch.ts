@@ -41,7 +41,7 @@ const ASPECT_LABELS: Record<string, string> = {
 
 export type EvidenceCheckedLabel =
   | 'Metadata only'
-  | 'Abstract'
+  | 'Abstract available'
   | 'Open-access source available'
   | 'Full text analyzed'
   | 'User document';
@@ -92,7 +92,7 @@ function getEvidenceCheckedLabel(source: NormalizedSource): {
   if (ev.level === 3) return { level: 3, label: 'User document' };
   // Level 2 = OA URL available but NOT fetched/analyzed
   if (ev.level === 2) return { level: 2, label: 'Open-access source available' };
-  if (ev.level === 1) return { level: 1, label: 'Abstract' };
+  if (ev.level === 1) return { level: 1, label: 'Abstract available' };
   return { level: 0, label: 'Metadata only' };
 }
 
