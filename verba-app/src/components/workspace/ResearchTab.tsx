@@ -249,10 +249,10 @@ export function ResearchTab({ workId, onSourceSaved, evidenceSelection, onClearE
             className="w-full h-8 pl-8 pr-3 text-[13px] bg-[#F6F8FB] border border-border-light rounded focus:outline-none focus:border-accent disabled:opacity-50"
           />
         </form>
-        {providerStatus && Object.entries(providerStatus).some(([k, v]) => v !== 'ok') && (
+        {providerStatus && Object.entries(providerStatus).some(([k, v]) => !['succeeded', 'disabled_missing_configuration', 'skipped', 'fallback_not_needed', 'planned', 'called'].includes(v)) && (
           <div className="mt-2 p-2 bg-status-warning/10 border border-status-warning/20 rounded text-[11px] text-status-warning flex flex-col gap-1">
             <span className="font-semibold flex items-center gap-1"><AlertTriangle size={12}/> Provider Issues</span>
-            {Object.entries(providerStatus).filter(([k,v]) => v !== 'ok').map(([k, v]) => (
+            {Object.entries(providerStatus).filter(([k, v]) => !['succeeded', 'disabled_missing_configuration', 'skipped', 'fallback_not_needed', 'planned', 'called'].includes(v)).map(([k, v]) => (
               <span key={k}>{k}: {v}</span>
             ))}
           </div>
