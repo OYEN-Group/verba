@@ -6,7 +6,7 @@ const SERPER_MAX_RESULTS = 3;
 export async function searchSerper(query: string): Promise<NormalizedSource[]> {
   const apiKey = process.env.SERPER_API_KEY;
   if (!apiKey) {
-    return []; // Gracefully disable if no key
+    throw new Error('disabled_missing_configuration');
   }
 
   try {

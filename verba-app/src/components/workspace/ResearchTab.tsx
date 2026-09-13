@@ -19,7 +19,7 @@ export function ResearchTab({ workId, onSourceSaved, evidenceSelection, onClearE
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<ResearchResult[]>([]);
-  const [providerStatus, setProviderStatus] = useState<Record<string, string> | null>(null);
+  const [providerStatus, setProviderStatus] = useState<Record<string, { status: string; error?: string }> | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -249,14 +249,38 @@ export function ResearchTab({ workId, onSourceSaved, evidenceSelection, onClearE
             className="w-full h-8 pl-8 pr-3 text-[13px] bg-[#F6F8FB] border border-border-light rounded focus:outline-none focus:border-accent disabled:opacity-50"
           />
         </form>
-        {providerStatus && Object.entries(providerStatus).some(([k, v]) => !['succeeded', 'disabled_missing_configuration', 'skipped', 'fallback_not_needed', 'planned', 'called'].includes(v)) && (
-          <div className="mt-2 p-2 bg-status-warning/10 border border-status-warning/20 rounded text-[11px] text-status-warning flex flex-col gap-1">
-            <span className="font-semibold flex items-center gap-1"><AlertTriangle size={12}/> Provider Issues</span>
-            {Object.entries(providerStatus).filter(([k, v]) => !['succeeded', 'disabled_missing_configuration', 'skipped', 'fallback_not_needed', 'planned', 'called'].includes(v)).map(([k, v]) => (
-              <span key={k}>{k}: {v}</span>
-            ))}
-          </div>
-        )}
+        {providerStatus && (() => {
+          const statuses = Object.entries(providerStatus);
+          const formatName = (k: string) => k === 'openalex' ? 'OpenAlex' : k.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+          
+          const searched = statuses.filter(([_, v]) => ['succeeded', 'fallback_not_needed', 'skipped'].includes(v.status));
+          const issues = statuses.filter(([_, v]) => ['disabled_missing_configuration', 'timeout', 'failed'].includes(v.status));
+
+          if (searched.length === 0 && issues.length === 0) return null;
+
+          return (
+            <div className="mt-2 flex flex-col gap-2">
+              {searched.length > 0 && (
+                <div className="text-[11px] text-foreground-muted">
+                  <span className="font-semibold block mb-0.5">Sources searched</span>
+                  {searched.map(([k]) => formatName(k)).join(' · ')}
+                </div>
+              )}
+              {issues.length > 0 && (
+                <div className="p-2 bg-status-warning/10 border border-status-warning/20 rounded text-[11px] text-status-warning flex flex-col gap-1">
+                  <span className="font-semibold flex items-center gap-1">
+                    <AlertTriangle size={12}/> {issues.length === 1 ? 'Provider unavailable' : `${issues.length} providers unavailable`}
+                  </span>
+                  {issues.map(([k, v]) => (
+                    <span key={k}>
+                      {formatName(k)} — {v.status === 'disabled_missing_configuration' ? 'configuration missing' : (v.error || v.status)}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
         {errorMsg && (
           <div className="mt-2 text-[12px] text-status-error">{errorMsg}</div>
         )}

@@ -155,7 +155,7 @@ export async function POST(
     const plan = planResearchQuery(selected_claim, 'find_evidence');
 
     // 9. Search providers (progressive relaxation)
-    const providerStatus: Record<string, string> = {};
+    const providerStatus = {} as Record<SourceProvider, { status: ProviderExecutionStatus; error?: string }>;
     const rawCandidates: { source: NormalizedSource; provider: SourceProvider }[] = [];
     let finalRanked: CandidateAnalysis[] = [];
     let finalDeduplicatedCount = 0;
@@ -180,7 +180,7 @@ export async function POST(
           
           // Merge provider status safely
           for (const [p, s] of Object.entries(batchStatus)) {
-             providerStatus[p] = s.error ? s.error : s.status;
+             providerStatus[p as SourceProvider] = s;
           }
         })
       );
@@ -215,7 +215,7 @@ export async function POST(
             
             // Merge provider status safely
             for (const [p, s] of Object.entries(batchStatus)) {
-               providerStatus[p] = s.error ? s.error : s.status;
+               providerStatus[p as SourceProvider] = s;
             }
           })
         );

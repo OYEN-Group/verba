@@ -6,11 +6,13 @@ import { searchArxiv } from './providers/arxiv';
 import { searchSerper } from './providers/serper';
 import { SourceProvider, NormalizedSource } from '../sources/types';
 
+import { getProviderConfiguration } from './providerConfig';
+
 export type ProviderExecutionStatus =
   | 'planned'
-  | 'called'
   | 'succeeded'
   | 'failed'
+  | 'timeout'
   | 'skipped'
   | 'fallback_not_needed'
   | 'disabled_missing_configuration';
@@ -55,6 +57,12 @@ export async function executeProviders(providers: SourceProvider[], query: strin
   await Promise.allSettled(
     providers.map(async (provider) => {
       try {
+        const config = getProviderConfiguration(provider);
+        if (!config.configured) {
+          providerStatus[provider].status = 'disabled_missing_configuration';
+          return;
+        }
+
         const fetcher = providerRegistry[provider];
         if (!fetcher) {
           providerStatus[provider].status = 'skipped';
@@ -62,7 +70,6 @@ export async function executeProviders(providers: SourceProvider[], query: strin
           return;
         }
         
-        providerStatus[provider].status = 'called';
         const results = await fetcher(query);
         providerStatus[provider].status = 'succeeded';
         for (const r of results) {
@@ -72,6 +79,8 @@ export async function executeProviders(providers: SourceProvider[], query: strin
         const msg = err.message || 'error';
         if (msg === 'disabled_missing_configuration') {
           providerStatus[provider].status = 'disabled_missing_configuration';
+        } else if (err.name === 'AbortError' || msg.includes('timeout')) {
+          providerStatus[provider].status = 'timeout';
         } else {
           providerStatus[provider].status = 'failed';
           providerStatus[provider].error = msg;
