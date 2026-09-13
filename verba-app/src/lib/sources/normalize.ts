@@ -63,7 +63,7 @@ export function getSourceTrackId(source: any): string {
   }
 
   // Absolute fallback
-  return `unknown:${Math.random().toString(36).substring(7)}`;
+  return `unknown:${crypto.randomUUID()}`;
 }
 
 export const SourceSchema = z.object({

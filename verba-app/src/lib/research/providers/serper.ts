@@ -5,9 +5,7 @@ const SERPER_MAX_RESULTS = 3;
 
 export async function searchSerper(query: string): Promise<NormalizedSource[]> {
   const apiKey = process.env.SERPER_API_KEY;
-  if (!apiKey) {
-    throw new Error('disabled_missing_configuration');
-  }
+  if (!apiKey) throw new Error('Provider executed without required configuration');
 
   try {
     const res = await fetch(SERPER_API_URL, {

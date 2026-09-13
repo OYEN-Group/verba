@@ -4,11 +4,7 @@ const GOOGLE_BOOKS_API_URL = 'https://www.googleapis.com/books/v1/volumes';
 
 export async function searchGoogleBooks(query: string, maxResults: number = 10): Promise<NormalizedSource[]> {
   const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
-  if (!apiKey) {
-    // Graceful degradation if key is absent
-    console.warn('GOOGLE_BOOKS_API_KEY is missing. Skipping Google Books provider.');
-    throw new Error('disabled_missing_configuration');
-  }
+  if (!apiKey) throw new Error('Provider executed without required configuration');
 
   try {
     const url = new URL(GOOGLE_BOOKS_API_URL);
