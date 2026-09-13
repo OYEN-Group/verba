@@ -123,7 +123,8 @@ function ClaimSupportBadge({ result }: { result: CitationIntegrityResult }) {
     insufficient_evidence: { label: 'Not enough evidence', color: 'text-foreground-muted' },
     supported: { label: 'Supported', color: 'text-status-success' },
     partially_supported: { label: 'Partially supported', color: 'text-status-warning' },
-    unclear: { label: 'Could not confirm', color: 'text-foreground-secondary' },
+    related: { label: 'Related', color: 'text-foreground-secondary' },
+    unclear: { label: 'Evidence not yet confirmed', color: 'text-foreground-secondary' },
     possibly_contradicted: { label: 'Possible conflict', color: 'text-status-error' },
   };
   const cfg = map[status] || { label: status, color: 'text-foreground-muted' };
@@ -537,8 +538,13 @@ export function CitationIntegrityTab({ documentId, workId, projectContext, onNav
       let contextText = '';
       try {
         const el = document.querySelector(`[data-citation-id="${cit.citationId}"]`);
-        if (el?.parentElement) {
-          contextText = el.parentElement.textContent || '';
+        if (el) {
+          const blockEl = el.closest('p, li, blockquote, h1, h2, h3');
+          if (blockEl) {
+            contextText = blockEl.textContent || '';
+          } else if (el.parentElement) {
+            contextText = el.parentElement.textContent || '';
+          }
         }
       } catch (_) {}
 

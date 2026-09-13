@@ -280,3 +280,57 @@ export function planResearchQuery(originalQuery: string, mode: SearchMode): Rese
     confidence
   };
 }
+
+export function planCitationRecovery(mode: "intended_source" | "supporting_research" | "better_source", sourceFingerprint?: any): ResearchPlan {
+  const primaryProviders = new Set<SourceProvider>();
+  const fallbackProviders = new Set<SourceProvider>();
+  let familiesArray: SourceFamily[] = [];
+
+  if (mode === "intended_source" && sourceFingerprint) {
+    if (sourceFingerprint.source_type === "book" || sourceFingerprint.source_type === "book_chapter") {
+      primaryProviders.add("google_books");
+      primaryProviders.add("open_library");
+      fallbackProviders.add("openalex");
+      fallbackProviders.add("crossref");
+      familiesArray = ["books", "scholarly"];
+    } else if (sourceFingerprint.source_type === "preprint") {
+      primaryProviders.add("arxiv");
+      fallbackProviders.add("openalex");
+      fallbackProviders.add("crossref");
+      familiesArray = ["preprints", "scholarly"];
+    } else if (sourceFingerprint.source_type === "report" || sourceFingerprint.source_type === "standard") {
+      primaryProviders.add("serper");
+      fallbackProviders.add("openalex");
+      familiesArray = ["institutional_web", "scholarly"];
+    } else {
+      primaryProviders.add("openalex");
+      primaryProviders.add("crossref");
+      fallbackProviders.add("google_books");
+      fallbackProviders.add("open_library");
+      familiesArray = ["scholarly", "books"];
+    }
+  } else {
+    // broad search for supporting_research and better_source
+    primaryProviders.add("openalex");
+    primaryProviders.add("crossref");
+    primaryProviders.add("google_books");
+    primaryProviders.add("open_library");
+    fallbackProviders.add("serper");
+    fallbackProviders.add("arxiv");
+    familiesArray = ["scholarly", "books", "preprints", "institutional_web"];
+  }
+
+  return {
+    originalQuery: "",
+    intent: mode === "intended_source" ? "scholarly_evidence" : "broad_discovery",
+    sourceFamilies: familiesArray,
+    providers: [...Array.from(primaryProviders), ...Array.from(fallbackProviders)],
+    primaryProviders: Array.from(primaryProviders),
+    fallbackProviders: Array.from(fallbackProviders),
+    recencyPreference: "none",
+    searchMode: "find_evidence",
+    reasonCodes: ["citation_recovery"],
+    confidence: "high"
+  };
+}
+

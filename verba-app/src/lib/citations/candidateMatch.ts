@@ -42,8 +42,11 @@ const ASPECT_LABELS: Record<string, string> = {
 export type EvidenceCheckedLabel =
   | 'Metadata only'
   | 'Abstract available'
+  | 'Abstract checked'
   | 'Open-access source available'
-  | 'Full text analyzed'
+  | 'Excerpt checked'
+  | 'Full-text section checked'
+  | 'Full text checked'
   | 'User document';
 
 export type NumericalAnchorResult = {

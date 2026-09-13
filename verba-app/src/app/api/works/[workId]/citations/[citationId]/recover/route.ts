@@ -25,8 +25,9 @@
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { searchCrossref } from '@/lib/research/providers/crossref';
-import { searchOpenAlex } from '@/lib/research/providers/openalex';
+import { executeProviders, ProviderExecutionStatus } from '@/lib/research/executor';
+import { planCitationRecovery } from '@/lib/research/planner';
+import { SourceProvider } from '@/lib/sources/types';
 import { NormalizedSource } from '@/lib/sources/types';
 import {
   classifyRecoveryMode,
@@ -103,7 +104,7 @@ export async function POST(
     }
 
     // 8. Search providers (progressive relaxation)
-    const providerStatus: Record<string, string> = {};
+    const providerStatus: Record<SourceProvider, { status: ProviderExecutionStatus; error?: string }> = {} as any;
     const rawCandidates: { source: NormalizedSource; provider: string }[] = [];
     let finalRanked: CandidateAnalysis[] = [];
     let finalDeduplicatedCount = 0;
@@ -114,30 +115,32 @@ export async function POST(
       queries.filter(q => q.stage === 3),
     ];
 
+    // Source fingerprint for intended source
+    let sourceFingerprint = undefined;
+    if (sourceId) {
+      const { data: dbSource } = await supabase.from('sources').select('normalized_source').eq('id', sourceId).single();
+      if (dbSource?.normalized_source) {
+        sourceFingerprint = dbSource.normalized_source;
+      }
+    }
+
+    const plan = planCitationRecovery(mode, sourceFingerprint);
+
     for (const stageQueries of queriesByStage) {
       if (stageQueries.length === 0) continue;
 
+      // Primary providers
       await Promise.all(
         stageQueries.map(async (q) => {
-          let crossrefResults: NormalizedSource[] = [];
-          let openalexResults: NormalizedSource[] = [];
-
-          try {
-            crossrefResults = await searchCrossref(q.query, MAX_RESULTS_PER_QUERY);
-            providerStatus.crossref = 'ok';
-          } catch (e: any) {
-            providerStatus.crossref = e.message || 'error';
+          const { rawCandidates: batchCandidates, providerStatus: batchStatus } = await executeProviders(plan.primaryProviders, q.query);
+          
+          for (const c of batchCandidates) {
+             rawCandidates.push(c);
           }
-
-          try {
-            openalexResults = await searchOpenAlex(q.query, MAX_RESULTS_PER_QUERY);
-            providerStatus.openalex = 'ok';
-          } catch (e: any) {
-            providerStatus.openalex = e.message || 'error';
+          
+          for (const [p, s] of Object.entries(batchStatus)) {
+             providerStatus[p as SourceProvider] = s;
           }
-
-          for (const s of crossrefResults) rawCandidates.push({ source: s, provider: 'crossref' });
-          for (const s of openalexResults) rawCandidates.push({ source: s, provider: 'openalex' });
         })
       );
 
@@ -179,6 +182,36 @@ export async function POST(
         shouldStop = finalRanked.filter(
           c => !c.retracted && c.score.anchorScore >= 6
         ).length >= 2;
+      }
+
+      if (!shouldStop && plan.fallbackProviders.length > 0) {
+        await Promise.all(
+          stageQueries.map(async (q) => {
+            const { rawCandidates: batchCandidates, providerStatus: batchStatus } = await executeProviders(plan.fallbackProviders, q.query);
+            for (const c of batchCandidates) rawCandidates.push(c);
+            for (const [p, s] of Object.entries(batchStatus)) providerStatus[p as SourceProvider] = s;
+          })
+        );
+        
+        // re-evaluate
+        const deduplicatedFallback = deduplicateCandidates(rawCandidates);
+        finalDeduplicatedCount = deduplicatedFallback.length;
+
+        const scoredFallback = deduplicatedFallback
+          .map(({ source, providers }) => ({ source, providers, score: scoreCandidate(source, fingerprint) }))
+          .sort((a, b) => b.score.totalScore - a.score.totalScore);
+
+        const topCandidatesFallback = scoredFallback.slice(0, MAX_CANDIDATES_TO_ANALYZE);
+        const analysesFallback = topCandidatesFallback.map(({ source, providers }) => analyzeCandidate(source, providers, fingerprint, mode));
+        finalRanked = rankCandidates(analysesFallback);
+
+        if (mode === 'intended_source') {
+          shouldStop = finalRanked.some(c => c.fit === 'likely_intended_source' && c.score.anchorScore >= 10 && c.evidenceLevel >= 1 && !c.retracted);
+        } else if (mode === 'supporting_research') {
+          shouldStop = finalRanked.filter(c => !c.retracted && (c.fit === 'likely_intended_source' || c.fit === 'possible_supporting_source')).length >= 2;
+        } else {
+          shouldStop = finalRanked.filter(c => !c.retracted && c.score.anchorScore >= 6).length >= 2;
+        }
       }
 
       if (shouldStop) {

@@ -9,6 +9,7 @@ export type ClaimSupportStatus =
   | 'insufficient_evidence'
   | 'supported'
   | 'partially_supported'
+  | 'related'
   | 'unclear'
   | 'possibly_contradicted';
 
@@ -309,11 +310,11 @@ export function evaluateClaimSupportDeterministic(
       };
     } else if (missingAnchors.length > 0 && foundAnchors.length > 0) {
       return {
-        status: 'partially_supported',
+        status: 'related',
         uxTier: 'warning',
         shortMessage: 'Only some figures found in available source',
         detailMessage: `The figure(s) "${foundAnchors.join(', ')}" were found in the available source text, but "${missingAnchors.join(', ')}" could not be confirmed.`,
-        supportedParts: foundAnchors.map(a => `Contains figure: ${a}`),
+        supportedParts: [],
         unresolvedParts: missingAnchors.map(a => `Figure not found in available text: ${a}`),
         evidencePassages: passages,
         computedForHash: claimScope.claimHash,
@@ -372,12 +373,12 @@ export function evaluateClaimSupportDeterministic(
     }
     if (unresolved.length > 0 && supported.length > 0) {
       return {
-        status: 'partially_supported',
+        status: 'related',
         uxTier: 'warning',
-        shortMessage: 'Source appears to support only part of this statement',
+        shortMessage: 'Source appears to address only part of this statement',
         detailMessage:
           'The available source evidence corresponds to some but not all parts of this statement. Review what is and is not established from the source.',
-        supportedParts: supported,
+        supportedParts: [],
         unresolvedParts: unresolved,
         evidencePassages: passages,
         computedForHash: claimScope.claimHash,
@@ -391,11 +392,11 @@ export function evaluateClaimSupportDeterministic(
   return {
     status: 'unclear',
     uxTier: 'warning',
-    shortMessage: 'Could not confirm claim from available source',
+    shortMessage: 'Evidence not yet confirmed',
     detailMessage:
       evidenceAvailability.level === 1
-        ? "Verba couldn't confirm this claim from the abstract available to it. This does not mean the full paper doesn't support the claim."
-        : "Verba couldn't confirm this specific claim from the available source text.",
+        ? "The abstract is relevant, but it doesn't establish the full statement as written."
+        : "I found and confirmed the source, but the evidence I could inspect isn't enough to establish this statement as written.",
     supportedParts: [],
     unresolvedParts: claimScope.atomicClaims,
     evidencePassages: passages,
