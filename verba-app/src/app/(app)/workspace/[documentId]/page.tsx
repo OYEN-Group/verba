@@ -140,6 +140,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
 
   const editorRef = useRef<Editor | null>(null);
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const citationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savingRef = useRef(false);
   const pendingJsonRef = useRef<Record<string, unknown> | null>(null);
   // Ref so Ctrl+S handler always has fresh value without re-registering
@@ -363,7 +364,11 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   const handleEditorUpdate = useCallback((json: Record<string, unknown>) => {
     // Mark dirty immediately
     setSaveStatus('unsaved');
-    setDocumentCitations(extractCitationsFromTiptapJson(json));
+    // Debounce heavy citation AST walk to prevent tying up the main thread on every keystroke
+    if (citationTimerRef.current) clearTimeout(citationTimerRef.current);
+    citationTimerRef.current = setTimeout(() => {
+      setDocumentCitations(extractCitationsFromTiptapJson(json));
+    }, 600);
 
     // Do not schedule autosave until preference is loaded or if it's off
     if (autosaveEnabledRef.current !== true) return;
@@ -390,6 +395,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   useEffect(() => {
     return () => {
       if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+      if (citationTimerRef.current) clearTimeout(citationTimerRef.current);
     };
   }, []);
 
