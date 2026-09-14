@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { SourceSchema, normalizeDoi } from '@/lib/sources/normalize';
+import { researchRateLimiter } from '@/lib/rate-limit';
 
 export async function GET(
   request: Request,
@@ -49,6 +50,10 @@ export async function POST(
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!researchRateLimiter.check(user.id)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
 
     const { data: work, error: workError } = await supabase

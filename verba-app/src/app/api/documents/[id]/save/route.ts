@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createHash } from 'crypto';
+import { saveRateLimiter } from '@/lib/rate-limit';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function canonicalStringify(obj: any): string {
@@ -42,6 +43,11 @@ export async function POST(
     if (authError || !user) {
       console.error('[save] Auth error:', authError ? authError.message : 'No user', 'Status:', authError?.status, 'Name:', authError?.name);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // 1.5 Rate Limit
+    if (!saveRateLimiter.check(user.id)) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
 
     // 2. Verify ownership — fetch document scoped by id AND user_id

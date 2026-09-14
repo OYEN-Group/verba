@@ -1,0 +1,90 @@
+{
+  "total": 7,
+  "passed": 7,
+  "failed": 0,
+  "results": {
+    "DOCUMENT: Save Race": {
+      "expected": "1 success, 9 conflicts, version 11",
+      "passed": true,
+      "details": {
+        "s1": 1,
+        "c1": 9,
+        "finalDoc1": {
+          "editor_version": 11
+        }
+      }
+    },
+    "DOCUMENT: Old-Content/New-Version Regression": {
+      "expected": "One 200, one 409, DB 71",
+      "passed": true,
+      "details": {
+        "resNewObj": {
+          "status": 409,
+          "data": {
+            "success": false,
+            "stale": true,
+            "currentVersion": 71
+          }
+        },
+        "resOldObj": {
+          "status": 200,
+          "data": {
+            "success": true,
+            "newVersion": 71
+          }
+        },
+        "finalDoc2": {
+          "editor_version": 71,
+          "editor_state": {
+            "type": "doc",
+            "content": [
+              {
+                "text": "OLD",
+                "type": "text"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "DOCUMENT: Cross-User Concurrency": {
+      "expected": "User B gets 404/401 on User A doc",
+      "passed": true,
+      "details": {
+        "status": 404
+      }
+    },
+    "SOURCE: DOI Race": {
+      "expected": "1 logical DB source, all return same ID",
+      "passed": true,
+      "details": {
+        "dbCount": 1,
+        "uniqueReturnedIds": 1
+      }
+    },
+    "SOURCE: ISBN Race": {
+      "expected": "1 logical DB source, unique ID",
+      "passed": true,
+      "details": {
+        "dbCount": 1,
+        "uniqueReturnedIds": 1
+      }
+    },
+    "SOURCE: Cross-User RPC Auth": {
+      "expected": "User B gets 403/404 on User A work",
+      "passed": true,
+      "details": {
+        "status": 404
+      }
+    },
+    "CLAIM: Concurrent Evidence Upsert": {
+      "expected": "1 logical evidence mapping, 1 source",
+      "passed": true,
+      "details": {
+        "evidenceCount": 1,
+        "uniqueSources": 1,
+        "errors": []
+      }
+    }
+  }
+}
