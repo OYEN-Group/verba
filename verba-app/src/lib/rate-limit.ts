@@ -1,39 +1,36 @@
-export class RateLimiter {
-  private cache = new Map<string, { count: number; expiresAt: number }>();
+import { SupabaseClient } from '@supabase/supabase-js';
 
-  constructor(private windowMs: number, private maxRequests: number) {}
+/**
+ * Consumes a token from the durable Postgres-backed rate limiter.
+ * @param supabase The authenticated Supabase client (must have auth.uid() context)
+ * @param action The action scope (e.g. 'save', 'source')
+ * @param limit The maximum number of requests allowed in the window
+ * @param windowSeconds The window duration in seconds
+ * @returns boolean - true if allowed, false if rate limited
+ */
+export async function consumeRateLimit(
+  supabase: SupabaseClient,
+  action: string,
+  limit: number,
+  windowSeconds: number
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc('consume_rate_limit', {
+    p_action: action,
+    p_limit: limit,
+    p_window_seconds: windowSeconds
+  });
 
-  /**
-   * Check if the given identifier (e.g., IP or User ID) has exceeded the rate limit.
-   * Returns true if allowed, false if rate limited.
-   */
-  public check(identifier: string): boolean {
-    const now = Date.now();
-    const record = this.cache.get(identifier);
-
-    if (!record) {
-      this.cache.set(identifier, { count: 1, expiresAt: now + this.windowMs });
-      return true;
-    }
-
-    if (now > record.expiresAt) {
-      // Window expired, reset
-      record.count = 1;
-      record.expiresAt = now + this.windowMs;
-      return true;
-    }
-
-    if (record.count >= this.maxRequests) {
-      return false;
-    }
-
-    record.count++;
-    return true;
+  if (error) {
+    console.error(`[RateLimit] Failed to consume rate limit for ${action}:`, error.message);
+    throw error;
   }
+
+  return data === true;
 }
 
-// Global instance for document saves (e.g., 50 requests per 10 seconds per user/IP)
-export const saveRateLimiter = new RateLimiter(10000, 50);
-
-// Global instance for heavy research endpoints (e.g., 10 requests per minute)
-export const researchRateLimiter = new RateLimiter(60000, 10);
+// Limits
+export const LIMITS = {
+  AUTOSAVE: { limit: 100, window: 60 },
+  SOURCES: { limit: 20, window: 60 },
+  RESEARCH: { limit: 10, window: 60 }
+};

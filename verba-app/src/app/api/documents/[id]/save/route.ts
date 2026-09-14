@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createHash } from 'crypto';
-import { saveRateLimiter } from '@/lib/rate-limit';
+import { consumeRateLimit, LIMITS } from '@/lib/rate-limit';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function canonicalStringify(obj: any): string {
@@ -45,9 +45,17 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 1.5 Rate Limit
-    if (!saveRateLimiter.check(user.id)) {
-      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    // 1.5 Durable Rate Limit (Fail-open for autosave data safety)
+    try {
+      const allowed = await consumeRateLimit(supabase, 'save', LIMITS.AUTOSAVE.limit, LIMITS.AUTOSAVE.window);
+      if (!allowed) {
+        return NextResponse.json({ error: 'Too many requests' }, { 
+          status: 429,
+          headers: { 'Retry-After': '5' } 
+        });
+      }
+    } catch (rlError) {
+      console.warn('[save] Rate limiter failure, failing open for data safety:', rlError);
     }
 
     // 2. Verify ownership — fetch document scoped by id AND user_id

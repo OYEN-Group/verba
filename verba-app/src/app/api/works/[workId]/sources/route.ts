@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { SourceSchema, normalizeDoi } from '@/lib/sources/normalize';
-import { researchRateLimiter } from '@/lib/rate-limit';
+import { consumeRateLimit, LIMITS } from '@/lib/rate-limit';
 
 export async function GET(
   request: Request,
@@ -52,8 +52,18 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!researchRateLimiter.check(user.id)) {
-      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    // 2. Durable Rate Limit (Fail-closed for external requests and heavy DB operations)
+    try {
+      const allowed = await consumeRateLimit(supabase, 'source', LIMITS.SOURCES.limit, LIMITS.SOURCES.window);
+      if (!allowed) {
+        return NextResponse.json({ error: 'Too many requests' }, { 
+          status: 429,
+          headers: { 'Retry-After': '5' } 
+        });
+      }
+    } catch (rlError) {
+      console.error('[sources] Rate limiter failure, failing closed to protect capacity:', rlError);
+      return NextResponse.json({ error: 'Rate limiter unavailable' }, { status: 500 });
     }
 
     const { data: work, error: workError } = await supabase

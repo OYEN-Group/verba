@@ -105,9 +105,11 @@ async def parse_docx(file: UploadFile = File(...)):
     contents = await file.read()
     try:
         processor = DOCXProcessor(contents)
-        json_data = processor.parse_to_json()
-        processor.cleanup()
-        return JSONResponse(content=json_data)
+        try:
+            json_data = processor.parse_to_json()
+            return JSONResponse(content=json_data)
+        finally:
+            processor.cleanup()
     except Exception as exc:
         logger.exception("parse_docx failed", extra={"exception_type": type(exc).__name__})
         return JSONResponse(
