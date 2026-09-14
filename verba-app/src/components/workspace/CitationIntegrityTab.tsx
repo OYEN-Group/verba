@@ -215,7 +215,9 @@ function CandidateCard({
         {/* Matched aspects */}
         {candidate.matchedAspects.length > 0 && (
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted">Matches your statement</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted">
+              {candidate.fit === 'related_research' ? 'Related to your statement' : 'Matches your statement'}
+            </span>
             <div className="flex flex-wrap gap-1">
               {candidate.matchedAspects.map((aspect, i) => (
                 <span key={i} className="inline-flex items-center gap-0.5 text-[10px] text-[#027A48] font-medium">
@@ -246,9 +248,10 @@ function CandidateCard({
 
         {/* Evidence checked + source identity */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10px] text-foreground-muted">
-          <span>Evidence: <span className="text-foreground-secondary font-medium">{candidate.evidenceCheckedLabel}</span></span>
+          <span>Access: <span className="text-foreground-secondary font-medium">{candidate.accessLabel}</span></span>
+          <span>Evidence: <span className="text-foreground-secondary font-medium">{candidate.evidenceLabel}</span></span>
           {candidate.providers.length > 0 && (
-            <span>Verified by: <span className="text-foreground-secondary">{candidate.providers.join(' + ')}</span></span>
+            <span>Found via: <span className="text-foreground-secondary">{candidate.providers.join(' + ')}</span></span>
           )}
           {candidate.doi && (
             <span>DOI: <span className="text-foreground-secondary font-mono">{candidate.doi.slice(0, 24)}{candidate.doi.length > 24 ? '…' : ''}</span></span>
@@ -274,7 +277,7 @@ function CandidateCard({
             </div>
           ))}
           <p className="text-[10px] text-foreground-muted mt-1">
-            Evidence checked: {candidate.evidenceCheckedLabel}
+            Access: {candidate.accessLabel} | Evidence checked: {candidate.evidenceLabel}
           </p>
         </div>
       )}
@@ -316,7 +319,7 @@ function CandidateCard({
                 }`}
               >
                 {adding ? <Loader2 size={10} className="animate-spin" /> : null}
-                Add as supporting source
+                {candidate.fit === 'related_research' ? 'Add source' : 'Add as supporting source'}
               </button>
             )}
             
@@ -483,7 +486,9 @@ function RecoveryPanel({
     <div className="mt-3 pt-3 border-t border-border-light space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-bold uppercase tracking-wider text-foreground-muted">
-          I think I found the study you may have meant
+          {topCandidates.some(c => c.fit === 'likely_intended_source')
+            ? 'I think I found the study you may have meant'
+            : "I found a few sources related to your statement. I can't tell yet whether any of them is the source you originally meant."}
         </p>
         <button
           onClick={() => setRecoveryState({ status: 'idle' })}
@@ -861,7 +866,7 @@ export function CitationIntegrityTab({ documentId, workId, projectContext, onNav
                           </div>
                           {result.sourceIdentity.providers.length > 0 && (
                             <p className="text-foreground-muted text-[10px]">
-                              Verified by: {result.sourceIdentity.providers.join(', ')}
+                              Metadata via: {result.sourceIdentity.providers.join(', ')}
                             </p>
                           )}
                           {result.reasons.length > 0 && (

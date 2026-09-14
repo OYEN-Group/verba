@@ -293,7 +293,8 @@ export async function POST(
         matchedAspects: c.matchedAspects,
         unmatchedAspects: c.unmatchedAspects,
         evidenceLevel: c.evidenceLevel,
-        evidenceCheckedLabel: c.evidenceCheckedLabel,
+        accessLabel: c.accessLabel,
+        evidenceLabel: c.evidenceLabel,
         numericalAnchors: c.numericalAnchors,
         retracted: c.retracted,
         doi: c.doi,
@@ -304,7 +305,7 @@ export async function POST(
           access: { status: access.status, pdf_url: access.pdf_url },
           identity: { status: c.evidenceLevel >= 1 ? 'confirmed' : 'partial', reasons: [] },
           relevance: computedRelevance,
-          evidence_availability: c.evidenceCheckedLabel
+          evidence_availability: c.accessLabel
         },
         provenance: { providers: c.providers, provider_ids: {}, provider_fields: {} }
       };

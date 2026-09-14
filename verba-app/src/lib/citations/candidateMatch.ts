@@ -39,15 +39,18 @@ const ASPECT_LABELS: Record<string, string> = {
   topic: 'Topic relevance',
 };
 
-export type EvidenceCheckedLabel =
+export type AccessAvailabilityLabel =
+  | 'Open-access location available'
+  | 'Abstract/description available'
   | 'Metadata only'
-  | 'Abstract available'
+  | 'User document';
+
+export type EvidenceCheckedLabel =
+  | 'Not checked'
   | 'Abstract checked'
-  | 'Open-access source available'
   | 'Excerpt checked'
   | 'Full-text section checked'
-  | 'Full text checked'
-  | 'User document';
+  | 'Full text checked';
 
 export type NumericalAnchorResult = {
   claimed: string;
@@ -70,8 +73,10 @@ export type CandidateAnalysis = {
   unmatchedAspects: string[];
 
   evidenceLevel: EvidenceLevel;
+  /** Truthful display label for access/availability */
+  accessLabel: AccessAvailabilityLabel;
   /** Truthful display label for what evidence was checked */
-  evidenceCheckedLabel: EvidenceCheckedLabel;
+  evidenceLabel: EvidenceCheckedLabel;
 
   numericalAnchors: NumericalAnchorResult[];
 
@@ -86,17 +91,17 @@ export type CandidateAnalysis = {
 
 // ─── Evidence Label ───────────────────────────────────────────────────────────
 
-function getEvidenceCheckedLabel(source: NormalizedSource): {
+function getAccessAndEvidenceLabels(source: NormalizedSource): {
   level: EvidenceLevel;
-  label: EvidenceCheckedLabel;
+  accessLabel: AccessAvailabilityLabel;
+  evidenceLabel: EvidenceCheckedLabel;
 } {
   const ev = classifyEvidenceAvailability(source);
 
-  if (ev.level === 3) return { level: 3, label: 'User document' };
-  // Level 2 = OA URL available but NOT fetched/analyzed
-  if (ev.level === 2) return { level: 2, label: 'Open-access source available' };
-  if (ev.level === 1) return { level: 1, label: 'Abstract available' };
-  return { level: 0, label: 'Metadata only' };
+  if (ev.level === 3) return { level: 3, accessLabel: 'User document', evidenceLabel: 'Not checked' };
+  if (ev.level === 2) return { level: 2, accessLabel: 'Open-access location available', evidenceLabel: 'Not checked' };
+  if (ev.level === 1) return { level: 1, accessLabel: 'Abstract/description available', evidenceLabel: 'Not checked' };
+  return { level: 0, accessLabel: 'Metadata only', evidenceLabel: 'Not checked' };
 }
 
 // ─── Numerical Anchor Analysis ────────────────────────────────────────────────
@@ -389,7 +394,7 @@ export function analyzeCandidate(
   mode: RecoveryMode
 ): CandidateAnalysis {
   const score = scoreCandidate(source, fp);
-  const { level: evidenceLevel, label: evidenceCheckedLabel } = getEvidenceCheckedLabel(source);
+  const { level: evidenceLevel, accessLabel, evidenceLabel } = getAccessAndEvidenceLabels(source);
   const retracted = source.metadata?.is_retracted === true;
 
   const { fit, reason: fitReason } = classifyFit(score, evidenceLevel, mode, retracted);
@@ -413,7 +418,8 @@ export function analyzeCandidate(
     matchedAspects,
     unmatchedAspects,
     evidenceLevel,
-    evidenceCheckedLabel,
+    accessLabel,
+    evidenceLabel,
     numericalAnchors,
     retracted,
     doi: normalizeDoi(source.doi),

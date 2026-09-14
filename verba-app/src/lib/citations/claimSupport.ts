@@ -6,6 +6,7 @@ import { ClaimScope } from './scope';
 
 export type ClaimSupportStatus =
   | 'not_checked'
+  | 'not_checkable'
   | 'insufficient_evidence'
   | 'supported'
   | 'partially_supported'
@@ -66,6 +67,26 @@ export type ClaimSupportResult = {
    */
   temporalWarning: string | null;
 };
+
+// ─── Claim Checkability Classification ────────────────────────────────────────
+
+export type ClaimCheckability = 'checkable_claim' | 'weak_or_incomplete_claim' | 'non_claim';
+
+export function evaluateClaimCheckability(sentence: string): ClaimCheckability {
+  const text = sentence.trim();
+  const words = text.split(/\s+/).filter(w => w.length > 0);
+  
+  if (words.length <= 2) return 'non_claim';
+  
+  // Basic heuristic to detect propositional statements vs title fragments/topics
+  const hasVerbHeuristic = /\b(is|are|was|were|has|have|had|do|does|did|can|could|will|would|should|may|might|must|shows|demonstrates|indicates|suggests|removes|reduces|increases|found|argued|stated|reported|concluded|proposed)\b/i;
+  
+  if (!hasVerbHeuristic.test(text) && words.length < 8) {
+    return 'weak_or_incomplete_claim';
+  }
+  
+  return 'checkable_claim';
+}
 
 // ─── Claim Type Classification (deterministic) ────────────────────────────────
 
@@ -258,9 +279,26 @@ export function evaluateClaimSupportDeterministic(
   evidenceAvailability: EvidenceAvailabilityResult,
   source: NormalizedSource
 ): ClaimSupportResult {
+  const checkability = evaluateClaimCheckability(claimScope.sentence);
   const claimType = classifyClaimType(claimScope.sentence);
   const temporalWarning = detectTemporalMismatch(claimScope, source);
   const passages: EvidencePassage[] = [];
+
+  // ── Pre-check: Is this a verifiable claim? ──────────────────────────────
+  if (checkability === 'non_claim' || checkability === 'weak_or_incomplete_claim') {
+    return {
+      status: 'not_checkable',
+      uxTier: 'unavailable',
+      shortMessage: 'Not enough information to verify',
+      detailMessage: 'Not enough of a factual claim to check. The citation may still need attention because some source details are incomplete.',
+      supportedParts: [],
+      unresolvedParts: [],
+      evidencePassages: [],
+      computedForHash: claimScope.claimHash,
+      claimType,
+      temporalWarning: null,
+    };
+  }
 
   // ── Level 0: Metadata only — always insufficient_evidence ──────────────────
   if (evidenceAvailability.level === 0) {
