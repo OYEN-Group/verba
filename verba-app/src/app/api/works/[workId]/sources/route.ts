@@ -106,7 +106,7 @@ export async function POST(
     if (existingId) {
       if (claimId) {
         // Source already existed, link it to the claim
-        await supabase.from('claim_source_evidence').upsert({
+        const { error: upsertErr } = await supabase.from('claim_source_evidence').upsert({
           claim_id: claimId,
           source_id: existingId,
           user_id: user.id,
@@ -116,22 +116,22 @@ export async function POST(
           evidence_location: evidenceLocation || null,
           verification_method: 'not_checked',
         }, { onConflict: 'claim_id,source_id' });
-        
-        // Return existing source so frontend knows it succeeded
-        const { data: existingSrc } = await supabase
-          .from('work_sources')
-          .select('*, identifiers:source_identifiers(*), locations:source_locations(*)')
-          .eq('id', existingId)
-          .single();
-        return NextResponse.json(existingSrc);
+        if (upsertErr) console.error("DB UPSERT ERROR in claim_source_evidence:", upsertErr);
       }
-      return NextResponse.json({ error: 'SOURCE_ALREADY_EXISTS', sourceId: existingId }, { status: 409 });
+      
+      // Return existing source so frontend knows it succeeded
+      const { data: existingSrc } = await supabase
+        .from('work_sources')
+        .select('*, identifiers:source_identifiers(*), locations:source_locations(*)')
+        .eq('id', existingId)
+        .single();
+      return NextResponse.json(existingSrc);
     }
 
     // It is a newly inserted source. 
     // Insert claim evidence mapping if provided.
     if (claimId) {
-      await supabase.from('claim_source_evidence').insert({
+      const { error: ceErr } = await supabase.from('claim_source_evidence').insert({
         claim_id: claimId,
         source_id: sourceResult.id,
         user_id: user.id,
@@ -141,6 +141,10 @@ export async function POST(
         evidence_location: evidenceLocation || null,
         verification_method: 'not_checked',
       });
+      if (ceErr) {
+        console.error("DB INSERT ERROR in claim_source_evidence:", ceErr);
+        sourceResult._insertError = ceErr;
+      }
     }
 
     // Return with fetched arrays matching the format expected by the frontend

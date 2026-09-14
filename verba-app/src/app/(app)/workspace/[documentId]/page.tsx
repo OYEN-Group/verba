@@ -315,7 +315,9 @@ export default function WorkspacePage({ params }: { params: { documentId: string
         setSaveStatus('saved');
       } else if (res.status === 409 && data.stale) {
         versionRef.current = data.currentVersion;
-        setSaveStatus('saved');
+        // The save was rejected because the server has a newer version.
+        // We must keep the status as 'unsaved' so the user's edits aren't lost when they close the tab.
+        setSaveStatus('unsaved');
       } else {
         console.error('[save] Server error:', data);
         setSaveStatus('failed');
