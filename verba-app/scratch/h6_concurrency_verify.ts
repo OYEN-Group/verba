@@ -1,4 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
+import * as fs from 'fs';
+if (fs.existsSync('.env.local')) {
+  const envConfig = fs.readFileSync('.env.local', 'utf8');
+  envConfig.split('\n').forEach(line => {
+    const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+    if (match) {
+      let key = match[1];
+      let value = match[2] || '';
+      // Remove surrounding quotes
+      if (value.length > 0 && value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') {
+        value = value.replace(/\\n/gm, '\n');
+      }
+      value = value.replace(/(^['"]|['"]$)/g, '').trim();
+      process.env[key] = value;
+    }
+  });
+}
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321';
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy';
@@ -42,8 +59,11 @@ async function run() {
   const API_BASE = 'http://localhost:3000/api';
 
   // 1. Setup Fixture Document
-  const { data: workA } = await supabase.from('works').insert({ title: 'Work A', user_id: userA.id }).select('id').single();
-  const { data: docA } = await supabase.from('documents').insert({ work_id: workA!.id, user_id: userA.id, title: 'Doc A', editor_version: 10, editor_state: { type: 'doc', content: [] } }).select('id').single();
+  const { data: workA, error: errW } = await supabase.from('works').insert({ title: 'Work A', user_id: userA.id }).select('id').single();
+  if (errW) throw new Error('Failed to create Work A: ' + errW.message);
+  
+  const { data: docA, error: errD } = await supabase.from('documents').insert({ work_id: workA!.id, user_id: userA.id, title: 'Doc A', original_filename: 'docA.txt', storage_path: 'workA/docA.txt', editor_version: 10, editor_state: { type: 'doc', content: [] } }).select('id').single();
+  if (errD) throw new Error('Failed to create Doc A: ' + errD.message);
 
   // ---------------------------------------------------------
   // TEST 1 — DOCUMENT SAVE RACE
@@ -82,7 +102,8 @@ async function run() {
   // ---------------------------------------------------------
   // TEST 2 — DELAYED STALE AUTOSAVE (Test 31 equivalent)
   // ---------------------------------------------------------
-  const { data: docB } = await supabase.from('documents').insert({ work_id: workA!.id, user_id: userA.id, title: 'Doc B', editor_version: 20, editor_state: { type: 'doc', content: [] } }).select('id').single();
+  const { data: docB, error: errD2 } = await supabase.from('documents').insert({ work_id: workA!.id, user_id: userA.id, title: 'Doc B', original_filename: 'docB.txt', storage_path: 'workA/docB.txt', editor_version: 20, editor_state: { type: 'doc', content: [] } }).select('id').single();
+  if (errD2) throw new Error('Failed to create Doc B: ' + errD2.message);
 
   const reqA = fetch(`${API_BASE}/documents/${docB!.id}/save`, {
       method: 'POST',
@@ -121,6 +142,50 @@ async function run() {
     (resA.status === 200 && resB.status === 409 && finalContent === 'OLD_AUTOSAVE') ||
     (resA.status === 409 && resB.status === 200 && finalContent === 'NEW_MANUAL_SAVE'),
     { resA, resB, finalDocB }
+  );
+
+  // ---------------------------------------------------------
+  // TEST 11 — CREATE SOURCE RACE — DOI
+  // ---------------------------------------------------------
+  const sourcePayload = {
+    source_type: 'journal_article',
+    title: 'Concurrent Source DOI Test',
+    doi: '10.1234/test.race.' + Date.now(),
+    publication_year: 2026,
+    authors: [{ given: 'John', family: 'Smith' }]
+  };
+
+  const sourcePromises = Array(10).fill(0).map(() => 
+    fetch(`${API_BASE}/works/${workA!.id}/sources`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(sourcePayload)
+    }).then(res => res.json().then(data => ({ status: res.status, data })))
+  );
+
+  const sourceResults = await Promise.allSettled(sourcePromises);
+  
+  let rpcSuccessCount = 0;
+  let rpcConflictCount = 0;
+  let returnedSourceIds = new Set();
+  let rpcError = null;
+
+  for (const r of sourceResults) {
+    if (r.status === 'fulfilled') {
+      if (r.value.status === 200 || r.value.status === 201) rpcSuccessCount++;
+      if (r.value.status === 409) rpcConflictCount++;
+      if (r.value.data?.error) rpcError = r.value.data.error;
+      if (r.value.data?.id) returnedSourceIds.add(r.value.data.id);
+    }
+  }
+
+  const { data: dbSources } = await supabase.from('work_sources').select('id').eq('doi', sourcePayload.doi);
+
+  report(
+    'TEST 11 - CREATE SOURCE RACE - DOI',
+    'One logical work_source, all successful return same ID',
+    dbSources?.length === 1 && returnedSourceIds.size === 1 && !rpcError,
+    { rpcSuccessCount, rpcConflictCount, uniqueIds: returnedSourceIds.size, dbCount: dbSources?.length, rpcError }
   );
 
   console.log(`\nTOTAL: ${total}\nPASSED: ${passed}\nFAILED: ${failed}`);
