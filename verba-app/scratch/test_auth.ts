@@ -24,7 +24,11 @@ async function run() {
   console.log(`[Diagnostic] Anon Key length: ${SUPABASE_ANON_KEY.length}`);
   
   const email = 'testa@verba.test';
-  const password = 'password123';
+  const password = process.env.TEST_USER_PASSWORD;
+  
+  if (!password) {
+    throw new Error("TEST_USER_PASSWORD is required");
+  }
   
   console.log("Authenticating...");
   let { data: auth, error: authErr } = await supabase.auth.signInWithPassword({ email, password });

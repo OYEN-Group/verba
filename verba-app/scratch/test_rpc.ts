@@ -18,7 +18,8 @@ if (fs.existsSync('.env.local')) {
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321';
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy';
 const USER_EMAIL = 'testa@verba.test';
-const USER_PASSWORD = 'password123';
+const USER_PASSWORD = process.env.TEST_USER_PASSWORD;
+if (!USER_PASSWORD) throw new Error("TEST_USER_PASSWORD is required");
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 

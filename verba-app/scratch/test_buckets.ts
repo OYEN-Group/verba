@@ -17,7 +17,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function run() {
   const email = 'testa@verba.test';
-  const password = 'password123';
+  const password = process.env.TEST_USER_PASSWORD;
+  if (!password) throw new Error("TEST_USER_PASSWORD is required");
   let { data: auth } = await supabase.auth.signInWithPassword({ email, password });
   
   const sbAuth = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
