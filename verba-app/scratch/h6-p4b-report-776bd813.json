@@ -1,0 +1,268 @@
+{
+  "runId": "776bd813",
+  "apiBase": "https://verba-silk.vercel.app",
+  "completedAt": "2026-09-18T07:32:41.207Z",
+  "stageResults": [
+    {
+      "concurrency": 1,
+      "healthy": true,
+      "stopReason": null,
+      "metrics": {
+        "total": 44,
+        "success2xx": 44,
+        "networkErrors": 0,
+        "statusDistribution": {
+          "200": 44
+        },
+        "throughputRps": "0.73",
+        "overall": {
+          "min": "727",
+          "p50": "926",
+          "p95": "1787",
+          "p99": "2949",
+          "max": "2949"
+        },
+        "byRoute": {
+          "sources_read": {
+            "count": 12,
+            "min": "869",
+            "p50": "887",
+            "p95": "1050",
+            "p99": "1050",
+            "max": "1050"
+          },
+          "preferences_read": {
+            "count": 9,
+            "min": "727",
+            "p50": "750",
+            "p95": "926",
+            "p99": "926",
+            "max": "926"
+          },
+          "document_save": {
+            "count": 16,
+            "min": "1101",
+            "p50": "1328",
+            "p95": "2949",
+            "p99": "2949",
+            "max": "2949"
+          },
+          "source_write": {
+            "count": 3,
+            "min": "1142",
+            "p50": "1187",
+            "p95": "1339",
+            "p99": "1339",
+            "max": "1339"
+          },
+          "citation_write": {
+            "count": 3,
+            "min": "736",
+            "p50": "840",
+            "p95": "1001",
+            "p99": "1001",
+            "max": "1001"
+          }
+        },
+        "budgetSubstitutions": 1
+      }
+    },
+    {
+      "concurrency": 5,
+      "healthy": true,
+      "stopReason": null,
+      "metrics": {
+        "total": 237,
+        "success2xx": 237,
+        "networkErrors": 0,
+        "statusDistribution": {
+          "200": 237
+        },
+        "throughputRps": "3.95",
+        "overall": {
+          "min": "713",
+          "p50": "867",
+          "p95": "1518",
+          "p99": "2936",
+          "max": "3112"
+        },
+        "byRoute": {
+          "sources_read": {
+            "count": 63,
+            "min": "821",
+            "p50": "856",
+            "p95": "1228",
+            "p99": "2936",
+            "max": "2936"
+          },
+          "preferences_read": {
+            "count": 62,
+            "min": "713",
+            "p50": "737",
+            "p95": "1121",
+            "p99": "2103",
+            "max": "2103"
+          },
+          "document_save": {
+            "count": 50,
+            "min": "1046",
+            "p50": "1174",
+            "p95": "1528",
+            "p99": "1901",
+            "max": "1901"
+          },
+          "source_write": {
+            "count": 35,
+            "min": "1061",
+            "p50": "1101",
+            "p95": "3037",
+            "p99": "3112",
+            "max": "3112"
+          },
+          "citation_write": {
+            "count": 21,
+            "min": "722",
+            "p50": "757",
+            "p95": "957",
+            "p99": "1160",
+            "max": "1160"
+          }
+        },
+        "budgetSubstitutions": 6
+      }
+    },
+    {
+      "concurrency": 10,
+      "healthy": true,
+      "stopReason": null,
+      "metrics": {
+        "total": 423,
+        "success2xx": 423,
+        "networkErrors": 0,
+        "statusDistribution": {
+          "200": 423
+        },
+        "throughputRps": "7.05",
+        "overall": {
+          "min": "701",
+          "p50": "1068",
+          "p95": "1872",
+          "p99": "2650",
+          "max": "17872"
+        },
+        "byRoute": {
+          "sources_read": {
+            "count": 121,
+            "min": "814",
+            "p50": "989",
+            "p95": "1843",
+            "p99": "2650",
+            "max": "17872"
+          },
+          "preferences_read": {
+            "count": 103,
+            "min": "701",
+            "p50": "855",
+            "p95": "1421",
+            "p99": "2278",
+            "max": "2386"
+          },
+          "document_save": {
+            "count": 86,
+            "min": "1048",
+            "p50": "1292",
+            "p95": "2010",
+            "p99": "2816",
+            "max": "2816"
+          },
+          "source_write": {
+            "count": 65,
+            "min": "1038",
+            "p50": "1208",
+            "p95": "2389",
+            "p99": "3158",
+            "max": "3158"
+          },
+          "citation_write": {
+            "count": 22,
+            "min": "713",
+            "p50": "782",
+            "p95": "1256",
+            "p99": "1463",
+            "max": "1463"
+          }
+        },
+        "budgetSubstitutions": 26
+      }
+    },
+    {
+      "concurrency": 20,
+      "healthy": false,
+      "stopReason": "p95=12694ms > 3000ms threshold",
+      "metrics": {
+        "total": 188,
+        "success2xx": 188,
+        "networkErrors": 0,
+        "statusDistribution": {
+          "200": 188
+        },
+        "throughputRps": "3.13",
+        "overall": {
+          "min": "723",
+          "p50": "5169",
+          "p95": "12694",
+          "p99": "13391",
+          "max": "13482"
+        },
+        "byRoute": {
+          "sources_read": {
+            "count": 49,
+            "min": "905",
+            "p50": "5147",
+            "p95": "12699",
+            "p99": "13237",
+            "max": "13237"
+          },
+          "preferences_read": {
+            "count": 48,
+            "min": "1040",
+            "p50": "5593",
+            "p95": "12353",
+            "p99": "12644",
+            "max": "12644"
+          },
+          "document_save": {
+            "count": 35,
+            "min": "1126",
+            "p50": "5733",
+            "p95": "13157",
+            "p99": "13391",
+            "max": "13391"
+          },
+          "source_write": {
+            "count": 33,
+            "min": "1327",
+            "p50": "4906",
+            "p95": "13309",
+            "p99": "13482",
+            "max": "13482"
+          },
+          "citation_write": {
+            "count": 3,
+            "min": "1878",
+            "p50": "3508",
+            "p95": "8702",
+            "p99": "8702",
+            "max": "8702"
+          }
+        },
+        "budgetSubstitutions": 20
+      }
+    }
+  ],
+  "conclusion": {
+    "lastHealthyConcurrency": 10,
+    "firstUnhealthyConcurrency": 20,
+    "workloadLabel": "SYNTHETIC HIGH-ACTIVITY â€” not realistic normal use"
+  }
+}
