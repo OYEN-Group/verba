@@ -16,6 +16,7 @@ export interface ContextualSelection {
   originalText: string;
   startOffset: number;
   endOffset: number;
+  associatedCitations?: string[];
 }
 
 /** A parsed block from docx_processor / parsed_content */
@@ -47,6 +48,7 @@ interface DocumentEditorProps {
   onUpdate?: (json: TiptapJson) => void;
   onAskVerba?: (selection: ContextualSelection) => void;
   onFindEvidence?: (selection: ContextualSelection) => void;
+  onReviewEvidence?: (selection: ContextualSelection) => void;
   onFocus?: () => void;
   onBlur?: () => void;
 }
@@ -95,6 +97,7 @@ export function DocumentEditor({
   onUpdate,
   onAskVerba,
   onFindEvidence,
+  onReviewEvidence,
   onFocus,
   onBlur,
 }: DocumentEditorProps) {
@@ -243,6 +246,7 @@ export function DocumentEditor({
                     let blockId = '';
                     let paragraphText = '';
                     let blockStart = 0;
+                    let associatedCitations: string[] = [];
                     
                     editor.state.doc.descendants((node, pos) => {
                       if (pos <= from && pos + node.nodeSize >= to) {
@@ -250,6 +254,13 @@ export function DocumentEditor({
                           blockId = node.attrs.verbaBlockId;
                           paragraphText = node.textContent;
                           blockStart = pos + 1;
+                          
+                          // Extract any citations in this block
+                          node.descendants((childNode) => {
+                            if (childNode.type.name === 'citation' && childNode.attrs.citationId) {
+                              associatedCitations.push(childNode.attrs.citationId);
+                            }
+                          });
                           return false;
                         }
                       }
@@ -261,7 +272,8 @@ export function DocumentEditor({
                         paragraphText,
                         originalText: text,
                         startOffset: from - blockStart,
-                        endOffset: to - blockStart
+                        endOffset: to - blockStart,
+                        associatedCitations
                       });
                     }
                   }}
@@ -279,6 +291,7 @@ export function DocumentEditor({
                     let blockId = '';
                     let paragraphText = '';
                     let blockStart = 0;
+                    let associatedCitations: string[] = [];
                     
                     editor.state.doc.descendants((node, pos) => {
                       if (pos <= from && pos + node.nodeSize >= to) {
@@ -286,6 +299,12 @@ export function DocumentEditor({
                           blockId = node.attrs.verbaBlockId;
                           paragraphText = node.textContent;
                           blockStart = pos + 1;
+                          
+                          node.descendants((childNode) => {
+                            if (childNode.type.name === 'citation' && childNode.attrs.citationId) {
+                              associatedCitations.push(childNode.attrs.citationId);
+                            }
+                          });
                           return false;
                         }
                       }
@@ -297,7 +316,8 @@ export function DocumentEditor({
                         paragraphText,
                         originalText: text,
                         startOffset: from - blockStart,
-                        endOffset: to - blockStart
+                        endOffset: to - blockStart,
+                        associatedCitations
                       });
                     }
                   }}
@@ -305,6 +325,50 @@ export function DocumentEditor({
                 >
                   <Search size={14} className="text-white" />
                   Find evidence
+                </button>
+                <div className="w-[1px] bg-[#213555]" />
+                <button
+                  onClick={() => {
+                    const { from, to } = editor.state.selection;
+                    const text = editor.state.doc.textBetween(from, to, ' ');
+                    
+                    let blockId = '';
+                    let paragraphText = '';
+                    let blockStart = 0;
+                    let associatedCitations: string[] = [];
+                    
+                    editor.state.doc.descendants((node, pos) => {
+                      if (pos <= from && pos + node.nodeSize >= to) {
+                        if (node.attrs.verbaBlockId) {
+                          blockId = node.attrs.verbaBlockId;
+                          paragraphText = node.textContent;
+                          blockStart = pos + 1;
+                          
+                          node.descendants((childNode) => {
+                            if (childNode.type.name === 'citation' && childNode.attrs.citationId) {
+                              associatedCitations.push(childNode.attrs.citationId);
+                            }
+                          });
+                          return false;
+                        }
+                      }
+                    });
+                    
+                    if (blockId && onReviewEvidence) {
+                      onReviewEvidence({
+                        blockId,
+                        paragraphText,
+                        originalText: text,
+                        startOffset: from - blockStart,
+                        endOffset: to - blockStart,
+                        associatedCitations
+                      });
+                    }
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-accent transition-colors"
+                >
+                  <Search size={14} className="text-white" />
+                  Review Evidence
                 </button>
               </div>
             </BubbleMenu>

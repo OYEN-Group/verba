@@ -107,6 +107,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   // Contextual Assistant
   const [contextualSelection, setContextualSelection] = useState<ContextualSelection | null>(null);
   const [evidenceSelection, setEvidenceSelection] = useState<ContextualSelection | null>(null);
+  const [reviewEvidenceSelection, setReviewEvidenceSelection] = useState<ContextualSelection | null>(null);
 
   // Citation Data
   const [sources, setSources] = useState<any[]>([]);
@@ -134,7 +135,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isOutlineOpen, setIsOutlineOpen] = useState(false);
   const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
-  const [workspaceTab, setWorkspaceTab] = useState<'assistant' | 'review' | 'research' | 'cite' | 'integrity' | 'prove'>('assistant');
+  const [workspaceTab, setWorkspaceTab] = useState<'assistant' | 'review' | 'research' | 'cite' | 'integrity' | 'evidence' | 'prove'>('assistant');
   const [zoomLevel, setZoomLevel] = useState(100);
   const [showZoomMenu, setShowZoomMenu] = useState(false);
 
@@ -788,6 +789,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
                 setWorkspaceTab('assistant');
                 setActiveIssueId(null);
                 setEvidenceSelection(null);
+                setReviewEvidenceSelection(null);
               }}
               onFindEvidence={(sel) => {
                 setEvidenceSelection(sel);
@@ -795,6 +797,15 @@ export default function WorkspacePage({ params }: { params: { documentId: string
                 setWorkspaceTab('research');
                 setActiveIssueId(null);
                 setContextualSelection(null);
+                setReviewEvidenceSelection(null);
+              }}
+              onReviewEvidence={(sel) => {
+                setReviewEvidenceSelection(sel);
+                setIsWorkspaceOpen(true);
+                setWorkspaceTab('evidence');
+                setActiveIssueId(null);
+                setContextualSelection(null);
+                setEvidenceSelection(null);
               }}
             />
             <BibliographyPreview />
@@ -808,21 +819,27 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           onClose={() => setIsWorkspaceOpen(false)}
           activeTab={workspaceTab}
           onTabChange={setWorkspaceTab}
-          blockId={activeIssue?.block_id || contextualSelection?.blockId || evidenceSelection?.blockId || ''}
-          paragraphText={activeBlockText || contextualSelection?.paragraphText || evidenceSelection?.paragraphText || ''}
+          blockId={activeIssue?.block_id || contextualSelection?.blockId || evidenceSelection?.blockId || reviewEvidenceSelection?.blockId || ''}
+          paragraphText={activeBlockText || contextualSelection?.paragraphText || evidenceSelection?.paragraphText || reviewEvidenceSelection?.paragraphText || ''}
           issues={issues}
           issue={activeIssue as unknown as typeof activeIssue}
           contextualSelection={contextualSelection}
           onClearContextualSelection={() => setContextualSelection(null)}
           evidenceSelection={evidenceSelection}
           onClearEvidenceSelection={() => setEvidenceSelection(null)}
+          reviewEvidenceSelection={reviewEvidenceSelection}
+          onClearReviewEvidenceSelection={() => setReviewEvidenceSelection(null)}
           onIssueSelect={(id) => {
             selectIssue(id);
-            if (id) setContextualSelection(null);
+            if (id) {
+               setContextualSelection(null);
+               setReviewEvidenceSelection(null);
+            }
           }}
           onCloseIssue={() => {
             selectIssue(null);
             setContextualSelection(null);
+            setReviewEvidenceSelection(null);
           }}
           onSuggestionAction={handleSuggestionAction as unknown as (...args: unknown[]) => void}
           isAnalyzed={isAnalyzed}

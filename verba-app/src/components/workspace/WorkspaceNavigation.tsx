@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sparkles, Eye, Search, BookOpen, ShieldCheck, BadgeCheck } from 'lucide-react';
 
-export type WorkspaceTab = 'assistant' | 'review' | 'research' | 'cite' | 'integrity' | 'prove';
+export type WorkspaceTab = 'assistant' | 'review' | 'research' | 'cite' | 'integrity' | 'evidence' | 'prove';
 
 interface Props {
   activeTab: WorkspaceTab;
@@ -15,6 +15,7 @@ export function WorkspaceNavigation({ activeTab, onTabChange }: Props) {
     { id: 'research', label: 'Research', icon: Search },
     { id: 'cite', label: 'Cite', icon: BookOpen },
     { id: 'integrity', label: 'Integrity', icon: BadgeCheck },
+    { id: 'evidence', label: 'Evidence', icon: ShieldCheck },
     { id: 'prove', label: 'PROVE', icon: ShieldCheck },
   ] as const;
 

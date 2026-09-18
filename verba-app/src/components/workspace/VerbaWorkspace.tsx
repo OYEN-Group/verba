@@ -5,6 +5,7 @@ import { CiteTab } from './CiteTab';
 import { ReviewTab } from './ReviewTab';
 import { ProvePanel } from './ProvePanel';
 import { CitationIntegrityTab } from './CitationIntegrityTab';
+import { ReviewEvidencePanel } from './ReviewEvidencePanel';
 import { WritingAssistant, Issue } from '../WritingAssistant';
 import { PanelRightClose } from 'lucide-react';
 import { ContextualSelection } from '../DocumentEditor';
@@ -23,6 +24,8 @@ interface Props {
   onClearContextualSelection?: () => void;
   evidenceSelection?: ContextualSelection | null;
   onClearEvidenceSelection?: () => void;
+  reviewEvidenceSelection?: ContextualSelection | null;
+  onClearReviewEvidenceSelection?: () => void;
   onIssueSelect?: (id: string | null) => void;
   onSuggestionAction: (issueId: string, suggestionId: string, action: 'accepted' | 'rejected' | 'manually_edited', newText?: string) => void;
   onCloseIssue: () => void;
@@ -57,6 +60,8 @@ export function VerbaWorkspace({
   onClearContextualSelection,
   evidenceSelection,
   onClearEvidenceSelection,
+  reviewEvidenceSelection,
+  onClearReviewEvidenceSelection,
   onIssueSelect,
   onSuggestionAction,
   onCloseIssue,
@@ -157,6 +162,17 @@ export function VerbaWorkspace({
             onNavigate={(tab) => onTabChange(tab)}
             onReplaceCitation={onReplaceCitation}
             onAddSupportingCitation={onAddSupportingCitation}
+          />
+        )}
+        {activeTab === 'evidence' && (
+          <ReviewEvidencePanel 
+            workId={workId || ''}
+            documentId={documentId}
+            selection={reviewEvidenceSelection || null}
+            onFindEvidence={(text) => {
+              if (onTabChange) onTabChange('research');
+            }}
+            onClearSelection={onClearReviewEvidenceSelection || (() => {})}
           />
         )}
         {activeTab === 'prove' && <ProvePanel documentId={documentId} />}
