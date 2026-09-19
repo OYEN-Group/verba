@@ -173,13 +173,13 @@ export function SidebarNav({ userName = 'Writer', userEmail = '' }: SidebarNavPr
             </div>
 
             <div className="p-2 border-b border-slate-100 flex flex-col space-y-0.5">
-              <Link href="/account" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center justify-between px-3 py-2 text-[14px] font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors">
+              <Link href="/account#profile" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center justify-between px-3 py-2 text-[14px] font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors">
                 Account settings <ArrowRight size={14} className="text-slate-400" />
               </Link>
-              <Link href="/account" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center justify-between px-3 py-2 text-[14px] font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors">
+              <Link href="/account#billing" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center justify-between px-3 py-2 text-[14px] font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors">
                 Billing & plan <ArrowRight size={14} className="text-slate-400" />
               </Link>
-              <Link href="/account" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center justify-between px-3 py-2 text-[14px] font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors">
+              <Link href="/account#usage" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center justify-between px-3 py-2 text-[14px] font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors">
                 Usage <ArrowRight size={14} className="text-slate-400" />
               </Link>
             </div>
