@@ -139,6 +139,10 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   const [zoomLevel, setZoomLevel] = useState(100);
   const [showZoomMenu, setShowZoomMenu] = useState(false);
 
+  // Document Renaming State
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+
   const editorRef = useRef<Editor | null>(null);
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const citationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -637,6 +641,26 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   };
 
 
+  const handleRenameSubmit = async () => {
+    if (!renameValue.trim() || renameValue === (doc?.original_filename || doc?.title)) {
+      setIsRenaming(false);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/documents/${params.documentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ original_filename: renameValue })
+      });
+      if (res.ok) {
+        setDoc(prev => prev ? { ...prev, original_filename: renameValue } : null);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    setIsRenaming(false);
+  };
+
   return (
     <>
     <CitationProvider sources={sources} style={citationStyle} documentCitations={documentCitations}>
@@ -683,9 +707,30 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               </button>
             )}
             <FileText size={18} className="text-accent shrink-0" />
-            <h1 className="text-[14px] font-medium text-[#0B1628] truncate min-w-0">
-              {doc.original_filename || `${doc.title}.docx`}
-            </h1>
+            {isRenaming ? (
+              <input
+                autoFocus
+                className="text-[14px] font-medium text-[#0B1628] bg-white border border-accent rounded px-1 outline-none min-w-[200px]"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onBlur={handleRenameSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleRenameSubmit();
+                  if (e.key === 'Escape') setIsRenaming(false);
+                }}
+              />
+            ) : (
+              <h1 
+                className="text-[14px] font-medium text-[#0B1628] truncate min-w-0 cursor-text hover:bg-black/5 px-1 rounded transition-colors"
+                onClick={() => {
+                  setRenameValue(doc.original_filename || `${doc.title}.docx`);
+                  setIsRenaming(true);
+                }}
+                title="Click to rename"
+              >
+                {doc.original_filename || `${doc.title}.docx`}
+              </h1>
+            )}
             {renderSaveBadge()}
           </div>
 
