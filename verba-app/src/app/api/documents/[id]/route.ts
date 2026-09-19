@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function PATCH(
   request: Request,
@@ -37,6 +38,10 @@ export async function PATCH(
       return NextResponse.json({ error: 'Failed to update document' }, { status: 500 });
     }
 
+    revalidatePath('/dashboard');
+    revalidatePath('/documents');
+    revalidatePath('/');
+    
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('[patch document] unexpected error:', error.message);
