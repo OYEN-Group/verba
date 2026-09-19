@@ -32,6 +32,10 @@ export function ReviewEvidencePanel({ workId, documentId, selection, onFindEvide
     setError(null);
     setResults(null);
     try {
+      if (!workId) {
+        throw new Error("This document must be saved to a Workspace before you can review evidence.");
+      }
+      
       const res = await fetch(`/api/works/${workId}/documents/${documentId}/evidence/review-selection`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -41,8 +45,10 @@ export function ReviewEvidencePanel({ workId, documentId, selection, onFindEvide
           associatedCitations: currentSelection.associatedCitations || []
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to review evidence');
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data) {
+        throw new Error(data?.error || 'Failed to review evidence. The server returned an invalid response.');
+      }
       setResults(data.results || []);
     } catch (e: any) {
       setError(e.message);
