@@ -289,16 +289,16 @@ export function DocumentEditor({
                   Ask Verba
                 </button>
                 <div className="w-[1px] bg-[#213555]" />
-                <button
-                  onClick={() => {
-                    const ctx = getSelectionContext();
-                    if (ctx.blockId && onFindEvidence) onFindEvidence(ctx);
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-accent transition-colors"
-                >
-                  <Search size={14} className="text-white" />
-                  Find evidence
-                </button>
+                  <button
+                    onClick={() => {
+                      const ctx = getSelectionContext();
+                      if (ctx.blockId && onFindEvidence) onFindEvidence(ctx);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-accent transition-colors"
+                  >
+                    <Search size={14} className="text-white" />
+                    Research
+                  </button>
                 <div className="w-[1px] bg-[#213555]" />
                 <button
                   onClick={() => {

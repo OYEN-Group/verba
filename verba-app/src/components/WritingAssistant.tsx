@@ -183,10 +183,12 @@ export function WritingAssistant({
   if (!isAnalyzed) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-white">
-        <Zap className="w-10 h-10 mb-4 text-accent/40" />
-        <h3 className="text-[15px] font-semibold text-[#0B1628] mb-2">Writing Assistant</h3>
-        <p className="text-[14px] text-foreground-secondary mb-6 leading-relaxed max-w-[240px]">
-          Head over to the Review tab to analyze this document.
+        <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4 text-accent">
+          <Sparkles size={24} />
+        </div>
+        <h3 className="text-[14px] font-semibold text-[#0B1628] mb-2">Writing Assistant</h3>
+        <p className="text-[13px] text-foreground-secondary mb-6 leading-relaxed max-w-[240px]">
+          Highlight text in your document to ask Verba a question, or head over to the Review tab to analyze the entire document for clarity.
         </p>
       </div>
     );

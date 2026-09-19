@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sparkles, Eye, Search, BookOpen, ShieldCheck, BadgeCheck } from 'lucide-react';
 
-export type WorkspaceTab = 'assistant' | 'review' | 'research' | 'cite' | 'integrity' | 'evidence' | 'prove';
+export type WorkspaceTab = 'assistant' | 'review' | 'research' | 'cite' | 'integrity' | 'prove';
 
 interface Props {
   activeTab: WorkspaceTab;
@@ -15,30 +15,30 @@ export function WorkspaceNavigation({ activeTab, onTabChange }: Props) {
     { id: 'research', label: 'Research', icon: Search },
     { id: 'cite', label: 'Cite', icon: BookOpen },
     { id: 'integrity', label: 'Integrity', icon: BadgeCheck },
-    { id: 'evidence', label: 'Evidence', icon: ShieldCheck },
     { id: 'prove', label: 'PROVE', icon: ShieldCheck },
   ] as const;
 
   return (
-    <div className="flex items-center justify-between px-2 pt-2 pb-0 border-b border-border-light shrink-0">
-      {tabs.map((tab) => {
-        const isActive = activeTab === tab.id;
-        return (
-          <button
-            key={tab.id}
-            onClick={() => onTabChange(tab.id)}
-            className={`flex flex-col items-center justify-center flex-1 py-2 relative transition-colors ${
-              isActive ? 'text-accent' : 'text-foreground-secondary hover:text-[#0B1628]'
-            }`}
-          >
-            <tab.icon size={18} className="mb-1" />
-            <span className="text-[11px] font-medium">{tab.label}</span>
-            {isActive && (
-              <div className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-accent rounded-t" />
-            )}
-          </button>
-        );
-      })}
+    <div className="flex items-center justify-center bg-white border-t border-border-light shrink-0 h-[56px] w-full z-20 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+      <div className="flex items-center space-x-1 lg:space-x-4 max-w-3xl w-full px-4 justify-between lg:justify-center">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onTabChange(tab.id as WorkspaceTab)}
+              className={`flex items-center gap-2 px-3 lg:px-4 py-2 rounded-md transition-colors ${
+                isActive 
+                  ? 'bg-accent/10 text-accent font-medium' 
+                  : 'text-foreground-secondary hover:text-[#0B1628] hover:bg-black/5'
+              }`}
+            >
+              <tab.icon size={16} className={isActive ? 'text-accent' : ''} />
+              <span className="text-[13px] hidden sm:inline">{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

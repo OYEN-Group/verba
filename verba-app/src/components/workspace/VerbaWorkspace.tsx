@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { WorkspaceNavigation, WorkspaceTab } from './WorkspaceNavigation';
+import { WorkspaceTab } from './WorkspaceNavigation';
 import { ResearchTab } from './ResearchTab';
 import { CiteTab } from './CiteTab';
 import { ReviewTab } from './ReviewTab';
@@ -84,14 +84,13 @@ export function VerbaWorkspace({
 }: Props) {
 
   return (
-    <aside className="w-[340px] bg-white border-l border-border-light shrink-0 flex flex-col h-full relative z-20 shadow-[-4px_0_24px_rgba(0,0,0,0.02)] md:shadow-none transition-all duration-300">
-      <div className="flex items-center justify-between p-4 pb-2 border-b border-border-light shrink-0">
+    <aside className="w-full sm:w-[370px] bg-[#F9FAFB] border-l border-border-light shrink-0 flex flex-col h-full absolute lg:relative right-0 z-20 shadow-2xl lg:shadow-none transition-all duration-300">
+      <div className="flex items-center justify-between p-4 pb-3 border-b border-border-light shrink-0 bg-white">
         <div>
-          <h2 className="text-[14px] font-semibold text-[#0B1628] flex items-center gap-2">
-            <span className="w-5 h-5 bg-accent text-white rounded-[4px] flex items-center justify-center text-[12px] font-bold">V</span>
-            Verba Workspace
+          <h2 className="text-[12px] font-semibold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-accent">✦</span> VERBA
           </h2>
-          <p className="text-[12px] text-foreground-secondary mt-1">Everything you need, right here.</p>
+          <p className="text-[14px] font-medium text-[#0B1628] mt-1 capitalize">{activeTab}</p>
         </div>
         <button
           onClick={onClose}
@@ -101,8 +100,6 @@ export function VerbaWorkspace({
           <PanelRightClose size={16} />
         </button>
       </div>
-
-      <WorkspaceNavigation activeTab={activeTab} onTabChange={onTabChange} />
 
       <div className="flex-1 overflow-hidden flex flex-col">
         {activeTab === 'assistant' && (

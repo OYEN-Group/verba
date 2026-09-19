@@ -8,6 +8,7 @@ import {
   PanelRightClose, PanelRightOpen, ChevronDown, CloudOff, Cloud, Save, Sparkles
 } from 'lucide-react';
 import { VerbaWorkspace } from '@/components/workspace/VerbaWorkspace';
+import { WorkspaceNavigation } from '@/components/workspace/WorkspaceNavigation';
 import { DocumentEditor, ContextualSelection } from '@/components/DocumentEditor';
 import { Editor } from '@tiptap/react';
 import { CitationProvider } from '@/components/workspace/CitationContext';
@@ -78,6 +79,25 @@ function countWordsFromTiptapJson(json: Record<string, any>): number {
   return count;
 }
 
+function extractHeadingsFromTiptapJson(json: Record<string, unknown> | null): { id: string; text: string; level: number }[] {
+  if (!json) return [];
+  const headings: { id: string; text: string; level: number }[] = [];
+  const walk = (node: Record<string, any>) => {
+    if (node.type === 'heading' && node.attrs?.verbaBlockId) {
+      let text = '';
+      if (Array.isArray(node.content)) {
+        text = node.content.map((c: any) => c.text || '').join('');
+      }
+      headings.push({ id: node.attrs.verbaBlockId, text, level: node.attrs.level || 1 });
+    }
+    if (Array.isArray(node.content)) {
+      node.content.forEach((child: Record<string, any>) => walk(child));
+    }
+  };
+  walk(json);
+  return headings;
+}
+
 function extractCitationsFromTiptapJson(json: Record<string, unknown> | null): { citationId: string; sourceId: string }[] {
   if (!json) return [];
   const citations: { citationId: string; sourceId: string }[] = [];
@@ -117,9 +137,11 @@ export default function WorkspacePage({ params }: { params: { documentId: string
 
   // Live word count (updated on every save)
   const [liveWordCount, setLiveWordCount] = useState<number | null>(null);
+  const [liveHeadings, setLiveHeadings] = useState<{ id: string; text: string; level: number }[]>([]);
 
   // Editor Focus State for Citation insertion
   const [editorHasFocus, setEditorHasFocus] = useState(false);
+  const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
 
   // Toast notification state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -146,6 +168,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   const editorRef = useRef<Editor | null>(null);
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const citationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const outlineTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savingRef = useRef(false);
   const pendingJsonRef = useRef<Record<string, unknown> | null>(null);
   // Ref so Ctrl+S handler always has fresh value without re-registering
@@ -188,6 +211,16 @@ export default function WorkspacePage({ params }: { params: { documentId: string
       setLiveWordCount(docData.word_count ?? null);
       if (docData.editor_state) {
         setDocumentCitations(extractCitationsFromTiptapJson(docData.editor_state as any));
+        setLiveHeadings(extractHeadingsFromTiptapJson(docData.editor_state as any));
+      } else {
+        // Fallback to parsed content if editor_state is missing
+        const initialBlocks = docData.parsed_content?.sections?.[0]?.blocks || [];
+        const fallbackHeadings = initialBlocks.filter((b: any) => b.type === 'heading').map((b: any) => ({
+          id: b.id,
+          text: b.text || '',
+          level: b.level || 1
+        }));
+        setLiveHeadings(fallbackHeadings);
       }
 
       const { data: issuesData, error: issuesError } = await supabase
@@ -377,6 +410,11 @@ export default function WorkspacePage({ params }: { params: { documentId: string
     citationTimerRef.current = setTimeout(() => {
       setDocumentCitations(extractCitationsFromTiptapJson(json));
     }, 600);
+    
+    if (outlineTimerRef.current) clearTimeout(outlineTimerRef.current);
+    outlineTimerRef.current = setTimeout(() => {
+      setLiveHeadings(extractHeadingsFromTiptapJson(json));
+    }, 1000);
 
     // Do not schedule autosave until preference is loaded or if it's off
     if (autosaveEnabledRef.current !== true) return;
@@ -405,8 +443,35 @@ export default function WorkspacePage({ params }: { params: { documentId: string
     return () => {
       if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
       if (citationTimerRef.current) clearTimeout(citationTimerRef.current);
+      if (outlineTimerRef.current) clearTimeout(outlineTimerRef.current);
     };
   }, []);
+
+  // ─── Active Section Tracking ───────────────────────────────────────────────
+  useEffect(() => {
+    if (liveHeadings.length === 0) return;
+
+    const headingElements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'))
+      .filter(el => el.hasAttribute('data-verba-block-id'));
+
+    if (headingElements.length === 0) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      let latestVisibleId: string | null = null;
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          latestVisibleId = entry.target.getAttribute('data-verba-block-id');
+        }
+      });
+      if (latestVisibleId) {
+        setActiveHeadingId(latestVisibleId);
+      }
+    }, { rootMargin: '-10% 0px -80% 0px', threshold: 0 }); // trigger near top
+
+    headingElements.forEach(el => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [liveHeadings, isOutlineOpen]);
 
   // ─── Refresh sources after Research saves a new source ──────────────────
   // NOTE: must live here, before any early returns, to satisfy Rules of Hooks.
@@ -599,7 +664,6 @@ export default function WorkspacePage({ params }: { params: { documentId: string
 
   const initialEditorJson = doc.editor_state ?? null;
   const initialBlocks = doc.parsed_content.sections?.[0]?.blocks || [];
-  const outlineHeadings = initialBlocks.filter(b => b.type === 'heading');
   const displayWordCount = liveWordCount !== null ? liveWordCount : doc.word_count;
 
   // ── Save badge ────────────────────────────────────────────────────────────
@@ -664,10 +728,11 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   return (
     <>
     <CitationProvider sources={sources} style={citationStyle} documentCitations={documentCitations}>
-    <div className="flex h-full bg-[#F6F8FB] overflow-hidden relative">
-      {/* 2. Left Panel: Document Outline */}
-      {!isFocusMode && isOutlineOpen && (
-        <aside className="w-[200px] bg-[#F6F8FB] border-r border-border-light flex flex-col shrink-0 overflow-y-auto hidden lg:flex">
+    <div className="flex flex-col h-screen h-[100dvh] overflow-hidden bg-[#F6F8FB]">
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* 2. Left Panel: Document Outline */}
+        {!isFocusMode && isOutlineOpen && (
+          <aside className="w-[230px] bg-[#F6F8FB] border-r border-border-light flex flex-col shrink-0 overflow-y-auto hidden lg:flex">
           <div className="p-4 border-b border-border-light flex items-center justify-between sticky top-0 bg-[#F6F8FB] z-10">
             <h3 className="text-[11px] font-semibold text-foreground-muted uppercase tracking-wider flex items-center">
               <ListIcon size={14} className="mr-2" />
@@ -677,13 +742,25 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               <PanelRightClose size={14} className="rotate-180" />
             </button>
           </div>
-          <div className="p-3 flex-1">
-            {outlineHeadings.length > 0 ? (
-              <nav className="space-y-0.5">
-                {outlineHeadings.map((h, i) => (
+          <div className="p-3 flex-1 relative">
+            {liveHeadings.length > 0 ? (
+              <nav className="space-y-0.5 pb-4">
+                {liveHeadings.map((h, i) => (
                   <button
                     key={h.id || i}
-                    className="block w-full text-left px-2 py-1 text-[13px] rounded hover:bg-black/5 text-foreground-secondary hover:text-[#0B1628] truncate transition-colors"
+                    onClick={() => {
+                      if (!editorRef.current) return;
+                      const node = document.querySelector(`[data-verba-block-id="${h.id}"]`);
+                      if (node) {
+                        node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        setActiveHeadingId(h.id);
+                      }
+                    }}
+                    className={`block w-full text-left px-2 py-1 text-[13px] rounded truncate transition-colors ${
+                      activeHeadingId === h.id 
+                        ? 'bg-black/5 text-[#0B1628] font-medium border-l-2 border-accent' 
+                        : 'text-foreground-secondary hover:text-[#0B1628] hover:bg-black/5 border-l-2 border-transparent'
+                    }`}
                     style={{ paddingLeft: `${((h.level || 1) - 1) * 0.75 + 0.5}rem` }}
                   >
                     {h.text}
@@ -1080,6 +1157,12 @@ export default function WorkspacePage({ params }: { params: { documentId: string
             }
           }}
         />
+      )}
+      </div>
+      
+      {/* Bottom Workspace Navigation */}
+      {(!isFocusMode && isWorkspaceOpen) && (
+        <WorkspaceNavigation activeTab={workspaceTab} onTabChange={setWorkspaceTab} />
       )}
     </div>
     </CitationProvider>
