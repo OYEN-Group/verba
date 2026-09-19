@@ -21,12 +21,26 @@ interface Props {
 
 export function DashboardContent({ documents, userName }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isNewWorkModalOpen, setIsNewWorkModalOpen] = useState(false);
 
-  const filteredDocuments = documents.filter(doc => 
-    doc.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredDocuments = documents.filter(doc => {
+    const matchesSearch = doc.title.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    let matchesStatus = true;
+    if (statusFilter === 'Drafts') {
+      matchesStatus = doc.status === 'draft';
+    } else if (statusFilter === 'In progress') {
+      matchesStatus = ['uploaded', 'processing', 'analyzing'].includes(doc.status);
+    } else if (statusFilter === 'Ready') {
+      matchesStatus = ['ready', 'analyzed'].includes(doc.status);
+    } else if (statusFilter === 'Shared') {
+      matchesStatus = false; // Add real shared logic here when available in schema
+    }
+
+    return matchesSearch && matchesStatus;
+  });
 
   const greeting = userName ? `Good afternoon, ${userName}.` : 'Welcome back.';
 
@@ -141,11 +155,19 @@ export function DashboardContent({ documents, userName }: Props) {
               </Link>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <button className="px-4 py-1.5 bg-gold border border-gold text-white text-[13px] font-medium rounded-full">All</button>
-              <button className="px-4 py-1.5 bg-[#F1F5F9] border border-transparent text-[#475569] text-[13px] font-medium rounded-full hover:bg-[#E2E8F0] transition-colors">Drafts</button>
-              <button className="px-4 py-1.5 bg-[#F1F5F9] border border-transparent text-[#475569] text-[13px] font-medium rounded-full hover:bg-[#E2E8F0] transition-colors">In progress</button>
-              <button className="px-4 py-1.5 bg-[#F1F5F9] border border-transparent text-[#475569] text-[13px] font-medium rounded-full hover:bg-[#E2E8F0] transition-colors">Ready</button>
-              <button className="px-4 py-1.5 bg-[#F1F5F9] border border-transparent text-[#475569] text-[13px] font-medium rounded-full hover:bg-[#E2E8F0] transition-colors">Shared</button>
+              {['All', 'Drafts', 'In progress', 'Ready', 'Shared'].map(filter => (
+                <button
+                  key={filter}
+                  onClick={() => setStatusFilter(filter)}
+                  className={`px-4 py-1.5 text-[13px] font-medium rounded-full transition-colors ${
+                    statusFilter === filter
+                      ? 'bg-gold border border-gold text-white'
+                      : 'bg-[#F1F5F9] border border-transparent text-[#475569] hover:bg-[#E2E8F0]'
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
             </div>
           </div>
           <div className="flex items-center space-x-3 mt-4 md:mt-0">

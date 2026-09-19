@@ -9,16 +9,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className={`flex h-screen bg-[#F6F8FB] ${playfair.variable}`}>
       {/* Sidebar */}
-      <aside className="w-[240px] bg-navy border-r border-navy flex-col hidden md:flex shrink-0">
-        <div className="h-[64px] flex items-center px-6 shrink-0 mt-2 mb-2">
-          <Link href="/dashboard" className="flex items-center space-x-2">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gold">
+      <aside className="w-[260px] bg-[#141C2B] border-r border-[#141C2B] flex-col hidden md:flex shrink-0">
+        <div className="h-[80px] flex items-center px-7 shrink-0 mt-2 mb-2">
+          <Link href="/dashboard" className="flex items-center space-x-3">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gold">
               <path d="M4.5 4.5L10 20H14L19.5 4.5H16.5L12 16.5L7.5 4.5H4.5Z" fill="currentColor"/>
-              <path d="M12 4.5L14 10.5H10L12 4.5Z" fill="white" opacity="0.3"/>
+              <path d="M12 4.5L14 10.5H10L12 4.5Z" fill="#9C7646"/>
             </svg>
             <div className="flex flex-col ml-1">
-              <span className="text-white font-bold tracking-widest text-[14px] leading-none">VERBA</span>
-              <span className="text-white/50 text-[9px] tracking-wide mt-0.5 whitespace-nowrap">Write with evidence.</span>
+              <span className="text-white font-extrabold tracking-widest text-[16px] leading-none mb-1">VERBA</span>
+              <span className="text-slate-400 text-[10px] tracking-wide mt-0.5 whitespace-nowrap font-medium">Write with evidence.</span>
             </div>
           </Link>
         </div>
