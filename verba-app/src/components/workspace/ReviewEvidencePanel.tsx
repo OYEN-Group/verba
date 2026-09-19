@@ -32,7 +32,7 @@ export function ReviewEvidencePanel({ workId, documentId, selection, onFindEvide
     setError(null);
     setResults(null);
     try {
-      if (!workId) {
+      if (!workId || workId === 'null') {
         throw new Error("This document must be saved to a Workspace before you can review evidence.");
       }
       
