@@ -8,7 +8,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import { EditorToolbar } from './EditorToolbar';
 import { VerbaBlockId, IssueHighlight, IssueProp } from './editor/EditorExtensions';
 import { Citation } from './editor/extensions/Citation';
-import { Sparkles, Search } from 'lucide-react';
+import { Sparkles, Search, ShieldCheck } from 'lucide-react';
 
 export interface ContextualSelection {
   blockId: string;
@@ -212,6 +212,46 @@ export function DocumentEditor({
   const a4Width = 820;
   const a4MinHeight = 1123;
 
+  const getSelectionContext = () => {
+    const { from, to } = editor.state.selection;
+    const text = editor.state.doc.textBetween(from, to, ' ');
+    
+    let blockId = '';
+    let paragraphText = '';
+    let blockStart = 0;
+    let associatedCitations: string[] = [];
+    
+    editor.state.doc.descendants((node, pos) => {
+      if (node.attrs && node.attrs.verbaBlockId) {
+        const nodeEnd = pos + node.nodeSize;
+        // Check if node overlaps with selection [from, to]
+        // from !== to because BubbleMenu only shows when there's a selection
+        if (Math.max(pos, from) < Math.min(nodeEnd, to)) {
+          if (!blockId) {
+            blockId = node.attrs.verbaBlockId;
+            paragraphText = node.textContent;
+            blockStart = pos + 1;
+          }
+          
+          node.descendants((childNode) => {
+            if (childNode.type.name === 'citation' && childNode.attrs.citationId) {
+              associatedCitations.push(childNode.attrs.citationId);
+            }
+          });
+        }
+      }
+    });
+
+    return {
+      blockId,
+      paragraphText,
+      originalText: text,
+      startOffset: from - blockStart,
+      endOffset: to - blockStart,
+      associatedCitations
+    };
+  };
+
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-[#F6F8FB] relative overflow-hidden">
       {/* Document Toolbar (Sticky Header) */}
@@ -240,42 +280,8 @@ export function DocumentEditor({
               <div className="flex bg-[#0B1628] border border-[#213555] shadow-lg rounded-md overflow-hidden">
                 <button
                   onClick={() => {
-                    const { from, to } = editor.state.selection;
-                    const text = editor.state.doc.textBetween(from, to, ' ');
-                    
-                    let blockId = '';
-                    let paragraphText = '';
-                    let blockStart = 0;
-                    let associatedCitations: string[] = [];
-                    
-                    editor.state.doc.descendants((node, pos) => {
-                      if (pos <= from && pos + node.nodeSize >= to) {
-                        if (node.attrs.verbaBlockId) {
-                          blockId = node.attrs.verbaBlockId;
-                          paragraphText = node.textContent;
-                          blockStart = pos + 1;
-                          
-                          // Extract any citations in this block
-                          node.descendants((childNode) => {
-                            if (childNode.type.name === 'citation' && childNode.attrs.citationId) {
-                              associatedCitations.push(childNode.attrs.citationId);
-                            }
-                          });
-                          return false;
-                        }
-                      }
-                    });
-                    
-                    if (blockId && onAskVerba) {
-                      onAskVerba({
-                        blockId,
-                        paragraphText,
-                        originalText: text,
-                        startOffset: from - blockStart,
-                        endOffset: to - blockStart,
-                        associatedCitations
-                      });
-                    }
+                    const ctx = getSelectionContext();
+                    if (ctx.blockId && onAskVerba) onAskVerba(ctx);
                   }}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-accent transition-colors"
                 >
@@ -285,41 +291,8 @@ export function DocumentEditor({
                 <div className="w-[1px] bg-[#213555]" />
                 <button
                   onClick={() => {
-                    const { from, to } = editor.state.selection;
-                    const text = editor.state.doc.textBetween(from, to, ' ');
-                    
-                    let blockId = '';
-                    let paragraphText = '';
-                    let blockStart = 0;
-                    let associatedCitations: string[] = [];
-                    
-                    editor.state.doc.descendants((node, pos) => {
-                      if (pos <= from && pos + node.nodeSize >= to) {
-                        if (node.attrs.verbaBlockId) {
-                          blockId = node.attrs.verbaBlockId;
-                          paragraphText = node.textContent;
-                          blockStart = pos + 1;
-                          
-                          node.descendants((childNode) => {
-                            if (childNode.type.name === 'citation' && childNode.attrs.citationId) {
-                              associatedCitations.push(childNode.attrs.citationId);
-                            }
-                          });
-                          return false;
-                        }
-                      }
-                    });
-                    
-                    if (blockId && onFindEvidence) {
-                      onFindEvidence({
-                        blockId,
-                        paragraphText,
-                        originalText: text,
-                        startOffset: from - blockStart,
-                        endOffset: to - blockStart,
-                        associatedCitations
-                      });
-                    }
+                    const ctx = getSelectionContext();
+                    if (ctx.blockId && onFindEvidence) onFindEvidence(ctx);
                   }}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-accent transition-colors"
                 >
@@ -329,45 +302,12 @@ export function DocumentEditor({
                 <div className="w-[1px] bg-[#213555]" />
                 <button
                   onClick={() => {
-                    const { from, to } = editor.state.selection;
-                    const text = editor.state.doc.textBetween(from, to, ' ');
-                    
-                    let blockId = '';
-                    let paragraphText = '';
-                    let blockStart = 0;
-                    let associatedCitations: string[] = [];
-                    
-                    editor.state.doc.descendants((node, pos) => {
-                      if (pos <= from && pos + node.nodeSize >= to) {
-                        if (node.attrs.verbaBlockId) {
-                          blockId = node.attrs.verbaBlockId;
-                          paragraphText = node.textContent;
-                          blockStart = pos + 1;
-                          
-                          node.descendants((childNode) => {
-                            if (childNode.type.name === 'citation' && childNode.attrs.citationId) {
-                              associatedCitations.push(childNode.attrs.citationId);
-                            }
-                          });
-                          return false;
-                        }
-                      }
-                    });
-                    
-                    if (blockId && onReviewEvidence) {
-                      onReviewEvidence({
-                        blockId,
-                        paragraphText,
-                        originalText: text,
-                        startOffset: from - blockStart,
-                        endOffset: to - blockStart,
-                        associatedCitations
-                      });
-                    }
+                    const ctx = getSelectionContext();
+                    if (ctx.blockId && onReviewEvidence) onReviewEvidence(ctx);
                   }}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-accent transition-colors"
                 >
-                  <Search size={14} className="text-white" />
+                  <ShieldCheck size={14} className="text-white" />
                   Review Evidence
                 </button>
               </div>
