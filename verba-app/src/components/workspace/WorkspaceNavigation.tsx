@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sparkles, Eye, Search, BookOpen, ShieldCheck, BadgeCheck } from 'lucide-react';
 
-export type WorkspaceTab = 'assistant' | 'review' | 'research' | 'cite' | 'integrity' | 'prove';
+export type WorkspaceTab = 'assistant' | 'review' | 'research' | 'cite' | 'integrity' | 'prove' | 'evidence';
 
 interface Props {
   activeTab: WorkspaceTab;
