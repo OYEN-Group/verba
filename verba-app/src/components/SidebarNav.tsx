@@ -59,15 +59,15 @@ export function SidebarNav({ userName = 'Writer' }: SidebarNavProps) {
       <div className="mt-auto flex flex-col w-full">
         <div className="px-7 py-6">
           <div className="text-[12px] font-bold tracking-widest text-slate-500 uppercase mb-5">MY PROFILE</div>
-          <div className="flex flex-col">
-            <div className="w-14 h-14 rounded-full bg-[#EADDC6] flex items-center justify-center mb-4">
+          <Link href="/account" className="flex flex-col group block rounded-xl hover:bg-slate-800/50 p-3 -mx-3 transition-colors cursor-pointer">
+            <div className="w-14 h-14 rounded-full bg-[#EADDC6] flex items-center justify-center mb-4 group-hover:ring-2 group-hover:ring-gold transition-all">
               <User size={28} className="text-[#141C2B]" />
             </div>
-            <div className="text-[16px] font-bold text-white mb-2 truncate" title={userName}>{userName}</div>
+            <div className="text-[16px] font-bold text-white mb-2 truncate group-hover:text-gold transition-colors" title={userName}>{userName}</div>
             <div className="text-[12px] font-semibold text-slate-200 border border-slate-600/60 bg-slate-800/20 rounded-full px-3 py-1.5 w-fit">
               Professional Account
             </div>
-          </div>
+          </Link>
         </div>
 
         <div className="px-5 py-5 border-t border-slate-800/50">
