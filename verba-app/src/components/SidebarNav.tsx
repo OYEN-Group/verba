@@ -7,7 +7,11 @@ import { Home, FileText, Settings, Plus, User, LogOut, BookOpen, HelpCircle } fr
 import { logout } from '@/app/(auth)/actions';
 import { NewWorkModal } from '@/components/NewWorkModal';
 
-export function SidebarNav() {
+interface SidebarNavProps {
+  userName?: string;
+}
+
+export function SidebarNav({ userName = 'Writer' }: SidebarNavProps) {
   const pathname = usePathname();
   const [isNewWorkModalOpen, setIsNewWorkModalOpen] = useState(false);
 
@@ -59,7 +63,7 @@ export function SidebarNav() {
             <div className="w-14 h-14 rounded-full bg-[#EADDC6] flex items-center justify-center mb-4">
               <User size={28} className="text-[#141C2B]" />
             </div>
-            <div className="text-[16px] font-bold text-white mb-2">Mayowa</div>
+            <div className="text-[16px] font-bold text-white mb-2 truncate" title={userName}>{userName}</div>
             <div className="text-[12px] font-semibold text-slate-200 border border-slate-600/60 bg-slate-800/20 rounded-full px-3 py-1.5 w-fit">
               Professional Account
             </div>

@@ -2,10 +2,14 @@ import React from 'react';
 import Link from 'next/link';
 import { SidebarNav } from '@/components/SidebarNav';
 import { Playfair_Display } from 'next/font/google';
+import { createClient } from '@/lib/supabase/server';
 
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Writer';
   return (
     <div className={`flex h-screen bg-[#F6F8FB] ${playfair.variable}`}>
       {/* Sidebar */}
@@ -23,7 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
         
-        <SidebarNav />
+        <SidebarNav userName={userName} />
       </aside>
 
       {/* Main Content */}
