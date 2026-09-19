@@ -10,6 +10,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Writer';
+  const userEmail = user?.email || 'user@example.com';
   return (
     <div className={`flex h-screen bg-[#F6F8FB] ${playfair.variable}`}>
       {/* Sidebar */}
@@ -27,7 +28,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </Link>
         </div>
         
-        <SidebarNav userName={userName} />
+        <SidebarNav userName={userName} userEmail={userEmail} />
       </aside>
 
       {/* Main Content */}
