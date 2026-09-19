@@ -40,6 +40,7 @@ interface Props {
   analyzeError?: string | null;
   onIssueCreated?: (issueId: string) => void;
   projectContext?: Record<string, unknown>;
+  onNavigateTab?: (tab: string) => void;
 }
 
 export function WritingAssistant({ 
@@ -58,7 +59,8 @@ export function WritingAssistant({
   docStatus = '', 
   analyzeError = null,
   onIssueCreated,
-  projectContext
+  projectContext,
+  onNavigateTab
 }: Props) {
   const [loadingAlternative, setLoadingAlternative] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -182,14 +184,45 @@ export function WritingAssistant({
 
   if (!isAnalyzed) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-white">
-        <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4 text-accent">
-          <Sparkles size={24} />
+      <div className="flex flex-col h-full bg-white relative">
+        <div className="flex-1 p-6 flex flex-col pt-10">
+          <p className="text-[13.5px] text-foreground-secondary mb-6">What would you like to work on?</p>
+          
+          <div className="space-y-3 flex-1">
+            <button 
+              onClick={() => onNavigateTab && onNavigateTab('review')}
+              className="w-full flex items-center justify-between text-[13px] font-medium text-[#0B1628] group hover:text-accent transition-colors"
+            >
+              <span>Review this section</span>
+              <span className="text-foreground-muted group-hover:text-accent group-hover:translate-x-1 transition-all">&rarr;</span>
+            </button>
+            <button 
+              onClick={() => onNavigateTab && onNavigateTab('research')}
+              className="w-full flex items-center justify-between text-[13px] font-medium text-[#0B1628] group hover:text-accent transition-colors"
+            >
+              <span>Find research</span>
+              <span className="text-foreground-muted group-hover:text-accent group-hover:translate-x-1 transition-all">&rarr;</span>
+            </button>
+            <button 
+              onClick={() => onNavigateTab && onNavigateTab('integrity')}
+              className="w-full flex items-center justify-between text-[13px] font-medium text-[#0B1628] group hover:text-accent transition-colors"
+            >
+              <span>Check citations</span>
+              <span className="text-foreground-muted group-hover:text-accent group-hover:translate-x-1 transition-all">&rarr;</span>
+            </button>
+          </div>
+
+          <div className="mt-auto shrink-0 relative">
+            <textarea
+              placeholder="Ask Verba about this section..."
+              className="w-full text-[13px] text-ink border border-border-light rounded px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-accent leading-relaxed bg-[#F9FAFB] resize-none pr-8"
+              rows={1}
+            />
+            <button className="absolute right-2 top-[7px] p-1 text-foreground-muted hover:text-[#0B1628] transition-colors rounded">
+              <span className="text-[12px] font-medium tracking-tight">↑</span>
+            </button>
+          </div>
         </div>
-        <h3 className="text-[14px] font-semibold text-[#0B1628] mb-2">Writing Assistant</h3>
-        <p className="text-[13px] text-foreground-secondary mb-6 leading-relaxed max-w-[240px]">
-          Highlight text in your document to ask Verba a question, or head over to the Review tab to analyze the entire document for clarity.
-        </p>
       </div>
     );
   }

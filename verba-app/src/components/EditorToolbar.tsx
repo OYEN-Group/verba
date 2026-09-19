@@ -60,19 +60,19 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`p-1.5 rounded-md transition-colors flex items-center justify-center
-        ${disabled ? 'opacity-30 cursor-not-allowed' : 'hover:bg-slate-100'}
-        ${isActive ? 'bg-accent/10 text-accent' : 'text-slate-600'}
+      className={`p-1.5 rounded transition-colors flex items-center justify-center
+        ${disabled ? 'opacity-30 cursor-not-allowed' : 'hover:bg-black/5'}
+        ${isActive ? 'bg-accent/10 text-accent font-medium' : 'text-foreground-secondary'}
       `}
     >
       {children}
     </button>
   );
 
-  const Divider = () => <div className="w-[1px] h-[20px] bg-slate-200 mx-2" />;
+  const Divider = () => <div className="w-[1px] h-[16px] bg-border-light mx-1" />;
 
   return (
-    <div className="flex items-center px-4 py-2 space-x-1 overflow-x-auto bg-[#F6F8FB] border-b border-border-light">
+    <div className="flex items-center px-4 py-1.5 space-x-0.5 overflow-x-auto bg-white border-b border-border-light/50 sticky top-0 z-10 opacity-80 hover:opacity-100 transition-opacity">
       {/* History */}
       <ToolbarButton onClick={undo} disabled={!editor.can().undo()}>
         <Undo size={16} />

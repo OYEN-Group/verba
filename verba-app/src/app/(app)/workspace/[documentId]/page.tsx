@@ -714,25 +714,20 @@ export default function WorkspacePage({ params }: { params: { documentId: string
     switch (saveStatus) {
       case 'saving':
         return (
-          <div className="flex items-center text-[12px] text-foreground-secondary gap-1.5 px-2 py-0.5 bg-black/5 rounded-full">
-            <Loader2 size={13} className="animate-spin text-accent" />
+          <div className="flex items-center text-[11px] text-foreground-muted gap-1 px-2 py-0.5 transition-opacity">
+            <Loader2 size={11} className="animate-spin" />
             <span>Saving…</span>
           </div>
         );
       case 'saved':
         return (
-          <div className="flex items-center text-[12px] text-[#027A48] gap-1.5 px-2 py-0.5 bg-[#ECFDF3] rounded-full">
-            <Cloud size={13} />
+          <div className="flex items-center text-[11px] text-foreground-muted gap-1 px-2 py-0.5">
             <span>Saved</span>
+            <CheckCircle size={10} className="opacity-70" />
           </div>
         );
       case 'unsaved':
-        return (
-          <div className="flex items-center text-[12px] text-foreground-secondary gap-1.5 px-2 py-0.5 bg-black/5 rounded-full">
-            <CheckCircle size={13} className="text-foreground-muted" />
-            <span>Unsaved changes</span>
-          </div>
-        );
+        return null; // Quiet until saving starts
       case 'failed':
         return (
           <button
@@ -775,7 +770,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
       <div className="flex flex-1 overflow-hidden relative">
         {/* 2. Left Panel: Document Outline */}
         {!isFocusMode && isOutlineOpen && (
-          <aside className="w-[230px] bg-[#F6F8FB] border-r border-border-light flex flex-col shrink-0 overflow-y-auto hidden lg:flex">
+          <aside className="w-[220px] bg-white border-r border-border-light h-full shrink-0 flex flex-col z-20 shadow-sm relative transition-all overflow-y-auto hidden lg:flex">
           <div className="p-4 border-b border-border-light flex items-center justify-between sticky top-0 bg-[#F6F8FB] z-10">
             <h3 className="text-[11px] font-semibold text-foreground-muted uppercase tracking-wider flex items-center">
               <ListIcon size={14} className="mr-2" />
@@ -870,13 +865,9 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               <div className="text-[12px] text-foreground-secondary flex items-center gap-2 mt-0.5 font-medium tracking-tight">
                 <span>{(displayWordCount ?? 0).toLocaleString()} words</span>
                 <span className="text-border-light">&bull;</span>
-                <span>{sources.length} sources</span>
-                <span className="text-border-light">&bull;</span>
                 <span className="uppercase">{citationStyle}</span>
                 <span className="text-border-light">&bull;</span>
                 <span>{documentCitations.length} citations</span>
-                <span className="text-border-light">&bull;</span>
-                <span className="flex items-center gap-1 opacity-80"><History size={11} /> History preserved</span>
               </div>
             </div>
           </div>
@@ -1256,11 +1247,6 @@ export default function WorkspacePage({ params }: { params: { documentId: string
         />
       )}
       </div>
-      
-      {/* Bottom Workspace Navigation */}
-      {(!isFocusMode && isWorkspaceOpen) && (
-        <WorkspaceNavigation activeTab={workspaceTab} onTabChange={setWorkspaceTab} />
-      )}
     </div>
     </CitationProvider>
     {/* ── Toast ── */}
