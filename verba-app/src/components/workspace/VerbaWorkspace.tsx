@@ -9,7 +9,6 @@ import { ReviewEvidencePanel } from './ReviewEvidencePanel';
 import { WritingAssistant, Issue } from '../WritingAssistant';
 import { PanelRightClose } from 'lucide-react';
 import { ContextualSelection } from '../DocumentEditor';
-import { WorkspaceNavigation } from './WorkspaceNavigation';
 
 interface Props {
   documentId: string;
@@ -195,7 +194,6 @@ export function VerbaWorkspace({
         )}
         {activeTab === 'prove' && <ProvePanel documentId={documentId} />}
       </div>
-      <WorkspaceNavigation activeTab={activeTab} onTabChange={onTabChange} />
     </aside>
   );
 }

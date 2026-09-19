@@ -19,25 +19,29 @@ export function WorkspaceNavigation({ activeTab, onTabChange }: Props) {
   ] as const;
 
   return (
-    <div className="flex items-center justify-between px-6 py-3 bg-white border-t border-border-light shrink-0">
-      {tabs.map((tab) => {
-        const isActive = activeTab === tab.id;
-        return (
-          <button
-            key={tab.id}
-            onClick={() => onTabChange(tab.id as WorkspaceTab)}
-            aria-label={tab.label}
-            title={tab.label}
-            className={`relative flex items-center justify-center w-8 h-8 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 ${
-              isActive 
-                ? 'text-accent bg-accent/10' 
-                : 'text-foreground-secondary hover:text-[#0B1628] hover:bg-black/5'
-            }`}
-          >
-            <tab.icon size={16} />
-          </button>
-        );
-      })}
+    <div className="flex items-center justify-center bg-[#F9FAFB] border-t border-border-light shrink-0 h-[40px] w-full z-20">
+      <div className="flex items-center space-x-1 sm:space-x-4 max-w-3xl w-full px-4 justify-between lg:justify-center h-full">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onTabChange(tab.id as WorkspaceTab)}
+              className={`relative flex items-center gap-1.5 px-3 h-full transition-colors text-[12px] ${
+                isActive 
+                  ? 'text-[#0B1628] font-medium' 
+                  : 'text-foreground-secondary hover:text-[#0B1628]'
+              }`}
+            >
+              {isActive && (
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-accent" />
+              )}
+              <tab.icon size={13} className={isActive ? 'text-accent' : 'opacity-70'} />
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

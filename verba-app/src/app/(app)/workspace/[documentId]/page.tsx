@@ -1247,6 +1247,11 @@ export default function WorkspacePage({ params }: { params: { documentId: string
         />
       )}
       </div>
+
+      {/* Bottom Workspace Navigation */}
+      {(!isFocusMode && isWorkspaceOpen) && (
+        <WorkspaceNavigation activeTab={workspaceTab} onTabChange={setWorkspaceTab} />
+      )}
     </div>
     </CitationProvider>
     {/* ── Toast ── */}
