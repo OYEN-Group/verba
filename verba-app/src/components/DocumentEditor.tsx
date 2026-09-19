@@ -49,6 +49,7 @@ interface DocumentEditorProps {
   onAskVerba?: (selection: ContextualSelection) => void;
   onFindEvidence?: (selection: ContextualSelection) => void;
   onReviewEvidence?: (selection: ContextualSelection) => void;
+  onCitationClick?: (citationId: string, sourceId: string, contextText: string, rect: DOMRect) => void;
   onFocus?: () => void;
   onBlur?: () => void;
 }
@@ -98,6 +99,7 @@ export function DocumentEditor({
   onAskVerba,
   onFindEvidence,
   onReviewEvidence,
+  onCitationClick,
   onFocus,
   onBlur,
 }: DocumentEditorProps) {
@@ -268,6 +270,20 @@ export function DocumentEditor({
             minHeight: `${a4MinHeight}px`,
             transform: `scale(${scale})`,
             marginBottom: scale < 1 ? `-${a4MinHeight * (1 - scale)}px` : '32px',
+          }}
+          onClick={(e) => {
+            const target = e.target as HTMLElement;
+            const citationNode = target.closest('[data-citation-id]');
+            if (citationNode && onCitationClick) {
+              const citationId = citationNode.getAttribute('data-citation-id');
+              const sourceId = citationNode.getAttribute('data-source-id');
+              if (citationId && sourceId) {
+                const rect = citationNode.getBoundingClientRect();
+                const blockNode = citationNode.closest('[data-verba-block-id]');
+                const contextText = blockNode ? blockNode.textContent || '' : '';
+                onCitationClick(citationId, sourceId, contextText, rect);
+              }
+            }
           }}
         >
           {editor && (

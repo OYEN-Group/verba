@@ -3,12 +3,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import {
-  Loader2, FileText, CheckCircle,
-  Maximize, Minimize, List as ListIcon,
-  PanelRightClose, PanelRightOpen, ChevronDown, CloudOff, Cloud, Save, Sparkles
+  MoreHorizontal, Play, Square, Settings2, FileText, ChevronRight, X,
+  PanelRightClose, PanelRightOpen, ChevronDown, CloudOff, Cloud, Save, Sparkles, History,
+  Loader2, CheckCircle, Maximize, Minimize, List as ListIcon
 } from 'lucide-react';
 import { VerbaWorkspace } from '@/components/workspace/VerbaWorkspace';
-import { WorkspaceNavigation } from '@/components/workspace/WorkspaceNavigation';
+import { CitationInspector } from '@/components/workspace/CitationInspector';
+import { WorkspaceNavigation, WorkspaceTab } from '@/components/workspace/WorkspaceNavigation';
 import { DocumentEditor, ContextualSelection } from '@/components/DocumentEditor';
 import { Editor } from '@tiptap/react';
 import { CitationProvider } from '@/components/workspace/CitationContext';
@@ -113,6 +114,29 @@ function extractCitationsFromTiptapJson(json: Record<string, unknown> | null): {
   return citations;
 }
 
+function extractSectionCitationCounts(json: Record<string, unknown> | null): Record<string, number> {
+  if (!json) return {};
+  const counts: Record<string, number> = {};
+  let currentHeadingId: string | null = null;
+
+  const walk = (node: Record<string, any>) => {
+    if (node.type === 'heading' && node.attrs?.verbaBlockId) {
+      currentHeadingId = node.attrs.verbaBlockId;
+      if (currentHeadingId !== null && !counts[currentHeadingId]) counts[currentHeadingId] = 0;
+    }
+    if (node.type === 'citation' && node.attrs?.citationId) {
+      if (currentHeadingId) {
+        counts[currentHeadingId]++;
+      }
+    }
+    if (Array.isArray(node.content)) {
+      node.content.forEach((child: Record<string, any>) => walk(child));
+    }
+  };
+  walk(json);
+  return counts;
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function WorkspacePage({ params }: { params: { documentId: string } }) {
@@ -135,9 +159,17 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   const [documentCitations, setDocumentCitations] = useState<{ citationId: string; sourceId: string }[]>([]);
   const [projectContext, setProjectContext] = useState<Record<string, unknown> | undefined>(undefined);
 
+  const [activeCitationInspector, setActiveCitationInspector] = useState<{
+    citationId: string;
+    sourceId: string;
+    contextText: string;
+    rect: DOMRect;
+  } | null>(null);
+
   // Live word count (updated on every save)
   const [liveWordCount, setLiveWordCount] = useState<number | null>(null);
   const [liveHeadings, setLiveHeadings] = useState<{ id: string; text: string; level: number }[]>([]);
+  const [sectionCitationCounts, setSectionCitationCounts] = useState<Record<string, number>>({});
 
   // Editor Focus State for Citation insertion
   const [editorHasFocus, setEditorHasFocus] = useState(false);
@@ -397,8 +429,18 @@ export default function WorkspacePage({ params }: { params: { documentId: string
       triggerManualSave();
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('click', closeInspector);
+    };
   }, [triggerManualSave]);
+
+  const closeInspector = () => setActiveCitationInspector(null);
+
+  useEffect(() => {
+    window.addEventListener('click', closeInspector);
+    return () => window.removeEventListener('click', closeInspector);
+  }, []);
 
   // ─── Editor onUpdate callback ─────────────────────────────────────────────
 
@@ -414,6 +456,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
     if (outlineTimerRef.current) clearTimeout(outlineTimerRef.current);
     outlineTimerRef.current = setTimeout(() => {
       setLiveHeadings(extractHeadingsFromTiptapJson(json));
+      setSectionCitationCounts(extractSectionCitationCounts(json));
     }, 1000);
 
     // Do not schedule autosave until preference is loaded or if it's off
@@ -756,14 +799,24 @@ export default function WorkspacePage({ params }: { params: { documentId: string
                         setActiveHeadingId(h.id);
                       }
                     }}
-                    className={`block w-full text-left px-2 py-1 text-[13px] rounded truncate transition-colors ${
+                    className={`group flex items-center justify-between w-full text-left px-2 py-1.5 text-[13px] rounded transition-colors ${
                       activeHeadingId === h.id 
                         ? 'bg-black/5 text-[#0B1628] font-medium border-l-2 border-accent' 
                         : 'text-foreground-secondary hover:text-[#0B1628] hover:bg-black/5 border-l-2 border-transparent'
                     }`}
                     style={{ paddingLeft: `${((h.level || 1) - 1) * 0.75 + 0.5}rem` }}
                   >
-                    {h.text}
+                    <span className="truncate">{h.text}</span>
+                    <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                      {sectionCitationCounts[h.id] > 0 && (
+                        <span className="text-[10px] text-foreground-muted bg-black/5 px-1 rounded flex items-center gap-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                          {sectionCitationCounts[h.id]}<span className="font-serif leading-none mt-0.5">”</span>
+                        </span>
+                      )}
+                      {activeHeadingId === h.id && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-accent/40" />
+                      )}
+                    </div>
                   </button>
                 ))}
               </nav>
@@ -777,44 +830,58 @@ export default function WorkspacePage({ params }: { params: { documentId: string
       {/* 3. Center Panel: Document Canvas */}
       <div className="flex-1 flex flex-col min-w-0 bg-[#F6F8FB] relative">
         <header className="h-[48px] bg-[#F6F8FB] border-b border-border-light flex items-center justify-between px-4 shrink-0 z-10">
-          <div className="flex items-center space-x-2 min-w-0 flex-1 overflow-hidden">
+          <div className="flex items-start space-x-3 min-w-0 flex-1 overflow-hidden pt-1">
             {!isOutlineOpen && !isFocusMode && (
-              <button onClick={() => setIsOutlineOpen(true)} className="text-foreground-muted hover:text-foreground p-1 shrink-0">
+              <button onClick={() => setIsOutlineOpen(true)} className="text-foreground-muted hover:text-foreground p-1 shrink-0 mt-0.5">
                 <PanelRightOpen size={16} className="rotate-180" />
               </button>
             )}
-            <FileText size={18} className="text-accent shrink-0" />
-            {isRenaming ? (
-              <input
-                autoFocus
-                className="text-[14px] font-medium text-[#0B1628] bg-white border border-accent rounded px-1 outline-none min-w-[200px]"
-                value={renameValue}
-                onChange={(e) => setRenameValue(e.target.value)}
-                onBlur={handleRenameSubmit}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleRenameSubmit();
-                  if (e.key === 'Escape') setIsRenaming(false);
-                }}
-              />
-            ) : (
-              <h1 
-                className="text-[14px] font-medium text-[#0B1628] truncate min-w-0 cursor-text hover:bg-black/5 px-1 rounded transition-colors"
-                onClick={() => {
-                  setRenameValue(doc.original_filename || `${doc.title}.docx`);
-                  setIsRenaming(true);
-                }}
-                title="Click to rename"
-              >
-                {doc.original_filename || `${doc.title}.docx`}
-              </h1>
-            )}
-            {renderSaveBadge()}
+            <FileText size={18} className="text-accent shrink-0 mt-0.5" />
+            
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-2">
+                {isRenaming ? (
+                  <input
+                    autoFocus
+                    className="text-[14px] font-medium text-[#0B1628] bg-white border border-accent rounded px-1 outline-none min-w-[200px]"
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onBlur={handleRenameSubmit}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleRenameSubmit();
+                      if (e.key === 'Escape') setIsRenaming(false);
+                    }}
+                  />
+                ) : (
+                  <h1 
+                    className="text-[14px] font-medium text-[#0B1628] truncate min-w-0 cursor-text hover:bg-black/5 px-1 -ml-1 rounded transition-colors"
+                    onClick={() => {
+                      setRenameValue(doc.original_filename || `${doc.title}.docx`);
+                      setIsRenaming(true);
+                    }}
+                    title="Click to rename"
+                  >
+                    {doc.original_filename || `${doc.title}.docx`}
+                  </h1>
+                )}
+                {renderSaveBadge()}
+              </div>
+              
+              <div className="text-[12px] text-foreground-secondary flex items-center gap-2 mt-0.5 font-medium tracking-tight">
+                <span>{(displayWordCount ?? 0).toLocaleString()} words</span>
+                <span className="text-border-light">&bull;</span>
+                <span>{sources.length} sources</span>
+                <span className="text-border-light">&bull;</span>
+                <span className="uppercase">{citationStyle}</span>
+                <span className="text-border-light">&bull;</span>
+                <span>{documentCitations.length} citations</span>
+                <span className="text-border-light">&bull;</span>
+                <span className="flex items-center gap-1 opacity-80"><History size={11} /> History preserved</span>
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center shrink-0 space-x-3">
-            <span className="text-[12px] text-foreground-secondary shrink-0 border-r border-border-light pr-3">
-              {(displayWordCount ?? 0).toLocaleString()} words
-            </span>
 
             {/* Manual Save button — only shown when autosave is OFF */}
             {!autosaveEnabled && (
@@ -929,6 +996,9 @@ export default function WorkspacePage({ params }: { params: { documentId: string
                 setContextualSelection(null);
                 setEvidenceSelection(null);
               }}
+              onCitationClick={(citationId, sourceId, contextText, rect) => {
+                setActiveCitationInspector({ citationId, sourceId, contextText, rect });
+              }}
             />
             <BibliographyPreview />
           </div>
@@ -943,6 +1013,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           onTabChange={setWorkspaceTab}
           blockId={activeIssue?.block_id || contextualSelection?.blockId || evidenceSelection?.blockId || reviewEvidenceSelection?.blockId || ''}
           paragraphText={activeBlockText || contextualSelection?.paragraphText || evidenceSelection?.paragraphText || reviewEvidenceSelection?.paragraphText || ''}
+          activeHeadingText={activeHeadingId ? liveHeadings.find(h => h.id === activeHeadingId)?.text || null : null}
           issues={issues}
           issue={activeIssue as unknown as typeof activeIssue}
           contextualSelection={contextualSelection}
@@ -1155,6 +1226,32 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               console.error('[addSupportingCitation]', err);
               alert(err.message);
             }
+          }}
+        />
+      )}
+
+      {/* Citation Inspector Overlay */}
+      {activeCitationInspector && (
+        <CitationInspector
+          citationId={activeCitationInspector.citationId}
+          sourceId={activeCitationInspector.sourceId}
+          contextText={activeCitationInspector.contextText}
+          onClose={() => setActiveCitationInspector(null)}
+          onCheckCitation={() => {
+            setIsWorkspaceOpen(true);
+            setWorkspaceTab('integrity');
+            setActiveCitationInspector(null);
+          }}
+          onViewSource={() => {
+            setIsWorkspaceOpen(true);
+            setWorkspaceTab('cite');
+            setActiveCitationInspector(null);
+          }}
+          style={{
+            position: 'fixed',
+            // Position near the click, but keep within viewport bounds approximately
+            top: `${Math.min(activeCitationInspector.rect.bottom + 8, window.innerHeight - 300)}px`,
+            left: `${Math.min(activeCitationInspector.rect.left, window.innerWidth - 340)}px`,
           }}
         />
       )}

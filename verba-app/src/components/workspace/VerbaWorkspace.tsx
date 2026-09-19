@@ -15,6 +15,7 @@ interface Props {
   onClose: () => void;
   activeTab: WorkspaceTab;
   onTabChange: (tab: WorkspaceTab) => void;
+  activeHeadingText?: string | null;
   // Assistant Props
   blockId: string;
   paragraphText: string;
@@ -81,16 +82,21 @@ export function VerbaWorkspace({
   onAddSupportingCitation,
   activeTab,
   onTabChange,
+  activeHeadingText,
 }: Props) {
+
+  // Derive selection for context
+  const hasSelection = !!(contextualSelection || evidenceSelection || reviewEvidenceSelection || issue);
+  const selectedPreview = paragraphText?.slice(0, 50) || issue?.original_text?.slice(0, 50) || '';
 
   return (
     <aside className="w-full sm:w-[370px] bg-[#F9FAFB] border-l border-border-light shrink-0 flex flex-col h-full absolute lg:relative right-0 z-20 shadow-2xl lg:shadow-none transition-all duration-300">
-      <div className="flex items-center justify-between p-4 pb-3 border-b border-border-light shrink-0 bg-white">
+      <div className="flex items-center justify-between p-4 pb-3 shrink-0 bg-white">
         <div>
-          <h2 className="text-[12px] font-semibold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5">
-            <span className="text-accent">✦</span> VERBA
+          <h2 className="text-[11px] font-semibold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5">
+            VERBA
           </h2>
-          <p className="text-[14px] font-medium text-[#0B1628] mt-1 capitalize">{activeTab}</p>
+          <p className="text-[15px] font-medium text-[#0B1628] mt-0.5 capitalize">{activeTab}</p>
         </div>
         <button
           onClick={onClose}
@@ -99,6 +105,25 @@ export function VerbaWorkspace({
         >
           <PanelRightClose size={16} />
         </button>
+      </div>
+
+      {/* Context Transparency */}
+      <div className="px-4 py-2.5 border-b border-border-light bg-background-pale/30 text-[12.5px] shrink-0">
+        <div className="text-foreground-muted mb-0.5">Working with</div>
+        <div className="text-[#0B1628] flex flex-col leading-snug">
+          {hasSelection ? (
+            <>
+              <span className="font-medium">Selected passage</span>
+              <span className="text-foreground-secondary italic mt-0.5">
+                "{selectedPreview}..."
+              </span>
+            </>
+          ) : activeHeadingText ? (
+            <span className="font-medium">§ {activeHeadingText}</span>
+          ) : (
+            <span className="font-medium">Whole document</span>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-hidden flex flex-col">

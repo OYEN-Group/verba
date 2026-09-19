@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Loader2, BookOpen, ExternalLink, ShieldAlert, CheckCircle, AlertTriangle, ChevronDown, Plus, Sparkles } from 'lucide-react';
+import { Search, Loader2, BookOpen, ExternalLink, ShieldAlert, CheckCircle, AlertTriangle, ChevronDown, Plus, Sparkles, X } from 'lucide-react';
 import { useCitationContext } from './CitationContext';
 import { ResearchResult } from '@/lib/research/types';
 import { NormalizedSource } from '@/lib/sources/types';
@@ -146,18 +146,12 @@ export function ResearchTab({ workId, onSourceSaved, evidenceSelection, onClearE
       return;
     }
     
-    const claims = extractPassageClaims(evidenceSelection.originalText);
-    setPassageClaims(claims);
-    setVisibleClaimsCount(5);
-    setActiveClaim(null);
-    
-    // Deterministic rule: 3+ claims triggers passage mode
-    const mode = claims.length >= 3 ? 'passage' : 'claim';
+    // P6: Prepare research context but DO NOT auto-search.
+    const mode = 'passage_search';
     setResearchMode(mode);
+    // Initialize the query with the selection text (or simplified version) so the user can edit it.
+    setQuery(evidenceSelection.originalText);
     
-    if (mode === 'claim') {
-      fetchEvidence(evidenceSelection.originalText, false);
-    }
   }, [evidenceSelection, workId]);
 
   const handleSave = async (result: ResearchResult) => {
@@ -238,16 +232,41 @@ export function ResearchTab({ workId, onSourceSaved, evidenceSelection, onClearE
   return (
     <div className="flex flex-col h-full bg-[#F6F8FB]">
       <div className="p-4 border-b border-border-light shrink-0 bg-white">
+        
+        {evidenceSelection && (
+          <div className="mb-3 p-3 bg-background-secondary rounded-md border border-border-light">
+            <div className="text-[11px] font-semibold text-foreground-muted uppercase tracking-wider mb-1.5 flex items-center justify-between">
+              <span>Researching this statement</span>
+              <button 
+                onClick={() => onClearEvidenceSelection?.()}
+                className="text-foreground-muted hover:text-[#0B1628]"
+                title="Clear selection"
+              >
+                <X size={12} />
+              </button>
+            </div>
+            <div className="text-[13px] text-[#0B1628] italic border-l-2 border-accent/40 pl-2">
+              "{evidenceSelection.originalText}"
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSearch} className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" />
           <input 
             type="text" 
             placeholder="Search academic sources..." 
             value={query}
             onChange={e => setQuery(e.target.value)}
             disabled={loading}
-            className="w-full h-8 pl-8 pr-3 text-[13px] bg-[#F6F8FB] border border-border-light rounded focus:outline-none focus:border-accent disabled:opacity-50"
+            className="w-full h-9 pl-3 pr-20 text-[13px] bg-white border border-border-light rounded focus:outline-none focus:border-accent disabled:opacity-50"
           />
+          <button 
+            type="submit"
+            disabled={loading || !query.trim()}
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-3 bg-accent text-white text-[12px] font-medium rounded transition-colors hover:bg-accent-hover disabled:opacity-50"
+          >
+            {loading ? <Loader2 size={12} className="animate-spin" /> : 'Search'}
+          </button>
         </form>
         {providerStatus && (() => {
           const statuses = Object.entries(providerStatus);
