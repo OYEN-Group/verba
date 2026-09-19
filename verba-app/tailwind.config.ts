@@ -8,6 +8,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        serif: ['var(--font-playfair)', 'serif'],
+      },
       colors: {
         background: {
           DEFAULT: "#FFFFFF",
@@ -37,6 +40,17 @@ const config: Config = {
           light: "#EAF3FF", // Soft blue
           veryLight: "#F3F8FF", // Very soft blue
           strong: "#0B6BFF", // Strong blue
+        },
+        gold: {
+          DEFAULT: "#B48B57", // Gold base
+          hover: "#9C7646",
+          light: "#FDFBF7",
+          border: "#EADDC6"
+        },
+        navy: {
+          DEFAULT: "#141C2B", // Deep navy for sidebar
+          hover: "#1D283A",
+          active: "#253347",
         },
         ink: {
           DEFAULT: "#101828", // Dark button / Strong heading
