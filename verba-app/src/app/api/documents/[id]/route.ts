@@ -25,7 +25,10 @@ export async function PATCH(
 
     const { error: updateError } = await supabase
       .from('documents')
-      .update({ original_filename: original_filename.trim() })
+      .update({ 
+        original_filename: original_filename.trim(),
+        title: original_filename.trim() 
+      })
       .eq('id', params.id)
       .eq('user_id', user.id); // ownership check
 

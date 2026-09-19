@@ -653,7 +653,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
         body: JSON.stringify({ original_filename: renameValue })
       });
       if (res.ok) {
-        setDoc(prev => prev ? { ...prev, original_filename: renameValue } : null);
+        setDoc(prev => prev ? { ...prev, title: renameValue, original_filename: renameValue } : null);
       }
     } catch (err) {
       console.error(err);
