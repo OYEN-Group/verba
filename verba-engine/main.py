@@ -98,9 +98,10 @@ def health_check():
 async def parse_document(file: UploadFile = File(...)):
     """Accepts a .docx or .pdf file and returns the JSON DocumentModel structure."""
     if not file.filename.lower().endswith((".docx", ".pdf")):
+        logger.warning(f"Invalid file type received: {file.filename}")
         return JSONResponse(
             status_code=400,
-            content={"error": "INVALID_FILE_TYPE", "message": "Only .docx and .pdf files are supported"},
+            content={"error": "INVALID_FILE_TYPE", "message": f"Only .docx and .pdf files are supported. Received: {file.filename}"},
         )
 
     contents = await file.read()
