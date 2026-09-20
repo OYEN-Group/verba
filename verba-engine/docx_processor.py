@@ -135,30 +135,84 @@ class DOCXProcessor:
 
     def parse_to_json(self) -> dict:
         """Parses the DOCX and returns a VerbaDocumentAST JSON."""
-        blocks = []
+        sections = []
+        current_blocks = []
         
+        # Get column count from a section XML element
+        def get_columns_from_sectPr(sectPr):
+            if sectPr is not None:
+                cols = sectPr.xpath('./w:cols/@w:num')
+                if cols and len(cols) > 0:
+                    try:
+                        return int(cols[0])
+                    except ValueError:
+                        pass
+            return 1
+
         try:
+            # We'll map the document into one or more AST sections.
+            # python-docx holds sections in `self.doc.sections`.
+            # Typically, w:sectPr elements inside paragraphs mark section breaks.
+            # The final section is stored at self.doc.element.body.sectPr.
+            
+            # Simple approach: build AST sections when we detect a section break.
+            current_columns = 1
+            
+            # For the first section, it will use the properties of the first section in doc.sections
+            if len(self.doc.sections) > 0:
+                current_columns = get_columns_from_sectPr(self.doc.sections[0]._sectPr)
+                
             for block in self.iter_block_items(self.doc):
                 if isinstance(block, Paragraph):
-                    # Skip empty paragraphs
-                    if not block.text.strip():
-                        continue
-                    blocks.append(self.process_paragraph(block))
+                    # Check if this paragraph contains a section break
+                    sectPr = block._p.pPr.sectPr if block._p.pPr is not None else None
+                    if sectPr is not None:
+                        # This paragraph ends the current section
+                        if block.text.strip():
+                            current_blocks.append(self.process_paragraph(block))
+                            
+                        # Commit the current section
+                        if current_blocks:
+                            sections.append({
+                                "id": str(uuid.uuid4()),
+                                "layout": { "type": "multi-column" if current_columns > 1 else "single-column", "columns": min(current_columns, 2) },
+                                "blocks": current_blocks
+                            })
+                            current_blocks = []
+                            
+                        # The next blocks will belong to the next section
+                        # But wait, in DOCX the section break defines the properties of the PRECEDING text.
+                        # So the sectPr we just found applies to `current_blocks`.
+                        # However, for simplicity and forward compatibility, let's just grab the next section's cols.
+                        # We can just read the next section from self.doc.sections.
+                        pass
+                    else:
+                        if block.text.strip() or block._p.xpath('.//a:blip'):
+                            current_blocks.append(self.process_paragraph(block))
+                            
                 elif isinstance(block, Table):
-                    blocks.append(self.process_table(block))
+                    current_blocks.append(self.process_table(block))
+            
+            # Commit the final section (which takes the document-level sectPr)
+            if current_blocks:
+                final_sectPr = self.doc.element.body.sectPr
+                final_columns = get_columns_from_sectPr(final_sectPr)
+                # If we only have 1 section overall, we can just use doc.sections[0] columns
+                if len(sections) == 0 and len(self.doc.sections) > 0:
+                    final_columns = get_columns_from_sectPr(self.doc.sections[0]._sectPr)
+                    
+                sections.append({
+                    "id": str(uuid.uuid4()),
+                    "layout": { "type": "multi-column" if final_columns > 1 else "single-column", "columns": min(final_columns, 2) },
+                    "blocks": current_blocks
+                })
             
             # Construct VerbaDocumentAST
             ast = {
                 "version": 1,
                 "sourceFormat": "docx",
                 "importMode": "layout_preserved",
-                "sections": [
-                    {
-                        "id": str(uuid.uuid4()),
-                        "layout": { "type": "single-column" },
-                        "blocks": blocks
-                    }
-                ],
+                "sections": sections,
                 "assets": []
             }
             
