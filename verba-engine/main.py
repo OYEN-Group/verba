@@ -111,7 +111,7 @@ async def parse_document(
     contents = await file.read()
     try:
         if file.filename.lower().endswith(".pdf"):
-            processor = PDFProcessor(contents)
+            processor = PDFProcessor(contents, user_id=userId, document_id=documentId)
         else:
             processor = DOCXProcessor(contents, user_id=userId, document_id=documentId)
             
