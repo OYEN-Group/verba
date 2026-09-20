@@ -131,7 +131,7 @@ export function SidebarNav({ userName = 'Writer', userEmail = '' }: SidebarNavPr
         {isAccountMenuOpen && (
           <div 
             ref={menuRef}
-            className="absolute bottom-[calc(100%-8px)] left-3 mb-2 w-[320px] bg-white rounded-[14px] shadow-xl border border-slate-200 overflow-hidden z-50 text-slate-800 animate-in fade-in slide-in-from-bottom-2 duration-200"
+            className="absolute bottom-[calc(100%-8px)] left-0 w-full mb-2 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-50 text-slate-800 animate-in fade-in slide-in-from-bottom-2 duration-200"
             role="menu"
           >
             <div className="p-4 border-b border-slate-100 flex items-center">
