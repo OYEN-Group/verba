@@ -1,6 +1,6 @@
 import uuid
 import tempfile
-import pdfplumber
+import fitz  # PyMuPDF
 
 class PDFProcessor:
     def __init__(self, pdf_bytes: bytes):
@@ -15,14 +15,22 @@ class PDFProcessor:
         try:
             blocks = []
             
-            with pdfplumber.open(self.pdf_path) as pdf:
-                for page_num, page in enumerate(pdf.pages):
-                    text = page.extract_text()
-                    if text:
-                        # Split by double newline for simple paragraph detection
-                        paragraphs = text.split("\n\n")
-                        for p_text in paragraphs:
-                            p_text = p_text.replace("\n", " ").strip()
+            with fitz.open(self.pdf_path) as pdf:
+                for page_num in range(len(pdf)):
+                    page = pdf[page_num]
+                    # get_text("blocks") returns:
+                    # (x0, y0, x1, y1, "lines in block", block_no, block_type)
+                    # block_type == 0 for text, 1 for image
+                    page_blocks = page.get_text("blocks")
+                    
+                    for b in page_blocks:
+                        # Ensure it's a text block
+                        if len(b) >= 7 and b[6] == 0:
+                            text = b[4]
+                            
+                            # Clean up the text: replace newlines with spaces to join the paragraph properly
+                            p_text = " ".join(text.split("\n")).strip()
+                            
                             if not p_text:
                                 continue
                             
