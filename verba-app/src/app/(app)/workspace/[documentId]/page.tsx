@@ -900,64 +900,6 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               </button>
             )}
 
-            {/* View Mode Toggle */}
-            <div className="flex bg-black/5 rounded p-0.5">
-              <button
-                onClick={() => {
-                  setViewMode('web');
-                  localStorage.setItem('verba_editor_view_mode', 'web');
-                }}
-                className={`px-2 py-1 text-[11px] font-medium rounded transition-colors ${
-                  viewMode === 'web' ? 'bg-white shadow-sm text-foreground' : 'text-foreground-secondary hover:text-foreground'
-                }`}
-              >
-                Web Layout
-              </button>
-              <button
-                onClick={() => {
-                  setViewMode('print');
-                  localStorage.setItem('verba_editor_view_mode', 'print');
-                }}
-                className={`px-2 py-1 text-[11px] font-medium rounded transition-colors ${
-                  viewMode === 'print' ? 'bg-white shadow-sm text-foreground' : 'text-foreground-secondary hover:text-foreground'
-                }`}
-              >
-                Print Layout
-              </button>
-            </div>
-
-            <div className="w-[1px] h-4 bg-border-light mx-1" />
-
-            {/* Zoom Control */}
-            <div className="relative">
-              <button
-                onClick={() => setShowZoomMenu(!showZoomMenu)}
-                className="flex items-center space-x-1 text-[12px] text-foreground-secondary hover:bg-black/5 px-2 py-1 rounded transition-colors"
-              >
-                <span>{zoomLevel === 0 ? 'Fit Width' : `${zoomLevel}%`}</span>
-                <ChevronDown size={14} />
-              </button>
-              {showZoomMenu && (
-                <div className="absolute top-full right-0 mt-1 w-32 bg-white border border-border-light shadow-lg rounded-md py-1 z-50">
-                  {zoomOptions.map(z => (
-                    <button
-                      key={z}
-                      onClick={() => { setZoomLevel(z); setShowZoomMenu(false); }}
-                      className="block w-full text-left px-4 py-1.5 text-[12px] hover:bg-background-secondary"
-                    >
-                      {z}%
-                    </button>
-                  ))}
-                  <div className="border-t border-border-light my-1" />
-                  <button
-                    onClick={() => { setZoomLevel(0); setShowZoomMenu(false); }}
-                    className="block w-full text-left px-4 py-1.5 text-[12px] hover:bg-background-secondary"
-                  >
-                    Fit Width
-                  </button>
-                </div>
-              )}
-            </div>
 
             <button
               onClick={() => setIsFocusMode(!isFocusMode)}
@@ -1027,6 +969,77 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               }}
             />
             <BibliographyPreview />
+          </div>
+
+          {/* Document Status Bar */}
+          <div className="h-[32px] border-t border-border-light/50 bg-white flex items-center justify-between px-4 shrink-0 text-[11px] text-foreground-secondary z-10 relative">
+            <div className="flex items-center space-x-4">
+              <span>{liveWordCount !== null ? `${liveWordCount.toLocaleString()} words` : '...'}</span>
+              {isAnalyzed && (
+                <span className="flex items-center space-x-1">
+                  <span className={`w-1.5 h-1.5 rounded-full ${issues.filter(i => i.status === 'open').length === 0 ? 'bg-status-success' : 'bg-accent'}`} />
+                  <span>{issues.filter(i => i.status === 'open').length} issues</span>
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-3">
+              {/* View Mode Toggle */}
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => {
+                    setViewMode('print');
+                    localStorage.setItem('verba_editor_view_mode', 'print');
+                  }}
+                  className={`p-1 rounded transition-colors ${viewMode === 'print' ? 'text-foreground bg-black/5' : 'hover:bg-black/5'}`}
+                  title="Print Layout"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>
+                </button>
+                <button
+                  onClick={() => {
+                    setViewMode('web');
+                    localStorage.setItem('verba_editor_view_mode', 'web');
+                  }}
+                  className={`p-1 rounded transition-colors ${viewMode === 'web' ? 'text-foreground bg-black/5' : 'hover:bg-black/5'}`}
+                  title="Web Layout"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                </button>
+              </div>
+
+              <div className="w-[1px] h-3 bg-border-light mx-1" />
+
+              {/* Zoom Control */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowZoomMenu(!showZoomMenu)}
+                  className="flex items-center space-x-1 hover:bg-black/5 px-2 py-1 rounded transition-colors"
+                >
+                  <span>{zoomLevel === 0 ? 'Fit Width' : `${zoomLevel}%`}</span>
+                </button>
+                {showZoomMenu && (
+                  <div className="absolute bottom-full right-0 mb-1 w-32 bg-white border border-border-light shadow-lg rounded-md py-1 z-50">
+                    {zoomOptions.map(z => (
+                      <button
+                        key={z}
+                        onClick={() => { setZoomLevel(z); setShowZoomMenu(false); }}
+                        className="block w-full text-left px-4 py-1.5 text-[12px] hover:bg-background-secondary"
+                      >
+                        {z}%
+                      </button>
+                    ))}
+                    <div className="border-t border-border-light my-1" />
+                    <button
+                      onClick={() => { setZoomLevel(0); setShowZoomMenu(false); }}
+                      className="block w-full text-left px-4 py-1.5 text-[12px] hover:bg-background-secondary"
+                    >
+                      Fit Width
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
       </div>
 
