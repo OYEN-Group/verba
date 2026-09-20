@@ -19,15 +19,14 @@ import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import Document from '@tiptap/extension-document';
 import { VerbaImage } from './editor/extensions/VerbaImage';
-import { CustomDocument } from './editor/extensions/CustomDocument';
 import { Figure } from './editor/extensions/Figure';
 import { Section } from './editor/extensions/Section';
 import { PageBreak } from './editor/extensions/PageBreak';
 import { LineHeight } from './editor/extensions/LineHeight';
 import { Indent } from './editor/extensions/Indent';
 import FontFamily from '@tiptap/extension-font-family';
-import TextStyle from '@tiptap/extension-text-style';
-import Color from '@tiptap/extension-color';
+import { TextStyle } from '@tiptap/extension-text-style';
+import { Color } from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
 import { FontSize } from './editor/extensions/FontSize';
 
