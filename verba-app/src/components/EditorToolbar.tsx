@@ -216,6 +216,46 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         <Columns size={16} />
       </ToolbarButton>
 
+      <div className="flex items-center space-x-1 ml-1 text-[11px] text-foreground-secondary">
+        <select 
+          value={editor.getAttributes('section').pageSize || 'A4'} 
+          onChange={(e) => {
+            // @ts-expect-error custom command
+            editor.chain().focus().setSectionPageSize(e.target.value).run();
+          }}
+          className="bg-transparent border border-border-light rounded px-1 py-0.5 outline-none hover:bg-black/5 cursor-pointer"
+          title="Page Size"
+        >
+          <option value="A4">A4</option>
+          <option value="Letter">Letter</option>
+        </select>
+        <select 
+          value={editor.getAttributes('section').orientation || 'portrait'} 
+          onChange={(e) => {
+            // @ts-expect-error custom command
+            editor.chain().focus().setSectionOrientation(e.target.value).run();
+          }}
+          className="bg-transparent border border-border-light rounded px-1 py-0.5 outline-none hover:bg-black/5 cursor-pointer"
+          title="Orientation"
+        >
+          <option value="portrait">Portrait</option>
+          <option value="landscape">Landscape</option>
+        </select>
+        <select 
+          value={editor.getAttributes('section').margins || 'normal'} 
+          onChange={(e) => {
+            // @ts-expect-error custom command
+            editor.chain().focus().setSectionMargins(e.target.value).run();
+          }}
+          className="bg-transparent border border-border-light rounded px-1 py-0.5 outline-none hover:bg-black/5 cursor-pointer"
+          title="Margins"
+        >
+          <option value="normal">Normal</option>
+          <option value="narrow">Narrow</option>
+          <option value="wide">Wide</option>
+        </select>
+      </div>
+
       <Divider />
 
       {/* Insert */}

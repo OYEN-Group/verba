@@ -190,6 +190,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   const [isOutlineOpen, setIsOutlineOpen] = useState(false);
   const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
   const [workspaceTab, setWorkspaceTab] = useState<'assistant' | 'review' | 'research' | 'cite' | 'integrity' | 'evidence' | 'prove'>('assistant');
+  const [viewMode, setViewMode] = useState<'web' | 'print'>('print');
   const [zoomLevel, setZoomLevel] = useState(100);
   const [showZoomMenu, setShowZoomMenu] = useState(false);
 
@@ -313,6 +314,8 @@ export default function WorkspacePage({ params }: { params: { documentId: string
         if (savedZoom) setZoomLevel(parseInt(savedZoom, 10));
         const savedOutline = localStorage.getItem('verba_editor_outline');
         if (savedOutline !== null) setIsOutlineOpen(savedOutline === 'true');
+        const savedViewMode = localStorage.getItem('verba_editor_view_mode') as 'web' | 'print';
+        if (savedViewMode) setViewMode(savedViewMode);
       } catch {/* ignore */}
 
       // Load document and autosave preference concurrently.
@@ -897,6 +900,34 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               </button>
             )}
 
+            {/* View Mode Toggle */}
+            <div className="flex bg-black/5 rounded p-0.5">
+              <button
+                onClick={() => {
+                  setViewMode('web');
+                  localStorage.setItem('verba_editor_view_mode', 'web');
+                }}
+                className={`px-2 py-1 text-[11px] font-medium rounded transition-colors ${
+                  viewMode === 'web' ? 'bg-white shadow-sm text-foreground' : 'text-foreground-secondary hover:text-foreground'
+                }`}
+              >
+                Web Layout
+              </button>
+              <button
+                onClick={() => {
+                  setViewMode('print');
+                  localStorage.setItem('verba_editor_view_mode', 'print');
+                }}
+                className={`px-2 py-1 text-[11px] font-medium rounded transition-colors ${
+                  viewMode === 'print' ? 'bg-white shadow-sm text-foreground' : 'text-foreground-secondary hover:text-foreground'
+                }`}
+              >
+                Print Layout
+              </button>
+            </div>
+
+            <div className="w-[1px] h-4 bg-border-light mx-1" />
+
             {/* Zoom Control */}
             <div className="relative">
               <button
@@ -953,7 +984,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           </div>
         </header>
 
-          <div className="flex-1 overflow-y-auto">
+          <div className={`flex-1 overflow-y-auto view-mode-${viewMode}`}>
             <DocumentEditor
               initialBlocks={initialEditorJson ? undefined : initialBlocks}
               initialEditorJson={initialEditorJson}

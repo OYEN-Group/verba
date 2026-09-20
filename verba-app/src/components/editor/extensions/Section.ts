@@ -8,6 +8,9 @@ declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     section: {
       setSectionColumns: (columns: 1 | 2) => ReturnType;
+      setSectionPageSize: (pageSize: 'A4' | 'Letter') => ReturnType;
+      setSectionOrientation: (orientation: 'portrait' | 'landscape') => ReturnType;
+      setSectionMargins: (margins: 'normal' | 'narrow' | 'wide') => ReturnType;
     }
   }
 }
@@ -45,12 +48,30 @@ export const Section = Node.create<SectionOptions>({
           };
         },
       },
+      pageSize: {
+        default: 'A4',
+        parseHTML: element => element.getAttribute('data-page-size') || 'A4',
+        renderHTML: attributes => ({ 'data-page-size': attributes.pageSize }),
+      },
+      orientation: {
+        default: 'portrait',
+        parseHTML: element => element.getAttribute('data-orientation') || 'portrait',
+        renderHTML: attributes => ({ 'data-orientation': attributes.orientation }),
+      },
+      margins: {
+        default: 'normal',
+        parseHTML: element => element.getAttribute('data-margins') || 'normal',
+        renderHTML: attributes => ({ 'data-margins': attributes.margins }),
+      },
     };
   },
 
   parseHTML() {
     return [
       { tag: 'section[data-columns]' },
+      { tag: 'section[data-page-size]' },
+      { tag: 'section[data-orientation]' },
+      { tag: 'section[data-margins]' },
       { tag: 'section.verba-section' },
     ];
   },
@@ -61,35 +82,70 @@ export const Section = Node.create<SectionOptions>({
 
   addCommands() {
     return {
-      setSectionColumns:
-        (columns: 1 | 2) =>
-        ({ tr, dispatch }) => {
-          const { selection } = tr;
-          let sectionPos = -1;
-          let sectionNode: any = null;
-
-          // Find the parent section node
-          tr.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
-            if (node.type.name === 'section') {
-              sectionPos = pos;
-              sectionNode = node;
-              return false;
-            }
-            return true;
-          });
-
-          if (sectionPos !== -1 && sectionNode) {
-            if (dispatch) {
-              tr.setNodeMarkup(sectionPos, undefined, {
-                ...sectionNode.attrs,
-                columns,
-              });
-            }
-            return true;
+      setSectionColumns: (columns: 1 | 2) => ({ tr, dispatch }) => {
+        const { selection } = tr;
+        let sectionPos = -1;
+        let sectionNode: any = null;
+        tr.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
+          if (node.type.name === 'section') {
+            sectionPos = pos; sectionNode = node; return false;
           }
-
-          return false;
-        },
+          return true;
+        });
+        if (sectionPos !== -1 && sectionNode) {
+          if (dispatch) tr.setNodeMarkup(sectionPos, undefined, { ...sectionNode.attrs, columns });
+          return true;
+        }
+        return false;
+      },
+      setSectionPageSize: (pageSize: 'A4' | 'Letter') => ({ tr, dispatch }) => {
+        const { selection } = tr;
+        let sectionPos = -1;
+        let sectionNode: any = null;
+        tr.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
+          if (node.type.name === 'section') {
+            sectionPos = pos; sectionNode = node; return false;
+          }
+          return true;
+        });
+        if (sectionPos !== -1 && sectionNode) {
+          if (dispatch) tr.setNodeMarkup(sectionPos, undefined, { ...sectionNode.attrs, pageSize });
+          return true;
+        }
+        return false;
+      },
+      setSectionOrientation: (orientation: 'portrait' | 'landscape') => ({ tr, dispatch }) => {
+        const { selection } = tr;
+        let sectionPos = -1;
+        let sectionNode: any = null;
+        tr.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
+          if (node.type.name === 'section') {
+            sectionPos = pos; sectionNode = node; return false;
+          }
+          return true;
+        });
+        if (sectionPos !== -1 && sectionNode) {
+          if (dispatch) tr.setNodeMarkup(sectionPos, undefined, { ...sectionNode.attrs, orientation });
+          return true;
+        }
+        return false;
+      },
+      setSectionMargins: (margins: 'normal' | 'narrow' | 'wide') => ({ tr, dispatch }) => {
+        const { selection } = tr;
+        let sectionPos = -1;
+        let sectionNode: any = null;
+        tr.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
+          if (node.type.name === 'section') {
+            sectionPos = pos; sectionNode = node; return false;
+          }
+          return true;
+        });
+        if (sectionPos !== -1 && sectionNode) {
+          if (dispatch) tr.setNodeMarkup(sectionPos, undefined, { ...sectionNode.attrs, margins });
+          return true;
+        }
+        return false;
+      },
     };
   },
 });
