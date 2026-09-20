@@ -37,7 +37,8 @@ export async function POST(request: Request) {
 
     // 4. Send to Python FastAPI Engine
     const formData = new FormData();
-    formData.append('file', fileData, originalFilename);
+    const fileObj = new File([fileData], originalFilename, { type: mimeType || 'application/octet-stream' });
+    formData.append('file', fileObj);
 
     let engineUrl = process.env.VERBA_ENGINE_URL;
     if (!engineUrl) {
