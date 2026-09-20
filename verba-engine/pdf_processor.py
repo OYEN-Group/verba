@@ -41,6 +41,27 @@ class PDFProcessor:
                     right_blocks = 0
                     full_blocks = 0
                     
+                    # Filter out existing PyMuPDF image blocks (we will use get_image_info instead)
+                    page_blocks = [b for b in page_blocks if len(b) < 7 or b[6] == 0]
+                    
+                    # Robustly extract images
+                    for img in page.get_image_info(xrefs=True):
+                        xref = img.get("xref")
+                        bbox = img.get("bbox")
+                        if not xref or not bbox:
+                            continue
+                        try:
+                            base_image = pdf.extract_image(xref)
+                            if not base_image:
+                                continue
+                            image_bytes = base_image["image"]
+                            ext = base_image["ext"]
+                            if ext == "jpeg": ext = "jpg"
+                            # Append a fake block tuple for the image
+                            page_blocks.append((bbox[0], bbox[1], bbox[2], bbox[3], "<image>", 9999, 1, image_bytes, ext))
+                        except Exception:
+                            pass
+                    
                     for b in page_blocks:
                         if len(b) >= 7 and b[6] == 0:
                             x0, y0, x1, y1 = b[:4]
@@ -111,13 +132,13 @@ class PDFProcessor:
                             
                         # IMAGE BLOCK
                         elif block_type_val == 1:
-                            # Extract the image using the block's bbox
-                            bbox = fitz.Rect(b[:4])
-                            pix = page.get_pixmap(clip=bbox)
-                            image_bytes = pix.tobytes("png")
+                            if len(b) < 9:
+                                continue
+                            image_bytes = b[7]
+                            ext = b[8]
                             
                             asset_id = str(uuid.uuid4())
-                            asset_path = f"{self.user_id}/{self.document_id}/assets/{asset_id}.png" if self.user_id and self.document_id else f"assets/{asset_id}.png"
+                            asset_path = f"{self.user_id}/{self.document_id}/assets/{asset_id}.{ext}" if self.user_id and self.document_id else f"assets/{asset_id}.{ext}"
                             
                             # Upload to Supabase if configured
                             if self.supabase:
@@ -125,7 +146,7 @@ class PDFProcessor:
                                     self.supabase.storage.from_("documents").upload(
                                         path=asset_path,
                                         file=image_bytes,
-                                        file_options={"content-type": "image/png"}
+                                        file_options={"content-type": f"image/{ext}"}
                                     )
                                 except Exception as e:
                                     # Log upload error or handle it
@@ -142,7 +163,7 @@ class PDFProcessor:
                                         "type": "image",
                                         "assetId": asset_id,
                                         "storagePath": asset_path,
-                                        "contentType": "image/png"
+                                        "contentType": f"image/{ext}"
                                     }
                                 ]
                             }
