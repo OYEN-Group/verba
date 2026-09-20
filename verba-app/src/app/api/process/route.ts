@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 
     // 4. Send to Python FastAPI Engine
     const formData = new FormData();
-    formData.append('file', fileData, 'document.docx');
+    formData.append('file', fileData, originalFilename);
 
     let engineUrl = process.env.VERBA_ENGINE_URL;
     if (!engineUrl) {
