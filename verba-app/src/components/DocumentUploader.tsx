@@ -43,9 +43,12 @@ export function DocumentUploader() {
   };
 
   const validateAndSetFile = (selectedFile: File) => {
-    if (!selectedFile.name.endsWith('.docx') && selectedFile.type !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    const isDocx = selectedFile.name.endsWith('.docx') || selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    const isPdf = selectedFile.name.toLowerCase().endsWith('.pdf') || selectedFile.type === 'application/pdf';
+
+    if (!isDocx && !isPdf) {
       setStatus('error');
-      setErrorMessage('Only .docx files are supported.');
+      setErrorMessage('Only .docx and .pdf files are supported.');
       return;
     }
     
@@ -76,7 +79,8 @@ export function DocumentUploader() {
       }
       
       const userId = user.id;
-      const storagePath = `${userId}/${documentId}/original.docx`;
+      const extension = file.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'docx';
+      const storagePath = `${userId}/${documentId}/original.${extension}`;
 
       const { error: storageError } = await supabase.storage
         .from('documents')
@@ -96,7 +100,7 @@ export function DocumentUploader() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           documentId,
-          title: file.name.replace('.docx', ''),
+          title: file.name.replace(/\.(docx|pdf)$/i, ''),
           originalFilename: file.name,
           mimeType: file.type,
           fileSize: file.size,
@@ -229,7 +233,7 @@ export function DocumentUploader() {
           type="file" 
           ref={fileInputRef}
           className="hidden" 
-          accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,application/pdf"
           onChange={handleFileChange}
         />
       </div>
