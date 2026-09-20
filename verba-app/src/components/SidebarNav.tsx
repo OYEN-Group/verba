@@ -10,9 +10,10 @@ import { NewWorkModal } from '@/components/NewWorkModal';
 interface SidebarNavProps {
   userName?: string;
   userEmail?: string;
+  isCollapsed?: boolean;
 }
 
-export function SidebarNav({ userName = 'Writer', userEmail = '' }: SidebarNavProps) {
+export function SidebarNav({ userName = 'Writer', userEmail = '', isCollapsed = false }: SidebarNavProps) {
   const pathname = usePathname();
   const [isNewWorkModalOpen, setIsNewWorkModalOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
@@ -62,31 +63,33 @@ export function SidebarNav({ userName = 'Writer', userEmail = '' }: SidebarNavPr
 
   return (
     <div className="flex flex-col flex-1 h-full bg-navy text-slate-300">
-      <div className="px-4 py-6">
+      <div className={`py-6 ${isCollapsed ? 'px-2' : 'px-4'}`}>
         <button 
           onClick={() => setIsNewWorkModalOpen(true)}
-          className="flex items-center justify-center w-full h-[40px] bg-gold text-white font-medium rounded-md hover:bg-gold-hover transition-colors text-[14px] shadow-sm"
+          className={`flex items-center justify-center h-[40px] bg-gold text-white font-medium rounded-md hover:bg-gold-hover transition-colors text-[14px] shadow-sm ${isCollapsed ? 'w-[44px] mx-auto' : 'w-full'}`}
+          title={isCollapsed ? "New document" : undefined}
         >
-          <Plus size={16} className="mr-2" />
-          New document
+          <Plus size={16} className={isCollapsed ? '' : 'mr-2'} />
+          {!isCollapsed && "New document"}
         </button>
       </div>
       
-      <div className="px-3 space-y-2 mt-2">
+      <div className={`space-y-2 mt-2 ${isCollapsed ? 'px-2' : 'px-3'}`}>
         {primaryNav.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link 
               key={item.name} 
               href={item.href} 
-              className={`flex items-center px-4 py-3 h-[44px] text-[15px] font-bold transition-colors rounded-xl ${
+              className={`flex items-center h-[44px] text-[15px] font-bold transition-colors rounded-xl ${isCollapsed ? 'justify-center w-[44px] mx-auto px-0' : 'px-4 py-3'} ${
                 isActive 
                   ? 'bg-navy-active text-white' 
                   : 'text-slate-200 hover:text-white hover:bg-navy-hover'
               }`}
+              title={isCollapsed ? item.name : undefined}
             >
-              <item.icon size={20} className={`mr-4 shrink-0 ${isActive ? 'text-gold' : 'text-slate-400'}`} />
-              {item.name}
+              <item.icon size={20} className={`shrink-0 ${isActive ? 'text-gold' : 'text-slate-400'} ${isCollapsed ? '' : 'mr-4'}`} />
+              {!isCollapsed && item.name}
             </Link>
           );
         })}
@@ -94,7 +97,7 @@ export function SidebarNav({ userName = 'Writer', userEmail = '' }: SidebarNavPr
 
       <div className="mt-auto flex flex-col w-full relative">
         {/* Promotional Block for Free Users */}
-        {mockPlan === 'free' && (
+        {mockPlan === 'free' && !isCollapsed && (
           <div className="px-4 mb-3">
             <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
               <div className="text-[11px] font-bold tracking-widest text-gold uppercase mb-2">PROFESSIONAL</div>
@@ -108,22 +111,27 @@ export function SidebarNav({ userName = 'Writer', userEmail = '' }: SidebarNavPr
           </div>
         )}
 
-        <div className="px-3 py-3 border-t border-slate-800/50">
+        <div className={`py-3 border-t border-slate-800/50 ${isCollapsed ? 'px-2' : 'px-3'}`}>
           <button 
             ref={triggerRef}
             onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-            className="flex items-center w-full p-2 rounded-xl hover:bg-slate-800/60 transition-colors text-left group focus:outline-none focus:ring-2 focus:ring-gold/50"
+            className={`flex items-center w-full p-2 rounded-xl hover:bg-slate-800/60 transition-colors group focus:outline-none focus:ring-2 focus:ring-gold/50 ${isCollapsed ? 'justify-center' : 'text-left'}`}
             aria-haspopup="menu"
             aria-expanded={isAccountMenuOpen}
+            title={isCollapsed ? userName : undefined}
           >
             <div className="w-9 h-9 rounded-full bg-[#EADDC6] flex items-center justify-center shrink-0 group-hover:ring-2 group-hover:ring-gold transition-all">
               <span className="text-[#141C2B] font-bold text-[14px]">{getInitials(userName)}</span>
             </div>
-            <div className="flex flex-col ml-3 overflow-hidden flex-1">
-              <span className="text-[14px] font-bold text-white truncate" title={userName}>{userName}</span>
-              <span className="text-[12px] text-slate-400 capitalize">{mockPlan} plan</span>
-            </div>
-            <MoreHorizontal size={18} className="text-slate-500 group-hover:text-white shrink-0 ml-2" />
+            {!isCollapsed && (
+              <>
+                <div className="flex flex-col ml-3 overflow-hidden flex-1">
+                  <span className="text-[14px] font-bold text-white truncate" title={userName}>{userName}</span>
+                  <span className="text-[12px] text-slate-400 capitalize">{mockPlan} plan</span>
+                </div>
+                <MoreHorizontal size={18} className="text-slate-500 group-hover:text-white shrink-0 ml-2" />
+              </>
+            )}
           </button>
         </div>
 

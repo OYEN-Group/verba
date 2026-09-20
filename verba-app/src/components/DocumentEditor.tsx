@@ -9,7 +9,6 @@ import { EditorToolbar } from './EditorToolbar';
 import { VerbaBlockId, IssueHighlight, IssueProp } from './editor/EditorExtensions';
 import { Citation } from './editor/extensions/Citation';
 import { Sparkles, Search, ShieldCheck } from 'lucide-react';
-import { VerbaImage } from './editor/extensions/VerbaImage';
 import Link from '@tiptap/extension-link';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
@@ -18,10 +17,19 @@ import { TableCell } from '@tiptap/extension-table-cell';
 import Underline from '@tiptap/extension-underline';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
-import { PageBreak } from './editor/extensions/PageBreak';
+import Document from '@tiptap/extension-document';
+import { VerbaImage } from './editor/extensions/VerbaImage';
+import { CustomDocument } from './editor/extensions/CustomDocument';
 import { Figure } from './editor/extensions/Figure';
 import { Section } from './editor/extensions/Section';
-import Document from '@tiptap/extension-document';
+import { PageBreak } from './editor/extensions/PageBreak';
+import { LineHeight } from './editor/extensions/LineHeight';
+import { Indent } from './editor/extensions/Indent';
+import FontFamily from '@tiptap/extension-font-family';
+import TextStyle from '@tiptap/extension-text-style';
+import Color from '@tiptap/extension-color';
+import Highlight from '@tiptap/extension-highlight';
+import { FontSize } from './editor/extensions/FontSize';
 
 export interface ContextualSelection {
   blockId: string;
@@ -194,6 +202,13 @@ export function DocumentEditor({
         onIssueSelect,
       }),
       Citation,
+      FontFamily,
+      TextStyle,
+      Color,
+      Highlight.configure({ multicolor: true }),
+      FontSize,
+      LineHeight,
+      Indent,
     ],
     content: '',
     editable: isEditable,

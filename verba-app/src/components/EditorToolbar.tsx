@@ -23,7 +23,16 @@ import {
   Trash2,
   Scissors,
   Columns,
-  Square
+  Square,
+  Paintbrush,
+  List,
+  ListOrdered,
+  Indent,
+  Outdent,
+  Eraser,
+  Palette,
+  Highlighter,
+  ChevronDown
 } from 'lucide-react';
 
 interface EditorToolbarProps {
@@ -178,21 +187,40 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
             <ToolbarButton onClick={redo} disabled={!editor.can().redo()} title="Redo">
               <Redo size={15} />
             </ToolbarButton>
+            <ToolbarButton onClick={() => {}} title="Format Painter">
+              <Paintbrush size={15} />
+            </ToolbarButton>
 
             <Divider />
 
-            <ToolbarButton onClick={setParagraph} isActive={editor.isActive('paragraph')} title="Normal Text">
-              <Type size={15} />
-            </ToolbarButton>
-            <ToolbarButton onClick={() => setHeading(1)} isActive={editor.isActive('heading', { level: 1 })} title="Heading 1">
-              <Heading1 size={15} />
-            </ToolbarButton>
-            <ToolbarButton onClick={() => setHeading(2)} isActive={editor.isActive('heading', { level: 2 })} title="Heading 2">
-              <Heading2 size={15} />
-            </ToolbarButton>
-            <ToolbarButton onClick={() => setHeading(3)} isActive={editor.isActive('heading', { level: 3 })} title="Heading 3">
-              <Heading3 size={15} />
-            </ToolbarButton>
+            {/* Font Family Dropdown (Simplified) */}
+            <div className="relative group flex items-center">
+              <select 
+                onChange={(e) => editor.chain().focus().setFontFamily(e.target.value).run()}
+                className="text-[12px] bg-transparent border-none outline-none focus:ring-0 cursor-pointer hover:bg-black/5 rounded px-1 py-1 w-[120px]"
+                value={editor.getAttributes('textStyle').fontFamily || ''}
+              >
+                <option value="">Default Font</option>
+                <option value="Inter">Inter</option>
+                <option value="var(--font-playfair)">Playfair Display</option>
+                <option value="Arial">Arial</option>
+                <option value="Courier New">Courier New</option>
+              </select>
+            </div>
+            
+            {/* Font Size Dropdown (Simplified) */}
+            <div className="relative group flex items-center ml-1">
+              <select 
+                onChange={(e) => (editor.chain().focus() as any).setFontSize(e.target.value).run()}
+                className="text-[12px] bg-transparent border-none outline-none focus:ring-0 cursor-pointer hover:bg-black/5 rounded px-1 py-1 w-[60px]"
+                value={editor.getAttributes('textStyle').fontSize || ''}
+              >
+                <option value="">Size</option>
+                {[8,9,10,11,12,14,16,18,24,30,36,48,72].map(size => (
+                  <option key={size} value={`${size}px`}>{size}</option>
+                ))}
+              </select>
+            </div>
 
             <Divider />
 
@@ -205,15 +233,34 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
             <ToolbarButton onClick={toggleUnderline} isActive={editor.isActive('underline')} disabled={!editor.can().toggleUnderline()} title="Underline">
               <Underline size={15} />
             </ToolbarButton>
-            <ToolbarButton onClick={toggleSubscript} isActive={editor.isActive('subscript')} disabled={!editor.can().toggleSubscript()} title="Subscript">
-              <SubscriptIcon size={15} />
-            </ToolbarButton>
-            <ToolbarButton onClick={toggleSuperscript} isActive={editor.isActive('superscript')} disabled={!editor.can().toggleSuperscript()} title="Superscript">
-              <SuperscriptIcon size={15} />
+            
+            {/* Color and Highlight Pickers */}
+            <div className="relative group flex items-center mx-1">
+              <input 
+                type="color" 
+                onChange={(e) => editor.chain().focus().setColor(e.target.value).run()} 
+                value={editor.getAttributes('textStyle').color || '#000000'}
+                className="w-[24px] h-[24px] p-0 border-none rounded cursor-pointer"
+                title="Text Color"
+              />
+            </div>
+            <div className="relative group flex items-center mx-1">
+              <input 
+                type="color" 
+                onChange={(e) => editor.chain().focus().setHighlight({ color: e.target.value }).run()} 
+                value={editor.getAttributes('highlight').color || '#ffff00'}
+                className="w-[24px] h-[24px] p-0 border-none rounded cursor-pointer"
+                title="Highlight Color"
+              />
+            </div>
+
+            <ToolbarButton onClick={() => editor.chain().focus().unsetAllMarks().run()} title="Clear Formatting">
+              <Eraser size={15} />
             </ToolbarButton>
 
             <Divider />
 
+            {/* Alignment & Lists */}
             <ToolbarButton onClick={() => setAlign('left')} isActive={editor.isActive({ textAlign: 'left' })} title="Align Left">
               <AlignLeft size={15} />
             </ToolbarButton>
@@ -225,6 +272,48 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
             </ToolbarButton>
             <ToolbarButton onClick={() => setAlign('justify')} isActive={editor.isActive({ textAlign: 'justify' })} title="Justify">
               <AlignJustify size={15} />
+            </ToolbarButton>
+
+            <Divider />
+
+            <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={editor.isActive('bulletList')} title="Bullet List">
+              <List size={15} />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} isActive={editor.isActive('orderedList')} title="Numbered List">
+              <ListOrdered size={15} />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => (editor.chain().focus() as any).outdent().run()} title="Decrease Indent">
+              <Outdent size={15} />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => (editor.chain().focus() as any).indent().run()} title="Increase Indent">
+              <Indent size={15} />
+            </ToolbarButton>
+            
+            {/* Line Spacing Dropdown */}
+            <div className="relative group flex items-center ml-1">
+              <select 
+                onChange={(e) => (editor.chain().focus() as any).setLineHeight(e.target.value).run()}
+                className="text-[12px] bg-transparent border-none outline-none focus:ring-0 cursor-pointer hover:bg-black/5 rounded px-1 py-1 w-[80px]"
+                value={editor.getAttributes('paragraph').lineHeight || editor.getAttributes('heading').lineHeight || ''}
+              >
+                <option value="">Spacing</option>
+                <option value="1">Single</option>
+                <option value="1.15">1.15</option>
+                <option value="1.5">1.5</option>
+                <option value="2">Double</option>
+              </select>
+            </div>
+
+            <Divider />
+
+            <ToolbarButton onClick={() => setHeading(1)} isActive={editor.isActive('heading', { level: 1 })} title="Heading 1">
+              <Heading1 size={15} />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => setHeading(2)} isActive={editor.isActive('heading', { level: 2 })} title="Heading 2">
+              <Heading2 size={15} />
+            </ToolbarButton>
+            <ToolbarButton onClick={setParagraph} isActive={editor.isActive('paragraph')} title="Normal Text">
+              <Type size={15} />
             </ToolbarButton>
           </>
         )}

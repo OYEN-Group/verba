@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { SidebarNav } from '@/components/SidebarNav';
+import { SidebarShell } from '@/components/SidebarShell';
 import { Playfair_Display } from 'next/font/google';
 import { createClient } from '@/lib/supabase/server';
 
@@ -14,22 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className={`flex h-screen bg-[#F6F8FB] ${playfair.variable}`}>
       {/* Sidebar */}
-      <aside className="w-[260px] bg-[#141C2B] border-r border-[#141C2B] flex-col hidden md:flex shrink-0">
-        <div className="h-[80px] flex items-center px-7 shrink-0 mt-2 mb-2">
-          <Link href="/dashboard" className="flex items-center space-x-3">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gold">
-              <path d="M4.5 4.5L10 20H14L19.5 4.5H16.5L12 16.5L7.5 4.5H4.5Z" fill="currentColor"/>
-              <path d="M12 4.5L14 10.5H10L12 4.5Z" fill="#9C7646"/>
-            </svg>
-            <div className="flex flex-col ml-1">
-              <span className="text-white font-extrabold tracking-widest text-[16px] leading-none mb-1">VERBA</span>
-              <span className="text-slate-400 text-[10px] tracking-wide mt-0.5 whitespace-nowrap font-medium">Write with evidence.</span>
-            </div>
-          </Link>
-        </div>
-        
-        <SidebarNav userName={userName} userEmail={userEmail} />
-      </aside>
+      <SidebarShell userName={userName} userEmail={userEmail} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
