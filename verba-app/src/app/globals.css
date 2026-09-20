@@ -25,3 +25,46 @@ body {
   color: var(--foreground);
   background: var(--background);
 }
+
+.prose hr.page-break {
+  border: 0;
+  border-bottom: 2px dashed #E5EAF0;
+  margin: 2rem 0;
+  break-after: page;
+  position: relative;
+}
+
+.prose hr.page-break::after {
+  content: 'PAGE BREAK';
+  position: absolute;
+  top: -10px;
+  right: 0;
+  background: #F6F8FB;
+  padding: 0 10px;
+  color: #98A2B3;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.verba-section {
+  display: block;
+  width: 100%;
+}
+
+.verba-section[data-columns="2"] {
+  column-count: 2;
+  column-gap: 3rem;
+}
+
+.verba-section > * {
+  /* Prevent child elements from breaking awkwardly across columns */
+  break-inside: avoid-column;
+}
+
+.verba-section p, .verba-section h1, .verba-section h2, .verba-section h3, .verba-section h4, .verba-section h5, .verba-section h6 {
+  /* Allow text blocks to break naturally but prevent widows/orphans */
+  break-inside: auto;
+  orphans: 3;
+  widows: 3;
+}

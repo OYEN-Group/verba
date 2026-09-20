@@ -14,6 +14,13 @@ import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { TableCell } from '@tiptap/extension-table-cell';
+import Underline from '@tiptap/extension-underline';
+import Subscript from '@tiptap/extension-subscript';
+import Superscript from '@tiptap/extension-superscript';
+import { PageBreak } from './editor/extensions/PageBreak';
+import { Figure } from './editor/extensions/Figure';
+import { Section } from './editor/extensions/Section';
+import Document from '@tiptap/extension-document';
 
 export interface ContextualSelection {
   blockId: string;
@@ -65,8 +72,12 @@ interface DocumentEditorProps {
  * Preserves the original parsed block IDs via data-verba-block-id.
  */
 const blocksToHtml = (blocks: Block[]): string => {
-  return blocks
+  const blocksHtml = blocks
     .map(block => {
+      if (block.type === 'pageBreak') {
+        return `<hr class="page-break" />`;
+      }
+      
       if (block.type === 'table') {
         // block.rows -> cells
         // @ts-expect-error - temporary dynamic type
@@ -109,7 +120,13 @@ const blocksToHtml = (blocks: Block[]): string => {
       return `<p data-verba-block-id="${block.id}">${content}</p>`;
     })
     .join('');
+    
+  return `<section data-columns="1" class="verba-section">${blocksHtml}</section>`;
 };
+
+const CustomDocument = Document.extend({
+  content: 'section+',
+});
 
 export function DocumentEditor({
   initialBlocks,
@@ -132,20 +149,28 @@ export function DocumentEditor({
 
   const editor = useEditor({
     extensions: [
+      CustomDocument,
       StarterKit.configure({
+        document: false, // disable default document
         heading: { levels: [1, 2, 3, 4, 5, 6] },
       }),
+      Section,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Image.configure({
         allowBase64: true,
         inline: true,
       }),
+      Figure,
       Table.configure({
         resizable: true,
       }),
       TableRow,
       TableHeader,
       TableCell,
+      Underline,
+      Subscript,
+      Superscript,
+      PageBreak,
       VerbaBlockId,
       IssueHighlight.configure({
         issues,
@@ -161,13 +186,50 @@ export function DocumentEditor({
         class: 'prose prose-slate max-w-none focus:outline-none min-h-[1000px]',
       },
       handlePaste: (view, event, slice) => {
+        // Handle Image Pastes
+        if (event.clipboardData && event.clipboardData.files && event.clipboardData.files.length > 0) {
+          const file = event.clipboardData.files[0];
+          if (file.type.startsWith('image/')) {
+            event.preventDefault();
+            const docIdMatch = window.location.pathname.match(/\/workspace\/([^/]+)/);
+            if (docIdMatch && docIdMatch[1]) {
+              const docId = docIdMatch[1];
+              // Optimistically insert a placeholder or just upload directly
+              import('@/lib/supabase/client').then(({ createClient }) => {
+                const supabase = createClient();
+                supabase.auth.getUser().then(({ data: { user } }) => {
+                  if (user) {
+                    const ext = file.name.split('.').pop() || 'png';
+                    const assetId = `img_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+                    const storagePath = `${user.id}/${docId}/assets/${assetId}`;
+                    
+                    supabase.storage.from('documents').upload(storagePath, file)
+                      .then(({ data, error }) => {
+                        if (!error && data) {
+                          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://poaclxtaacguolfeefcd.supabase.co';
+                          const publicUrl = `${supabaseUrl}/storage/v1/object/public/documents/${storagePath}`;
+                          // @ts-expect-error view is available
+                          const { schema } = view.state;
+                          const node = schema.nodes.image.create({ src: publicUrl });
+                          // @ts-expect-error view is available
+                          const tr = view.state.tr.replaceSelectionWith(node);
+                          view.dispatch(tr);
+                        }
+                      });
+                  }
+                });
+              });
+            }
+            return true; // Handled
+          }
+        }
+
         const text = slice.content.textBetween(0, slice.content.size, '\n', '\n');
         if (text) {
           const charCount = text.length;
           const wordCount = text.trim().split(/\s+/).filter(w => w.length > 0).length;
           
           if (charCount > 0) {
-            // Extract documentId from URL since it's not a direct prop
             const docIdMatch = window.location.pathname.match(/\/workspace\/([^/]+)/);
             if (docIdMatch && docIdMatch[1]) {
               fetch(`/api/documents/${docIdMatch[1]}/events`, {
@@ -185,6 +247,48 @@ export function DocumentEditor({
           }
         }
         return false; // Let Tiptap handle the actual paste
+      },
+      handleDrop: (view, event, slice, moved) => {
+        if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+          const file = event.dataTransfer.files[0];
+          if (file.type.startsWith('image/')) {
+            event.preventDefault();
+            const docIdMatch = window.location.pathname.match(/\/workspace\/([^/]+)/);
+            if (docIdMatch && docIdMatch[1]) {
+              const docId = docIdMatch[1];
+              import('@/lib/supabase/client').then(({ createClient }) => {
+                const supabase = createClient();
+                supabase.auth.getUser().then(({ data: { user } }) => {
+                  if (user) {
+                    const ext = file.name.split('.').pop() || 'png';
+                    const assetId = `img_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+                    const storagePath = `${user.id}/${docId}/assets/${assetId}`;
+                    
+                    supabase.storage.from('documents').upload(storagePath, file)
+                      .then(({ data, error }) => {
+                        if (!error && data) {
+                          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://poaclxtaacguolfeefcd.supabase.co';
+                          const publicUrl = `${supabaseUrl}/storage/v1/object/public/documents/${storagePath}`;
+                          // @ts-expect-error view is available
+                          const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
+                          if (coordinates) {
+                            // @ts-expect-error view is available
+                            const { schema } = view.state;
+                            const node = schema.nodes.image.create({ src: publicUrl });
+                            // @ts-expect-error view is available
+                            const tr = view.state.tr.insert(coordinates.pos, node);
+                            view.dispatch(tr);
+                          }
+                        }
+                      });
+                  }
+                });
+              });
+            }
+            return true;
+          }
+        }
+        return false;
       },
     },
     // onUpdate fires after every document change — used for autosave debouncing upstream
@@ -224,8 +328,21 @@ export function DocumentEditor({
 
     if (initialEditorJson && typeof initialEditorJson === 'object') {
       // CASE A: editor_state exists — load Tiptap JSON directly
-      // This preserves exact verbaBlockId values and all formatting
-      editor.commands.setContent(initialEditorJson);
+      // Check if it's a legacy linear document without sections
+      let jsonToLoad = initialEditorJson;
+      if (jsonToLoad.content && jsonToLoad.content.length > 0 && jsonToLoad.content[0].type !== 'section') {
+        jsonToLoad = {
+          type: 'doc',
+          content: [
+            {
+              type: 'section',
+              attrs: { columns: 1 },
+              content: jsonToLoad.content
+            }
+          ]
+        };
+      }
+      editor.commands.setContent(jsonToLoad);
     } else if (initialBlocks && initialBlocks.length > 0) {
       // CASE B: editor_state is null — seed from parsed_content blocks
       // Preserves original parsed block IDs via data-verba-block-id
