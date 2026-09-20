@@ -140,6 +140,7 @@ const CustomDocument = Document.extend({
 });
 
 export function DocumentEditor({
+  initialSections,
   initialBlocks,
   initialEditorJson,
   isEditable = true,
