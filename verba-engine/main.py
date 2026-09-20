@@ -12,6 +12,7 @@ from typing import Dict, Any
 from dotenv import load_dotenv
 
 from docx_processor import DOCXProcessor
+from pdf_processor import PDFProcessor
 from openai_provider import OpenAIProvider
 from safety_validator import SafetyValidator
 
@@ -94,24 +95,33 @@ def health_check():
 
 
 @app.post("/api/parse")
-async def parse_docx(file: UploadFile = File(...)):
-    """Accepts a .docx file and returns the JSON DocumentModel structure."""
-    if not file.filename.endswith(".docx"):
+async def parse_document(file: UploadFile = File(...)):
+    """Accepts a .docx or .pdf file and returns the JSON DocumentModel structure."""
+    if not file.filename.lower().endswith((".docx", ".pdf")):
         return JSONResponse(
             status_code=400,
-            content={"error": "INVALID_FILE_TYPE", "message": "Only .docx files are supported"},
+            content={"error": "INVALID_FILE_TYPE", "message": "Only .docx and .pdf files are supported"},
         )
 
     contents = await file.read()
     try:
-        processor = DOCXProcessor(contents)
+        if file.filename.lower().endswith(".pdf"):
+            processor = PDFProcessor(contents)
+        else:
+            processor = DOCXProcessor(contents)
+            
         try:
             json_data = processor.parse_to_json()
+            if "error" in json_data:
+                return JSONResponse(
+                    status_code=400,
+                    content={"error": "PARSE_ERROR", "message": json_data["error"]},
+                )
             return JSONResponse(content=json_data)
         finally:
             processor.cleanup()
     except Exception as exc:
-        logger.exception("parse_docx failed", extra={"exception_type": type(exc).__name__})
+        logger.exception("parse_document failed", extra={"exception_type": type(exc).__name__})
         return JSONResponse(
             status_code=500,
             content={"error": "DOCUMENT_PARSE_FAILED", "message": "Unable to parse document."},
