@@ -6,6 +6,7 @@ import { CheckCircle, Loader2, LogOut, ShieldAlert } from 'lucide-react';
 import { logout } from '@/app/(auth)/actions';
 
 export function AccountSecurityForm() {
+  const [currentPassword, setCurrentPassword] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [saving, setSaving] = useState(false);
@@ -29,13 +30,16 @@ export function AccountSecurityForm() {
     setSuccess(false);
 
     try {
+      // @ts-ignore - Supabase JS types might not have current_password yet, but the API expects it
       const { error } = await supabase.auth.updateUser({
-        password: password
+        password: password,
+        current_password: currentPassword
       });
 
       if (error) throw error;
 
       setSuccess(true);
+      setCurrentPassword('');
       setPassword('');
       setPasswordConfirm('');
       setTimeout(() => setSuccess(false), 3000);
@@ -52,6 +56,18 @@ export function AccountSecurityForm() {
       {/* Password Update */}
       <form onSubmit={handleUpdatePassword} className="space-y-5">
         <h3 className="text-[15px] font-bold text-ink">Change Password</h3>
+        
+        <div className="space-y-1.5">
+          <label className="text-[13px] font-semibold text-foreground-secondary">Current Password</label>
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            className="w-full px-3.5 py-2.5 bg-white border border-border-light rounded-xl text-[14px] text-ink focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all shadow-sm"
+            placeholder="••••••••"
+          />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-1.5">
             <label className="text-[13px] font-semibold text-foreground-secondary">New Password</label>
@@ -91,7 +107,7 @@ export function AccountSecurityForm() {
           )}
           <button
             type="submit"
-            disabled={saving || !password}
+            disabled={saving || !password || !currentPassword}
             className="h-[40px] px-5 bg-ink text-white font-semibold rounded-xl hover:bg-ink-secondary transition-colors text-[13px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-sm"
           >
             {saving ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
