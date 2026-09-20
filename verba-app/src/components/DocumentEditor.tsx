@@ -29,6 +29,9 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
 import { FontSize } from './editor/extensions/FontSize';
+import CharacterCount from '@tiptap/extension-character-count';
+import { MathEquation } from './editor/extensions/MathEquation';
+import SearchAndReplace from '@sereneinserenade/tiptap-search-and-replace';
 
 export interface ContextualSelection {
   blockId: string;
@@ -73,7 +76,7 @@ interface DocumentEditorProps {
   onIssueSelect?: (issueId: string | null) => void;
   onEditorReady?: (editor: Editor) => void;
   /** Called with the latest Tiptap JSON whenever the document changes (for autosave) */
-  onUpdate?: (json: TiptapJson) => void;
+  onUpdate?: (json: TiptapJson, wordCount: number, characterCount: number) => void;
   onAskVerba?: (selection: ContextualSelection) => void;
   onFindEvidence?: (selection: ContextualSelection) => void;
   onReviewEvidence?: (selection: ContextualSelection) => void;
@@ -208,6 +211,11 @@ export function DocumentEditor({
       FontSize,
       LineHeight,
       Indent,
+      CharacterCount,
+      MathEquation,
+      SearchAndReplace.configure({
+        searchResultClass: 'search-result',
+      }),
     ],
     content: '',
     editable: isEditable,
@@ -316,7 +324,11 @@ export function DocumentEditor({
     // onUpdate fires after every document change — used for autosave debouncing upstream
     onUpdate: ({ editor: e }) => {
       if (onUpdate) {
-        onUpdate(e.getJSON());
+        onUpdate(
+          e.getJSON(),
+          e.storage.characterCount.words(),
+          e.storage.characterCount.characters()
+        );
       }
     },
     onFocus: () => {

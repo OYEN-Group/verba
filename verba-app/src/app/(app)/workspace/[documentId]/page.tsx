@@ -448,11 +448,15 @@ export default function WorkspacePage({ params }: { params: { documentId: string
     return () => window.removeEventListener('click', closeInspector);
   }, []);
 
+  const [liveCharacterCount, setLiveCharacterCount] = useState<number | null>(null);
+
   // ─── Editor onUpdate callback ─────────────────────────────────────────────
 
-  const handleEditorUpdate = useCallback((json: Record<string, unknown>) => {
+  const handleEditorUpdate = useCallback((json: Record<string, unknown>, wordCount?: number, characterCount?: number) => {
     // Mark dirty immediately
     setSaveStatus('unsaved');
+    if (wordCount !== undefined) setLiveWordCount(wordCount);
+    if (characterCount !== undefined) setLiveCharacterCount(characterCount);
     // Debounce heavy citation AST walk to prevent tying up the main thread on every keystroke
     if (citationTimerRef.current) clearTimeout(citationTimerRef.current);
     citationTimerRef.current = setTimeout(() => {
@@ -870,6 +874,12 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               
               <div className="text-[12px] text-foreground-secondary flex items-center gap-2 mt-0.5 font-medium tracking-tight">
                 <span>{(displayWordCount ?? 0).toLocaleString()} words</span>
+                {liveCharacterCount !== null && (
+                  <>
+                    <span className="text-border-light">&bull;</span>
+                    <span>{liveCharacterCount.toLocaleString()} characters</span>
+                  </>
+                )}
                 <span className="text-border-light">&bull;</span>
                 <span className="uppercase">{citationStyle}</span>
                 <span className="text-border-light">&bull;</span>
@@ -984,6 +994,17 @@ export default function WorkspacePage({ params }: { params: { documentId: string
             </div>
 
             <div className="flex items-center space-x-3">
+              <button
+                onClick={() => window.print()}
+                className="flex items-center space-x-1.5 p-1 rounded hover:bg-black/5 text-foreground-secondary transition-colors"
+                title="Print Document"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                <span className="hidden sm:inline">Print</span>
+              </button>
+              
+              <div className="w-[1px] h-3 bg-border-light mx-1" />
+
               {/* View Mode Toggle */}
               <div className="flex items-center space-x-2">
                 <button

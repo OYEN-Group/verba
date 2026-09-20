@@ -32,7 +32,10 @@ import {
   Eraser,
   Palette,
   Highlighter,
-  ChevronDown
+  ChevronDown,
+  Sigma,
+  PlusCircle,
+  Search
 } from 'lucide-react';
 
 interface EditorToolbarProps {
@@ -43,6 +46,9 @@ type Tab = 'home' | 'insert' | 'layout' | 'academic';
 
 export function EditorToolbar({ editor }: EditorToolbarProps) {
   const [activeTab, setActiveTab] = useState<Tab>('home');
+  const [showFindReplace, setShowFindReplace] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [replaceTerm, setReplaceTerm] = useState('');
 
   if (!editor) {
     return null;
@@ -69,9 +75,42 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   const addColumn = () => editor.chain().focus().addColumnAfter().run();
   const deleteColumn = () => editor.chain().focus().deleteColumn().run();
 
-  const setAlign = (align: 'left' | 'center' | 'right' | 'justify') => {
-    editor.chain().focus().setTextAlign(align).run();
+  const setAlign = (alignment: string) => {
+    editor.chain().focus().setTextAlign(alignment).run();
   };
+
+  const handleFind = () => {
+    if (!searchTerm) return;
+    (editor.chain().focus() as any).setSearchTerm(searchTerm).run();
+  };
+
+  const handleNext = () => {
+    (editor.chain().focus() as any).nextSearchResult().run();
+  };
+
+  const handlePrev = () => {
+    (editor.chain().focus() as any).previousSearchResult().run();
+  };
+
+  const handleReplace = () => {
+    (editor.chain().focus() as any).replace(replaceTerm).run();
+  };
+
+  const handleReplaceAll = () => {
+    (editor.chain().focus() as any).replaceAll(replaceTerm).run();
+  };
+
+  // Close find dialog on escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showFindReplace) {
+        setShowFindReplace(false);
+        (editor.chain() as any).setSearchTerm('').run(); // clear search
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showFindReplace, editor]);
 
   const setHeading = (level: 1 | 2 | 3 | 4) => {
     editor.chain().focus().toggleHeading({ level }).run();
@@ -339,6 +378,18 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
                 </button>
               </div>
             </ToolGroup>
+
+            <ToolGroup label="Editing">
+              <div className="flex flex-col justify-center space-y-1 pl-1 pr-1">
+                <ToolbarButton 
+                  onClick={() => setShowFindReplace(!showFindReplace)} 
+                  isActive={showFindReplace} 
+                  title="Find and Replace"
+                >
+                  <div className="flex items-center text-[12px] font-medium"><Search size={14} className="mr-1.5"/> Find</div>
+                </ToolbarButton>
+              </div>
+            </ToolGroup>
           </>
         )}
 
@@ -413,6 +464,20 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
                     <div className="flex items-center text-[12px] font-medium text-accent">Add Caption</div>
                   </ToolbarButton>
                 )}
+              </div>
+            </ToolGroup>
+
+            <ToolGroup label="Symbols">
+              <div className="flex items-center space-x-0.5">
+                <ToolbarButton onClick={() => (editor.chain().focus() as any).insertEquation().run()} title="Insert Equation">
+                  <div className="flex items-center text-[12px] font-medium"><Sigma size={14} className="mr-1.5"/> Equation</div>
+                </ToolbarButton>
+                <div className="relative group">
+                  <button className="flex flex-col items-center justify-center p-1.5 min-w-[32px] min-h-[32px] rounded text-foreground-secondary hover:bg-black/5 transition-colors" title="Insert Symbol">
+                    <div className="flex items-center text-[12px] font-medium"><PlusCircle size={14} className="mr-1.5"/> Symbol</div>
+                  </button>
+                  {/* Future dropdown for symbols */}
+                </div>
               </div>
             </ToolGroup>
 
@@ -495,6 +560,47 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           </>
         )}
       </div>
+
+      {/* Find & Replace Floating Dialog */}
+      {showFindReplace && (
+        <div className="absolute top-[60px] right-[20px] bg-white border border-border-light shadow-lg rounded-md p-3 w-[280px] z-20 flex flex-col space-y-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[12px] font-semibold text-[#0B1628]">Find & Replace</span>
+            <button onClick={() => setShowFindReplace(false)} className="text-foreground-muted hover:text-foreground">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div className="flex space-x-1">
+            <input 
+              autoFocus
+              type="text" 
+              placeholder="Find..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleFind()}
+              className="flex-1 text-[12px] border border-border-light rounded px-2 py-1 outline-none focus:border-accent"
+            />
+            <button onClick={handleFind} className="px-2 bg-accent text-white text-[11px] rounded hover:bg-accent-hover font-medium">Find</button>
+          </div>
+          <div className="flex space-x-1 justify-end">
+            <button onClick={handlePrev} className="px-1.5 py-1 text-[11px] bg-black/5 hover:bg-black/10 rounded">Prev</button>
+            <button onClick={handleNext} className="px-1.5 py-1 text-[11px] bg-black/5 hover:bg-black/10 rounded">Next</button>
+          </div>
+          <div className="flex space-x-1 mt-2">
+            <input 
+              type="text" 
+              placeholder="Replace with..." 
+              value={replaceTerm}
+              onChange={(e) => setReplaceTerm(e.target.value)}
+              className="flex-1 text-[12px] border border-border-light rounded px-2 py-1 outline-none focus:border-accent"
+            />
+          </div>
+          <div className="flex space-x-1 mt-1 justify-end">
+            <button onClick={handleReplace} className="px-2 py-1 bg-black/5 hover:bg-black/10 text-[11px] rounded">Replace</button>
+            <button onClick={handleReplaceAll} className="px-2 py-1 bg-black/5 hover:bg-black/10 text-[11px] rounded">Replace All</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
