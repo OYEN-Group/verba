@@ -323,6 +323,17 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
             <ToolbarButton onClick={handleImageUpload} title="Insert Image">
               <div className="flex items-center text-[12px] font-medium">Image</div>
             </ToolbarButton>
+            {editor.isActive('image') && (
+              <ToolbarButton 
+                onClick={() => {
+                  const attrs = editor.getAttributes('image');
+                  (editor.chain().focus() as any).setFigure({ ...attrs, caption: 'Caption here' }).run();
+                }} 
+                title="Add Caption"
+              >
+                <div className="flex items-center text-[12px] font-medium text-accent">Add Caption</div>
+              </ToolbarButton>
+            )}
             <ToolbarButton onClick={() => editor.chain().focus().setPageBreak().run()} title="Insert Page Break">
               <div className="flex items-center text-[12px] font-medium"><Scissors size={14} className="mr-1.5"/> Page Break</div>
             </ToolbarButton>
@@ -351,6 +362,20 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
                 <ToolbarButton onClick={deleteColumn} title="Delete Column">
                   <div className="flex items-center text-[11px] text-red-500"><Trash2 size={12} className="mr-1"/> Col</div>
                 </ToolbarButton>
+                <Divider />
+                <ToolbarButton onClick={() => editor.chain().focus().mergeCells().run()} title="Merge Cells">
+                  <div className="flex items-center text-[11px]">Merge</div>
+                </ToolbarButton>
+                <ToolbarButton onClick={() => editor.chain().focus().splitCell().run()} title="Split Cell">
+                  <div className="flex items-center text-[11px]">Split</div>
+                </ToolbarButton>
+                <ToolbarButton onClick={() => editor.chain().focus().toggleHeaderRow().run()} title="Toggle Header Row">
+                  <div className="flex items-center text-[11px]">Header Row</div>
+                </ToolbarButton>
+                <ToolbarButton onClick={() => editor.chain().focus().toggleHeaderColumn().run()} title="Toggle Header Col">
+                  <div className="flex items-center text-[11px]">Header Col</div>
+                </ToolbarButton>
+                <Divider />
                 <ToolbarButton onClick={deleteTable} title="Delete Table">
                   <div className="flex items-center text-[11px] text-red-500"><Trash2 size={12} className="mr-1"/> Table</div>
                 </ToolbarButton>
