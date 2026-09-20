@@ -5,3 +5,4 @@ lxml
 pydantic
 openai
 python-dotenv
+pdfplumber==0.11.10
