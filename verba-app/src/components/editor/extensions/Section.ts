@@ -66,7 +66,7 @@ export const Section = Node.create<SectionOptions>({
         ({ tr, dispatch }) => {
           const { selection } = tr;
           let sectionPos = -1;
-          let sectionNode = null;
+          let sectionNode: any = null;
 
           // Find the parent section node
           tr.doc.nodesBetween(selection.from, selection.to, (node, pos) => {

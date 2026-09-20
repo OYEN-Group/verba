@@ -33,7 +33,7 @@ interface DocumentData {
   original_filename: string;
   status: string;
   word_count: number;
-  parsed_content: { sections: { blocks: Block[] }[] };
+  parsed_content: { sections: { id: string; layout: { type: string; columns: number }; blocks: Block[] }[] };
   editor_state: Record<string, unknown> | null;
   editor_version: number;
   work_id: string | null;

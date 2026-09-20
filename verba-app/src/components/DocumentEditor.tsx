@@ -9,7 +9,8 @@ import { EditorToolbar } from './EditorToolbar';
 import { VerbaBlockId, IssueHighlight, IssueProp } from './editor/EditorExtensions';
 import { Citation } from './editor/extensions/Citation';
 import { Sparkles, Search, ShieldCheck } from 'lucide-react';
-import { Image } from '@tiptap/extension-image';
+import { VerbaImage } from './editor/extensions/VerbaImage';
+import Link from '@tiptap/extension-link';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableHeader } from '@tiptap/extension-table-header';
@@ -107,10 +108,9 @@ const sectionsToHtml = (sections: SectionData[]): string => {
             .map(run => {
               // @ts-expect-error
               if (run.type === 'image') {
-                // @ts-expect-error
                 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://poaclxtaacguolfeefcd.supabase.co';
                 // @ts-expect-error
-                return `<img src="${supabaseUrl}/storage/v1/object/public/documents/${run.storagePath}" alt="Imported image" />`;
+                return `<img src="${supabaseUrl}/storage/v1/object/public/documents/${run.storagePath}" data-storage-path="${run.storagePath}" alt="Imported image" />`;
               }
               let text = run.text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
               if (run.bold) text = `<strong>${text}</strong>`;
@@ -168,9 +168,13 @@ export function DocumentEditor({
       }),
       Section,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Image.configure({
+      VerbaImage.configure({
         allowBase64: true,
         inline: true,
+      }),
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
       }),
       Figure,
       Table.configure({
@@ -218,12 +222,9 @@ export function DocumentEditor({
                     supabase.storage.from('documents').upload(storagePath, file)
                       .then(({ data, error }) => {
                         if (!error && data) {
-                          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://poaclxtaacguolfeefcd.supabase.co';
-                          const publicUrl = `${supabaseUrl}/storage/v1/object/public/documents/${storagePath}`;
-                          // @ts-expect-error view is available
                           const { schema } = view.state;
-                          const node = schema.nodes.image.create({ src: publicUrl });
-                          // @ts-expect-error view is available
+                          // Use the new VerbaImage via 'image' node
+                          const node = schema.nodes.image.create({ storagePath });
                           const tr = view.state.tr.replaceSelectionWith(node);
                           view.dispatch(tr);
                         }
@@ -279,15 +280,10 @@ export function DocumentEditor({
                     supabase.storage.from('documents').upload(storagePath, file)
                       .then(({ data, error }) => {
                         if (!error && data) {
-                          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://poaclxtaacguolfeefcd.supabase.co';
-                          const publicUrl = `${supabaseUrl}/storage/v1/object/public/documents/${storagePath}`;
-                          // @ts-expect-error view is available
                           const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
                           if (coordinates) {
-                            // @ts-expect-error view is available
                             const { schema } = view.state;
-                            const node = schema.nodes.image.create({ src: publicUrl });
-                            // @ts-expect-error view is available
+                            const node = schema.nodes.image.create({ storagePath });
                             const tr = view.state.tr.insert(coordinates.pos, node);
                             view.dispatch(tr);
                           }

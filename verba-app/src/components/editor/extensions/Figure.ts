@@ -1,4 +1,5 @@
 import { mergeAttributes, Node } from '@tiptap/core'
+import { TextSelection } from '@tiptap/pm/state'
 
 export interface FigureOptions {
   HTMLAttributes: Record<string, any>
@@ -38,6 +39,13 @@ export const Figure = Node.create<FigureOptions>({
         default: null,
         parseHTML: element => element.querySelector('img')?.getAttribute('src'),
       },
+      storagePath: {
+        default: null,
+        parseHTML: element => element.querySelector('img')?.getAttribute('data-storage-path'),
+      },
+      assetId: {
+        default: null,
+      },
       alt: {
         default: null,
         parseHTML: element => element.querySelector('img')?.getAttribute('alt'),
@@ -59,10 +67,17 @@ export const Figure = Node.create<FigureOptions>({
   },
 
   renderHTML({ HTMLAttributes }) {
+    let src = HTMLAttributes.src;
+    
+    // If we have a private storage path, route it through the authenticated proxy
+    if (HTMLAttributes.storagePath) {
+      src = `/api/assets?path=${encodeURIComponent(HTMLAttributes.storagePath)}`;
+    }
+
     return [
       'figure',
       this.options.HTMLAttributes,
-      ['img', mergeAttributes(HTMLAttributes, { draggable: false, contenteditable: false })],
+      ['img', mergeAttributes(HTMLAttributes, { src, 'data-storage-path': HTMLAttributes.storagePath, draggable: false, contenteditable: false })],
       ['figcaption', 0],
     ]
   },
@@ -83,7 +98,7 @@ export const Figure = Node.create<FigureOptions>({
               const { $from } = tr.selection
               const position = $from.pos - 1
               if (dispatch) {
-                tr.setSelection(tr.selection.constructor.near(tr.doc.resolve(position)))
+                tr.setSelection(TextSelection.near(tr.doc.resolve(position)))
               }
               return true
             })

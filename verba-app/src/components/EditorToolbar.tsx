@@ -42,7 +42,6 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   const toggleSuperscript = () => editor.chain().focus().toggleSuperscript().run();
 
   const setColumns = (cols: 1 | 2) => {
-    // @ts-expect-error setSectionColumns is custom
     editor.chain().focus().setSectionColumns(cols).run();
   };
 
@@ -62,12 +61,54 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     editor.chain().focus().setTextAlign(align).run();
   };
 
-  const setHeading = (level: 1 | 2 | 3) => {
+  const setHeading = (level: 1 | 2 | 3 | 4) => {
     editor.chain().focus().toggleHeading({ level }).run();
   };
   
   const setParagraph = () => {
     editor.chain().focus().setParagraph().run();
+  };
+
+  const toggleLink = () => {
+    if (editor.isActive('link')) {
+      editor.chain().focus().unsetLink().run();
+    } else {
+      const url = window.prompt('URL');
+      if (url) {
+        editor.chain().focus().setLink({ href: url }).run();
+      }
+    }
+  };
+
+  const handleImageUpload = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async () => {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const docIdMatch = window.location.pathname.match(/\/workspace\/([^/]+)/);
+        if (docIdMatch && docIdMatch[1]) {
+          const docId = docIdMatch[1];
+          const { createClient } = await import('@/lib/supabase/client');
+          const supabase = createClient();
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const ext = file.name.split('.').pop() || 'png';
+            const assetId = `img_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+            const storagePath = `${user.id}/${docId}/assets/${assetId}`;
+            
+            const { data, error } = await supabase.storage.from('documents').upload(storagePath, file);
+            if (!error && data) {
+              (editor.chain().focus() as any).setImage({ storagePath }).run();
+            } else {
+              console.error('Failed to upload image:', error);
+            }
+          }
+        }
+      }
+    };
+    input.click();
   };
 
   const undo = () => editor.chain().focus().undo().run();
@@ -77,16 +118,19 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     isActive = false, 
     onClick, 
     disabled = false, 
+    title,
     children 
   }: { 
     isActive?: boolean; 
     onClick?: () => void; 
     disabled?: boolean; 
+    title?: string;
     children: React.ReactNode; 
   }) => (
     <button
       onClick={onClick}
       disabled={disabled}
+      title={title}
       className={`p-1.5 rounded transition-colors flex items-center justify-center
         ${disabled ? 'opacity-30 cursor-not-allowed' : 'hover:bg-black/5'}
         ${isActive ? 'bg-accent/10 text-accent font-medium' : 'text-foreground-secondary'}
@@ -142,6 +186,9 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
       <ToolbarButton onClick={toggleSuperscript} isActive={editor.isActive('superscript')} disabled={!editor.can().toggleSuperscript()}>
         <SuperscriptIcon size={16} />
       </ToolbarButton>
+      <ToolbarButton onClick={toggleLink} isActive={editor.isActive('link')} title="Insert Link">
+        <div className="flex items-center text-xs font-medium px-1">Link</div>
+      </ToolbarButton>
 
       <Divider />
 
@@ -172,6 +219,9 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
       <Divider />
 
       {/* Insert */}
+      <ToolbarButton onClick={handleImageUpload} title="Insert Image">
+        <div className="flex items-center text-xs font-medium">Image</div>
+      </ToolbarButton>
       <ToolbarButton onClick={() => editor.chain().focus().setPageBreak().run()} title="Insert Page Break">
         <div className="flex items-center text-xs font-medium"><Scissors size={14} className="mr-1"/> Page Break</div>
       </ToolbarButton>
