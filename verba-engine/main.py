@@ -4,7 +4,7 @@ import os
 import sys
 import json
 
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -95,7 +95,11 @@ def health_check():
 
 
 @app.post("/api/parse")
-async def parse_document(file: UploadFile = File(...)):
+async def parse_document(
+    file: UploadFile = File(...),
+    userId: str = Form(...),
+    documentId: str = Form(...)
+):
     """Accepts a .docx or .pdf file and returns the JSON DocumentModel structure."""
     if not file.filename.lower().endswith((".docx", ".pdf")):
         logger.warning(f"Invalid file type received: {file.filename}")
@@ -109,7 +113,7 @@ async def parse_document(file: UploadFile = File(...)):
         if file.filename.lower().endswith(".pdf"):
             processor = PDFProcessor(contents)
         else:
-            processor = DOCXProcessor(contents)
+            processor = DOCXProcessor(contents, user_id=userId, document_id=documentId)
             
         try:
             json_data = processor.parse_to_json()

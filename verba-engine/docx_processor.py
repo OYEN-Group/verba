@@ -1,122 +1,176 @@
 import os
-import zipfile
 import tempfile
 import uuid
-from lxml import etree
+from typing import List, Dict, Any
 
-# Namespaces required for DOCX parsing
-NAMESPACES = {
-    'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
-}
+from docx import Document
+from docx.document import Document as _Document
+from docx.oxml.text.paragraph import CT_P
+from docx.oxml.table import CT_Tbl
+from docx.table import _Cell, Table
+from docx.text.paragraph import Paragraph
+
+from supabase import create_client, Client
 
 class DOCXProcessor:
-    def __init__(self, docx_bytes: bytes):
+    def __init__(self, docx_bytes: bytes, user_id: str = None, document_id: str = None):
         self.docx_bytes = docx_bytes
-        self.temp_dir = tempfile.TemporaryDirectory()
-        self._unzip()
+        self.user_id = user_id
+        self.document_id = document_id
         
-    def _unzip(self):
-        """Unzips the DOCX into a temporary directory."""
-        self.docx_path = os.path.join(self.temp_dir.name, "doc.docx")
-        with open(self.docx_path, "wb") as f:
-            f.write(self.docx_bytes)
-            
-        self.extract_path = os.path.join(self.temp_dir.name, "extracted")
-        with zipfile.ZipFile(self.docx_path, 'r') as zip_ref:
-            zip_ref.extractall(self.extract_path)
-            
-        # Parse document.xml
-        self.doc_xml_path = os.path.join(self.extract_path, "word", "document.xml")
-        self.tree = etree.parse(self.doc_xml_path)
-        self.root = self.tree.getroot()
+        self.temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
+        self.temp_file.write(self.docx_bytes)
+        self.temp_file.flush()
+        
+        self.doc = Document(self.temp_file.name)
+        
+        # Initialize Supabase client if credentials are provided
+        supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+        supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+        if supabase_url and supabase_key:
+            self.supabase: Client = create_client(supabase_url, supabase_key)
+        else:
+            self.supabase = None
 
-    def parse_to_json(self) -> dict:
-        """Parses the DOCX XML and returns a JSON representation mapping paragraphs and runs."""
-        body = self.root.find("w:body", NAMESPACES)
-        if body is None:
-            return {"error": "Invalid DOCX format: no body found"}
+    def iter_block_items(self, parent):
+        """Yield each paragraph and table child within *parent*, in document order."""
+        if isinstance(parent, _Document):
+            parent_elm = parent.element.body
+        elif isinstance(parent, _Cell):
+            parent_elm = parent._tc
+        else:
+            raise ValueError("Something's not right")
+            
+        for child in parent_elm.iterchildren():
+            if isinstance(child, CT_P):
+                yield Paragraph(child, parent)
+            elif isinstance(child, CT_Tbl):
+                yield Table(child, parent)
 
-        blocks = []
-        for p in body.findall("w:p", NAMESPACES):
-            block_id = str(uuid.uuid4())
-            
-            pPr = p.find("w:pPr", NAMESPACES)
-            pStyle = None
-            if pPr is not None:
-                pStyle_node = pPr.find("w:pStyle", NAMESPACES)
-                if pStyle_node is not None:
-                    pStyle = pStyle_node.get("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val")
-            
-            block_type = "paragraph"
-            level = None
-            style_name = "Normal"
-            
-            if pStyle and pStyle.startswith("Heading"):
-                block_type = "heading"
-                style_name = pStyle # e.g. 'Heading1'
-                try:
-                    level = int(pStyle.replace("Heading", ""))
-                except ValueError:
-                    level = 1
-            
-            runs = []
-            text_content = ""
-            for r in p.findall("w:r", NAMESPACES):
-                t = r.find("w:t", NAMESPACES)
-                if t is not None and t.text:
-                    rPr = r.find("w:rPr", NAMESPACES)
-                    runs.append({
-                        "text": t.text,
-                        "bold": rPr.find("w:b", NAMESPACES) is not None if rPr is not None else False,
-                        "italic": rPr.find("w:i", NAMESPACES) is not None if rPr is not None else False
-                    })
-                    text_content += t.text
-            
-            if runs:
-                block_data = {
-                    "id": block_id,
-                    "type": block_type,
-                    "style": style_name,
-                    "text": text_content,
-                    "runs": runs
-                }
-                if level is not None:
-                    block_data["level"] = level
-                    
-                blocks.append(block_data)
+    def process_paragraph(self, p: Paragraph) -> Dict[str, Any]:
+        style_name = p.style.name if p.style else "Normal"
+        block_type = "paragraph"
+        level = None
+        
+        if style_name.startswith("Heading"):
+            block_type = "heading"
+            try:
+                level = int(style_name.replace("Heading ", "").replace("Heading", ""))
+            except ValueError:
+                level = 1
                 
+        if p.style and "List" in p.style.name:
+            block_type = "list"
+                
+        runs = []
+        for r in p.runs:
+            # Check for images in the run
+            blips = r.element.xpath('.//a:blip')
+            for blip in blips:
+                rId = blip.get('{http://schemas.openxmlformats.org/officeDocument/2006/relationships}embed')
+                if rId:
+                    part = p.part.related_parts[rId]
+                    image_bytes = part.blob
+                    ext = part.content_type.split('/')[-1] if '/' in part.content_type else 'png'
+                    if ext == 'jpeg': ext = 'jpg'
+                    
+                    asset_id = str(uuid.uuid4())
+                    asset_path = f"{self.user_id}/{self.document_id}/assets/{asset_id}.{ext}" if self.user_id and self.document_id else f"assets/{asset_id}.{ext}"
+                    
+                    # Upload to Supabase if configured
+                    if self.supabase:
+                        try:
+                            self.supabase.storage.from_("documents").upload(
+                                path=asset_path,
+                                file=image_bytes,
+                                file_options={"content-type": part.content_type}
+                            )
+                        except Exception as e:
+                            # Log upload error or handle it
+                            pass
+                            
+                    runs.append({
+                        "type": "image",
+                        "assetId": asset_id,
+                        "storagePath": asset_path,
+                        "contentType": part.content_type
+                    })
+
+            if r.text:
+                runs.append({
+                    "text": r.text,
+                    "bold": bool(r.bold),
+                    "italic": bool(r.italic)
+                })
+            
         return {
-            "documentId": str(uuid.uuid4()),
-            "title": "Uploaded Document",
-            "sections": [
-                {
-                    "id": str(uuid.uuid4()),
-                    "blocks": blocks
-                }
-            ]
+            "id": str(uuid.uuid4()),
+            "type": block_type,
+            "style": style_name,
+            "level": level,
+            "text": p.text,
+            "runs": runs
         }
 
-    def apply_json_and_export(self, document_json: dict) -> bytes:
-        """Applies JSON edits back to the XML and rezips the DOCX."""
-        # This is where we would map the JSON edits back to the XML nodes.
-        # Since this is a prototype and requires exact ID mapping (bookmarks), 
-        # we will simply return the original bytes for now to avoid corruption,
-        # or implement a basic text replacement logic if nodes perfectly match.
+    def process_table(self, table: Table) -> Dict[str, Any]:
+        rows = []
+        for r_idx, row in enumerate(table.rows):
+            cells = []
+            for c_idx, cell in enumerate(row.cells):
+                # Basic cell processing - merge all paragraphs in cell
+                cell_text = "\n".join([p.text for p in cell.paragraphs])
+                cells.append({
+                    "text": cell_text
+                })
+            rows.append({
+                "type": "table-header" if r_idx == 0 else "table-row",
+                "cells": cells
+            })
+            
+        return {
+            "id": str(uuid.uuid4()),
+            "type": "table",
+            "rows": rows
+        }
+
+    def parse_to_json(self) -> dict:
+        """Parses the DOCX and returns a VerbaDocumentAST JSON."""
+        blocks = []
         
-        # Save modifications back to document.xml
-        self.tree.write(self.doc_xml_path, xml_declaration=True, encoding='UTF-8', standalone=True)
-        
-        # Re-zip
-        output_path = os.path.join(self.temp_dir.name, "output.docx")
-        with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as docx:
-            for dirpath, dirs, files in os.walk(self.extract_path):
-                for file in files:
-                    full_path = os.path.join(dirpath, file)
-                    arcname = os.path.relpath(full_path, self.extract_path)
-                    docx.write(full_path, arcname)
-                    
-        with open(output_path, "rb") as f:
-            return f.read()
+        try:
+            for block in self.iter_block_items(self.doc):
+                if isinstance(block, Paragraph):
+                    # Skip empty paragraphs
+                    if not block.text.strip():
+                        continue
+                    blocks.append(self.process_paragraph(block))
+                elif isinstance(block, Table):
+                    blocks.append(self.process_table(block))
+            
+            # Construct VerbaDocumentAST
+            ast = {
+                "version": 1,
+                "sourceFormat": "docx",
+                "importMode": "layout_preserved",
+                "sections": [
+                    {
+                        "id": str(uuid.uuid4()),
+                        "layout": { "type": "single-column" },
+                        "blocks": blocks
+                    }
+                ],
+                "assets": []
+            }
+            
+            return ast
+            
+        except Exception as e:
+            return {"error": f"Failed to parse DOCX: {str(e)}"}
 
     def cleanup(self):
-        self.temp_dir.cleanup()
+        try:
+            self.temp_file.close()
+            if os.path.exists(self.temp_file.name):
+                os.remove(self.temp_file.name)
+        except Exception:
+            pass

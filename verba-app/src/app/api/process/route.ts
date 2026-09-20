@@ -39,6 +39,8 @@ export async function POST(request: Request) {
     const formData = new FormData();
     const fileObj = new File([fileData], originalFilename, { type: mimeType || 'application/octet-stream' });
     formData.append('file', fileObj);
+    formData.append('userId', user.id);
+    formData.append('documentId', documentId);
 
     let engineUrl = process.env.VERBA_ENGINE_URL;
     if (!engineUrl) {

@@ -9,6 +9,11 @@ import { EditorToolbar } from './EditorToolbar';
 import { VerbaBlockId, IssueHighlight, IssueProp } from './editor/EditorExtensions';
 import { Citation } from './editor/extensions/Citation';
 import { Sparkles, Search, ShieldCheck } from 'lucide-react';
+import Image from '@tiptap/extension-image';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableHeader from '@tiptap/extension-table-header';
+import TableCell from '@tiptap/extension-table-cell';
 
 export interface ContextualSelection {
   blockId: string;
@@ -62,11 +67,31 @@ interface DocumentEditorProps {
 const blocksToHtml = (blocks: Block[]): string => {
   return blocks
     .map(block => {
-      let content = '';
+      if (block.type === 'table') {
+        // block.rows -> cells
+        // @ts-expect-error - temporary dynamic type
+        const rowsHtml = (block.rows || []).map(row => {
+          // @ts-expect-error
+          const cellsHtml = (row.cells || []).map(cell => {
+            const cellTag = row.type === 'table-header' ? 'th' : 'td';
+            return `<${cellTag}><p>${(cell.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p></${cellTag}>`;
+          }).join('');
+          return `<tr>${cellsHtml}</tr>`;
+        }).join('');
+        return `<table data-verba-block-id="${block.id}"><tbody>${rowsHtml}</tbody></table>`;
+      }
 
+      let content = '';
       if (block.runs && block.runs.length > 0) {
         content = block.runs
           .map(run => {
+            // @ts-expect-error
+            if (run.type === 'image') {
+              // @ts-expect-error
+              const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://poaclxtaacguolfeefcd.supabase.co';
+              // @ts-expect-error
+              return `<img src="${supabaseUrl}/storage/v1/object/public/documents/${run.storagePath}" alt="Imported image" />`;
+            }
             let text = run.text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             if (run.bold) text = `<strong>${text}</strong>`;
             if (run.italic) text = `<em>${text}</em>`;
@@ -111,6 +136,16 @@ export function DocumentEditor({
         heading: { levels: [1, 2, 3, 4, 5, 6] },
       }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Image.configure({
+        allowBase64: true,
+        inline: true,
+      }),
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
       VerbaBlockId,
       IssueHighlight.configure({
         issues,
