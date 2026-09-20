@@ -246,12 +246,15 @@ export default function WorkspacePage({ params }: { params: { documentId: string
         setLiveHeadings(extractHeadingsFromTiptapJson(docData.editor_state as any));
       } else {
         // Fallback to parsed content if editor_state is missing
-        const initialBlocks = docData.parsed_content?.sections?.[0]?.blocks || [];
-        const fallbackHeadings = initialBlocks.filter((b: any) => b.type === 'heading').map((b: any) => ({
-          id: b.id,
-          text: b.text || '',
-          level: b.level || 1
-        }));
+        const initialSections = docData.parsed_content?.sections || [];
+        const fallbackHeadings: any[] = [];
+        initialSections.forEach((sec: any) => {
+          (sec.blocks || []).forEach((b: any) => {
+            if (b.type === 'heading') {
+              fallbackHeadings.push({ id: b.id, text: b.text || '', level: b.level || 1 });
+            }
+          });
+        });
         setLiveHeadings(fallbackHeadings);
       }
 
@@ -954,7 +957,8 @@ export default function WorkspacePage({ params }: { params: { documentId: string
             <DocumentEditor
               initialBlocks={initialEditorJson ? undefined : initialBlocks}
               initialEditorJson={initialEditorJson}
-              isEditable={true}
+              initialSections={doc.parsed_content.sections}
+              isEditable={!isRenaming}
               zoomLevel={zoomLevel}
               issues={issues}
               selectedIssueId={activeIssueId}

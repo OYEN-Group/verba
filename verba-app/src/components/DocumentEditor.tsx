@@ -45,8 +45,16 @@ interface Block {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TiptapJson = Record<string, any>;
 
+interface SectionData {
+  id: string;
+  layout: { type: string; columns: number };
+  blocks: Block[];
+}
+
 interface DocumentEditorProps {
-  /** Parsed blocks from parsed_content — used only when no editor_state exists */
+  /** Parsed sections from parsed_content — used only when no editor_state exists */
+  initialSections?: SectionData[];
+  /** Parsed blocks from parsed_content (legacy) */
   initialBlocks?: Block[];
   /** Tiptap JSON from editor_state — takes priority over initialBlocks */
   initialEditorJson?: TiptapJson | null;
@@ -67,61 +75,64 @@ interface DocumentEditorProps {
 }
 
 /**
- * Convert parser blocks into HTML that Tiptap can ingest.
+ * Convert parser sections into HTML that Tiptap can ingest.
  * Used ONLY for the initial load when editor_state is NULL.
  * Preserves the original parsed block IDs via data-verba-block-id.
  */
-const blocksToHtml = (blocks: Block[]): string => {
-  const blocksHtml = blocks
-    .map(block => {
-      if (block.type === 'pageBreak') {
-        return `<hr class="page-break" />`;
-      }
-      
-      if (block.type === 'table') {
-        // block.rows -> cells
-        // @ts-expect-error - temporary dynamic type
-        const rowsHtml = (block.rows || []).map(row => {
-          // @ts-expect-error
-          const cellsHtml = (row.cells || []).map(cell => {
-            const cellTag = row.type === 'table-header' ? 'th' : 'td';
-            return `<${cellTag}><p>${(cell.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p></${cellTag}>`;
-          }).join('');
-          return `<tr>${cellsHtml}</tr>`;
-        }).join('');
-        return `<table data-verba-block-id="${block.id}"><tbody>${rowsHtml}</tbody></table>`;
-      }
-
-      let content = '';
-      if (block.runs && block.runs.length > 0) {
-        content = block.runs
-          .map(run => {
+const sectionsToHtml = (sections: SectionData[]): string => {
+  return sections.map(section => {
+    const blocksHtml = (section.blocks || [])
+      .map(block => {
+        if (block.type === 'pageBreak') {
+          return `<hr class="page-break" />`;
+        }
+        
+        if (block.type === 'table') {
+          // block.rows -> cells
+          // @ts-expect-error - temporary dynamic type
+          const rowsHtml = (block.rows || []).map(row => {
             // @ts-expect-error
-            if (run.type === 'image') {
-              // @ts-expect-error
-              const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://poaclxtaacguolfeefcd.supabase.co';
-              // @ts-expect-error
-              return `<img src="${supabaseUrl}/storage/v1/object/public/documents/${run.storagePath}" alt="Imported image" />`;
-            }
-            let text = run.text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            if (run.bold) text = `<strong>${text}</strong>`;
-            if (run.italic) text = `<em>${text}</em>`;
-            return text;
-          })
-          .join('');
-      } else {
-        content = (block.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      }
+            const cellsHtml = (row.cells || []).map(cell => {
+              const cellTag = row.type === 'table-header' ? 'th' : 'td';
+              return `<${cellTag}><p>${(cell.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p></${cellTag}>`;
+            }).join('');
+            return `<tr>${cellsHtml}</tr>`;
+          }).join('');
+          return `<table data-verba-block-id="${block.id}"><tbody>${rowsHtml}</tbody></table>`;
+        }
 
-      if (block.type === 'heading') {
-        const level = Math.min(Math.max(block.level || 1, 1), 6);
-        return `<h${level} data-verba-block-id="${block.id}">${content}</h${level}>`;
-      }
-      return `<p data-verba-block-id="${block.id}">${content}</p>`;
-    })
-    .join('');
-    
-  return `<section data-columns="1" class="verba-section">${blocksHtml}</section>`;
+        let content = '';
+        if (block.runs && block.runs.length > 0) {
+          content = block.runs
+            .map(run => {
+              // @ts-expect-error
+              if (run.type === 'image') {
+                // @ts-expect-error
+                const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://poaclxtaacguolfeefcd.supabase.co';
+                // @ts-expect-error
+                return `<img src="${supabaseUrl}/storage/v1/object/public/documents/${run.storagePath}" alt="Imported image" />`;
+              }
+              let text = run.text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              if (run.bold) text = `<strong>${text}</strong>`;
+              if (run.italic) text = `<em>${text}</em>`;
+              return text;
+            })
+            .join('');
+        } else {
+          content = (block.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        if (block.type === 'heading') {
+          const level = Math.min(Math.max(block.level || 1, 1), 6);
+          return `<h${level} data-verba-block-id="${block.id}">${content}</h${level}>`;
+        }
+        return `<p data-verba-block-id="${block.id}">${content}</p>`;
+      })
+      .join('');
+      
+    const columns = section.layout?.columns || 1;
+    return `<section data-columns="${columns}" class="verba-section">${blocksHtml}</section>`;
+  }).join('');
 };
 
 const CustomDocument = Document.extend({
@@ -343,10 +354,13 @@ export function DocumentEditor({
         };
       }
       editor.commands.setContent(jsonToLoad);
+    } else if (initialSections && initialSections.length > 0) {
+      // CASE B1: editor_state is null — seed from parsed_content sections
+      const html = sectionsToHtml(initialSections);
+      editor.commands.setContent(html);
     } else if (initialBlocks && initialBlocks.length > 0) {
-      // CASE B: editor_state is null — seed from parsed_content blocks
-      // Preserves original parsed block IDs via data-verba-block-id
-      const html = blocksToHtml(initialBlocks);
+      // CASE B2: fallback for older AST with just blocks
+      const html = sectionsToHtml([{ id: 'default', layout: { type: 'single-column', columns: 1 }, blocks: initialBlocks }]);
       editor.commands.setContent(html);
     }
     // Either way, mark mounted so we never re-initialize from props
