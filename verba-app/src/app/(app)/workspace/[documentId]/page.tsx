@@ -849,7 +849,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               <Settings2 size={18} />
             </button>
             <div className="w-8 h-8 rounded-full bg-[#4E75C4] flex items-center justify-center text-white text-[13px] font-bold">
-              {userName.charAt(0).toUpperCase()}
+              M
             </div>
           </div>
         </div>
