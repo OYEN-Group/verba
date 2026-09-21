@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, FileText, Settings, Plus, User, LogOut, BookOpen, HelpCircle, MoreHorizontal, ArrowRight, ArrowUpRight, PenTool, Shield, AlertTriangle, Share, ChevronDown } from 'lucide-react';
+import { Home, FileText, Settings, Plus, User, LogOut, BookOpen, HelpCircle, MoreHorizontal, ArrowRight, ArrowUpRight, PenTool, Shield, AlertTriangle, Share, ChevronDown, Folder, Users } from 'lucide-react';
 import { logout } from '@/app/(auth)/actions';
 import { NewWorkModal } from '@/components/NewWorkModal';
 
@@ -54,14 +54,10 @@ export function SidebarNav({ userName = 'Writer', userEmail = '', isCollapsed = 
   };
   const primaryNav = [
     { name: 'Home', href: '/dashboard', icon: Home },
-    { name: 'My Works', href: '/documents', icon: FileText },
-    { name: 'Research Library', href: '/library', icon: BookOpen },
-    { name: 'Sources', href: '/sources', icon: FileText }, // Placeholder
-    { name: 'Citations', href: '/citations', icon: FileText }, // Placeholder
-    { name: 'Writing Assistant', href: '/assistant', icon: PenTool }, // Placeholder
-    { name: 'Review Evidence', href: '/review', icon: Shield }, // Placeholder
-    { name: 'Plagiarism & AI Check', href: '/plagiarism', icon: AlertTriangle }, // Placeholder
-    { name: 'Submit & Export', href: '/export', icon: Share }, // Placeholder
+    { name: 'Documents', href: '/documents', icon: FileText },
+    { name: 'Library', href: '/library', icon: BookOpen },
+    { name: 'Folders', href: '#', icon: Folder, prefetch: false },
+    { name: 'Shared', href: '#', icon: Users, prefetch: false },
   ];
   
 
@@ -86,6 +82,7 @@ export function SidebarNav({ userName = 'Writer', userEmail = '', isCollapsed = 
             <Link 
               key={item.name} 
               href={item.href} 
+              prefetch={item.prefetch}
               className={`flex items-center h-[44px] text-[15px] font-bold transition-colors rounded-xl ${isCollapsed ? 'justify-center w-[44px] mx-auto px-0' : 'px-4 py-3'} ${
                 isActive 
                   ? 'bg-navy-active text-white' 
