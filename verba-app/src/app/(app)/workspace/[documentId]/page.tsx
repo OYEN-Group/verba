@@ -834,21 +834,23 @@ export default function WorkspacePage({ params }: { params: { documentId: string
 
       {/* 3. Center Panel: Document Canvas */}
       <div className="flex-1 flex flex-col min-w-0 bg-[#F6F8FB] relative">
-        <header className="h-[48px] bg-[#F6F8FB] border-b border-border-light flex items-center justify-between px-4 shrink-0 z-10">
-          <div className="flex items-start space-x-3 min-w-0 flex-1 overflow-hidden pt-1">
-            {!isOutlineOpen && !isFocusMode && (
-              <button onClick={() => setIsOutlineOpen(true)} className="text-foreground-muted hover:text-foreground p-1 shrink-0 mt-0.5">
-                <PanelRightOpen size={16} className="rotate-180" />
+        <div className="bg-white border-b border-border-light flex flex-col pt-3 px-6 shrink-0 z-10 w-full shadow-sm relative">
+          {/* Top Row: Breadcrumbs & Actions */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2 text-[13px]">
+              <button className="text-foreground-muted hover:text-foreground transition-colors">
+                <Home size={14} />
               </button>
-            )}
-            <FileText size={18} className="text-accent shrink-0 mt-0.5" />
-            
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-center gap-2">
+              <ChevronRight size={14} className="text-border-light" />
+              <button className="text-foreground-secondary hover:text-foreground font-medium transition-colors">
+                My Works
+              </button>
+              <ChevronRight size={14} className="text-border-light" />
+              <div className="flex items-center space-x-3">
                 {isRenaming ? (
                   <input
                     autoFocus
-                    className="text-[14px] font-medium text-[#0B1628] bg-white border border-accent rounded px-1 outline-none min-w-[200px]"
+                    className="font-bold text-[#0B1628] bg-background-secondary border border-accent rounded px-1 outline-none min-w-[200px]"
                     value={renameValue}
                     onChange={(e) => setRenameValue(e.target.value)}
                     onBlur={handleRenameSubmit}
@@ -859,7 +861,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
                   />
                 ) : (
                   <h1 
-                    className="text-[14px] font-medium text-[#0B1628] truncate min-w-0 cursor-text hover:bg-black/5 px-1 -ml-1 rounded transition-colors"
+                    className="font-bold text-[#0B1628] truncate min-w-0 cursor-text hover:bg-black/5 px-1 -ml-1 rounded transition-colors"
                     onClick={() => {
                       setRenameValue(doc.original_filename || `${doc.title}.docx`);
                       setIsRenaming(true);
@@ -869,72 +871,65 @@ export default function WorkspacePage({ params }: { params: { documentId: string
                     {doc.original_filename || `${doc.title}.docx`}
                   </h1>
                 )}
-                {renderSaveBadge()}
+                <span className="px-2 py-0.5 bg-background-secondary border border-border-light rounded-md text-[11px] font-medium text-foreground-muted">Draft</span>
+                
+                <div className="flex items-center text-[11px] text-foreground-muted font-medium ml-2 gap-1.5">
+                  {saveStatus === 'saving' ? (
+                    <Loader2 size={12} className="animate-spin" />
+                  ) : saveStatus === 'unsaved' || saveStatus === 'failed' ? (
+                    <CloudOff size={12} className="text-accent" />
+                  ) : (
+                    <Cloud size={12} />
+                  )}
+                  <span>{saveStatus === 'saving' ? 'Saving...' : saveStatus === 'unsaved' ? 'Unsaved changes' : 'Saved just now'}</span>
+                </div>
               </div>
-              
-              <div className="text-[12px] text-foreground-secondary flex items-center gap-2 mt-0.5 font-medium tracking-tight">
-                <span>{(displayWordCount ?? 0).toLocaleString()} words</span>
-                {liveCharacterCount !== null && (
-                  <>
-                    <span className="text-border-light">&bull;</span>
-                    <span>{liveCharacterCount.toLocaleString()} characters</span>
-                  </>
-                )}
-                <span className="text-border-light">&bull;</span>
-                <span className="uppercase">{citationStyle}</span>
-                <span className="text-border-light">&bull;</span>
-                <span>{documentCitations.length} citations</span>
-              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <button className="flex items-center space-x-1.5 px-3 h-8 rounded border border-border-light hover:bg-black/5 text-[13px] font-medium text-foreground-secondary transition-colors">
+                <Share size={14} />
+                <span>Share</span>
+              </button>
+              <button className="flex items-center space-x-1.5 px-3 h-8 rounded bg-navy text-white text-[13px] font-medium hover:bg-navy-hover transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span>Export</span>
+                <ChevronDown size={14} className="ml-1 opacity-70" />
+              </button>
+              <button className="w-8 h-8 flex items-center justify-center rounded border border-border-light hover:bg-black/5 text-foreground-secondary transition-colors">
+                <MoreHorizontal size={14} />
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center shrink-0 space-x-3">
-
-            {/* Manual Save button — only shown when autosave is OFF */}
-            {!autosaveEnabled && (
-              <button
-                id="manual-save-btn"
-                onClick={triggerManualSave}
-                disabled={saveStatus === 'saving' || saveStatus === 'saved'}
-                className={`h-[28px] px-3 inline-flex items-center gap-1.5 font-medium rounded text-[12px] transition-colors ${
-                  saveStatus === 'unsaved' || saveStatus === 'failed'
-                    ? 'bg-accent text-white hover:bg-accent-hover'
-                    : 'bg-black/5 text-foreground-secondary cursor-default'
-                } disabled:opacity-50`}
-                title="Save document (Ctrl/Cmd+S)"
-              >
-                {saveStatus === 'saving'
-                  ? <Loader2 size={13} className="animate-spin" />
-                  : <Save size={13} />
-                }
-              </button>
-            )}
-
-
-            <button
-              onClick={() => setIsFocusMode(!isFocusMode)}
-              className={`flex items-center justify-center p-1.5 rounded transition-colors ${isFocusMode ? 'bg-accent/10 text-accent' : 'text-foreground-secondary hover:bg-black/5'}`}
-              title="Focus Mode (Esc to exit)"
-            >
-              {isFocusMode ? <Minimize size={16} /> : <Maximize size={16} />}
+          {/* Document Tabs */}
+          <div className="flex items-center space-x-6 text-[13px] font-medium text-foreground-secondary mt-1">
+            <button className="flex items-center space-x-2 pb-2.5 border-b-2 border-accent text-accent">
+              <FileText size={16} />
+              <span>Document</span>
             </button>
-
-            <div className="w-[1px] h-4 bg-border-light mx-1" />
-
-            <button
-              onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}
-              className={`flex items-center space-x-1.5 px-3 h-[28px] text-[12px] font-medium border rounded transition-colors ${
-                isWorkspaceOpen 
-                  ? 'bg-accent/10 border-accent/20 text-accent' 
-                  : 'bg-white border-border-light text-[#0B1628] hover:bg-background-secondary'
-              }`}
-            >
-              <Sparkles size={14} className={isWorkspaceOpen ? 'text-accent' : 'text-accent'} />
-              <span>Verba Workspace</span>
-              <ChevronDown size={14} className={`ml-1 transition-transform ${isWorkspaceOpen ? 'rotate-180' : ''}`} />
+            <button className="flex items-center space-x-2 pb-2.5 border-b-2 border-transparent hover:text-foreground transition-colors">
+              <BookOpen size={16} />
+              <span>Project Context</span>
+            </button>
+            <button className="flex items-center space-x-2 pb-2.5 border-b-2 border-transparent hover:text-foreground transition-colors">
+              <FileText size={16} />
+              <span>Sources (12)</span>
+            </button>
+            <button className="flex items-center space-x-2 pb-2.5 border-b-2 border-transparent hover:text-foreground transition-colors">
+              <FileText size={16} />
+              <span>Citations (18)</span>
+            </button>
+            <button className="flex items-center space-x-2 pb-2.5 border-b-2 border-transparent hover:text-foreground transition-colors">
+              <Settings2 size={16} />
+              <span>Analysis</span>
+            </button>
+            <button className="flex items-center space-x-2 pb-2.5 border-b-2 border-transparent hover:text-foreground transition-colors">
+              <History size={16} />
+              <span>History</span>
             </button>
           </div>
-        </header>
+        </div>
 
           <div className={`flex-1 overflow-y-auto view-mode-${viewMode}`}>
             <DocumentEditor
@@ -982,84 +977,53 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           </div>
 
           {/* Document Status Bar */}
-          <div className="h-[32px] border-t border-border-light/50 bg-white flex items-center justify-between px-4 shrink-0 text-[11px] text-foreground-secondary z-10 relative">
-            <div className="flex items-center space-x-4">
+          <div className="h-[40px] bg-white border-t border-border-light flex items-center justify-between px-6 shrink-0 text-[12px] text-foreground-secondary z-10 relative shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
+            <div className="flex items-center">
+              <span>Page 1 of 14</span>
+              <span className="mx-3 text-border-light">|</span>
               <span>{liveWordCount !== null ? `${liveWordCount.toLocaleString()} words` : '...'}</span>
-              {isAnalyzed && (
-                <span className="flex items-center space-x-1">
-                  <span className={`w-1.5 h-1.5 rounded-full ${issues.filter(i => i.status === 'open').length === 0 ? 'bg-status-success' : 'bg-accent'}`} />
-                  <span>{issues.filter(i => i.status === 'open').length} issues</span>
-                </span>
-              )}
+              <span className="mx-3 text-border-light">|</span>
+              <span>12 sources</span>
+              <span className="mx-3 text-border-light">|</span>
+              <span className="flex items-center">
+                8/11 claims reviewed
+                <CheckCircle size={14} className="ml-1.5 text-status-success" />
+              </span>
             </div>
 
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => window.print()}
-                className="flex items-center space-x-1.5 p-1 rounded hover:bg-black/5 text-foreground-secondary transition-colors"
-                title="Print Document"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                <span className="hidden sm:inline">Print</span>
-              </button>
-              
-              <div className="w-[1px] h-3 bg-border-light mx-1" />
-
-              {/* View Mode Toggle */}
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => {
-                    setViewMode('print');
-                    localStorage.setItem('verba_editor_view_mode', 'print');
-                  }}
-                  className={`p-1 rounded transition-colors ${viewMode === 'print' ? 'text-foreground bg-black/5' : 'hover:bg-black/5'}`}
-                  title="Print Layout"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>
-                </button>
-                <button
-                  onClick={() => {
-                    setViewMode('web');
-                    localStorage.setItem('verba_editor_view_mode', 'web');
-                  }}
-                  className={`p-1 rounded transition-colors ${viewMode === 'web' ? 'text-foreground bg-black/5' : 'hover:bg-black/5'}`}
-                  title="Web Layout"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                </button>
-              </div>
-
-              <div className="w-[1px] h-3 bg-border-light mx-1" />
-
+            <div className="flex items-center space-x-4">
               {/* Zoom Control */}
-              <div className="relative">
+              <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => setShowZoomMenu(!showZoomMenu)}
-                  className="flex items-center space-x-1 hover:bg-black/5 px-2 py-1 rounded transition-colors"
+                  onClick={() => {
+                    const idx = zoomOptions.indexOf(zoomLevel);
+                    if (idx > 0) setZoomLevel(zoomOptions[idx - 1]);
+                  }}
+                  className="w-5 h-5 flex items-center justify-center hover:bg-black/5 rounded text-foreground-secondary transition-colors"
                 >
-                  <span>{zoomLevel === 0 ? 'Fit Width' : `${zoomLevel}%`}</span>
+                  <span className="text-[16px] leading-none mb-0.5">-</span>
                 </button>
-                {showZoomMenu && (
-                  <div className="absolute bottom-full right-0 mb-1 w-32 bg-white border border-border-light shadow-lg rounded-md py-1 z-50">
-                    {zoomOptions.map(z => (
-                      <button
-                        key={z}
-                        onClick={() => { setZoomLevel(z); setShowZoomMenu(false); }}
-                        className="block w-full text-left px-4 py-1.5 text-[12px] hover:bg-background-secondary"
-                      >
-                        {z}%
-                      </button>
-                    ))}
-                    <div className="border-t border-border-light my-1" />
-                    <button
-                      onClick={() => { setZoomLevel(0); setShowZoomMenu(false); }}
-                      className="block w-full text-left px-4 py-1.5 text-[12px] hover:bg-background-secondary"
-                    >
-                      Fit Width
-                    </button>
-                  </div>
-                )}
+                
+                <span className="w-10 text-center font-medium">{zoomLevel}%</span>
+                
+                <button
+                  onClick={() => {
+                    const idx = zoomOptions.indexOf(zoomLevel);
+                    if (idx < zoomOptions.length - 1) setZoomLevel(zoomOptions[idx + 1]);
+                  }}
+                  className="w-5 h-5 flex items-center justify-center hover:bg-black/5 rounded text-foreground-secondary transition-colors"
+                >
+                  <span className="text-[16px] leading-none mb-0.5">+</span>
+                </button>
               </div>
+
+              <button
+                onClick={() => setIsFocusMode(!isFocusMode)}
+                className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-black/5 text-foreground-secondary transition-colors"
+                title="Focus Mode (Esc to exit)"
+              >
+                {isFocusMode ? <Minimize size={14} /> : <Maximize size={14} />}
+              </button>
             </div>
           </div>
       </div>
@@ -1317,10 +1281,6 @@ export default function WorkspacePage({ params }: { params: { documentId: string
       )}
       </div>
 
-      {/* Bottom Workspace Navigation */}
-      {(!isFocusMode && isWorkspaceOpen) && (
-        <WorkspaceNavigation activeTab={workspaceTab} onTabChange={setWorkspaceTab} />
-      )}
     </div>
     </CitationProvider>
     {/* ── Toast ── */}

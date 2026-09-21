@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, FileText, Settings, Plus, User, LogOut, BookOpen, HelpCircle, MoreHorizontal, ArrowRight, ArrowUpRight } from 'lucide-react';
+import { Home, FileText, Settings, Plus, User, LogOut, BookOpen, HelpCircle, MoreHorizontal, ArrowRight, ArrowUpRight, PenTool, Shield, AlertTriangle, Share, ChevronDown } from 'lucide-react';
 import { logout } from '@/app/(auth)/actions';
 import { NewWorkModal } from '@/components/NewWorkModal';
 
@@ -54,9 +54,14 @@ export function SidebarNav({ userName = 'Writer', userEmail = '', isCollapsed = 
   };
   const primaryNav = [
     { name: 'Home', href: '/dashboard', icon: Home },
-    { name: 'Documents', href: '/documents', icon: FileText },
+    { name: 'My Works', href: '/documents', icon: FileText },
     { name: 'Research Library', href: '/library', icon: BookOpen },
-    { name: 'Settings', href: '/settings', icon: Settings },
+    { name: 'Sources', href: '/sources', icon: FileText }, // Placeholder
+    { name: 'Citations', href: '/citations', icon: FileText }, // Placeholder
+    { name: 'Writing Assistant', href: '/assistant', icon: PenTool }, // Placeholder
+    { name: 'Review Evidence', href: '/review', icon: Shield }, // Placeholder
+    { name: 'Plagiarism & AI Check', href: '/plagiarism', icon: AlertTriangle }, // Placeholder
+    { name: 'Submit & Export', href: '/export', icon: Share }, // Placeholder
   ];
   
 
@@ -95,113 +100,38 @@ export function SidebarNav({ userName = 'Writer', userEmail = '', isCollapsed = 
         })}
       </div>
 
-      <div className="mt-auto flex flex-col w-full relative">
-        {/* Promotional Block for Free Users */}
-        {mockPlan === 'free' && !isCollapsed && (
-          <div className="px-4 mb-3">
-            <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
-              <div className="text-[11px] font-bold tracking-widest text-gold uppercase mb-2">PROFESSIONAL</div>
-              <p className="text-[13px] text-slate-300 mb-4 leading-snug">
-                More AI usage, deeper review and advanced research tools.
-              </p>
-              <Link href="/account" className="flex items-center w-max text-[13px] font-semibold text-white hover:text-gold transition-colors">
-                Explore Professional <ArrowRight size={14} className="ml-1.5" />
-              </Link>
+      <div className="mt-auto flex flex-col w-full px-4 pb-4">
+        {/* Workspace Switcher */}
+        {!isCollapsed && (
+          <div className="mb-4">
+            <span className="text-[11px] text-slate-400 mb-1 block">Workspace</span>
+            <button className="flex items-center justify-between w-full p-2 bg-[#1A202A] rounded-md hover:bg-[#202732] transition-colors group text-left">
+              <div className="flex items-center">
+                <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center shrink-0 mr-2">
+                  <User size={12} className="text-[#161B22]" />
+                </div>
+                <span className="text-[13px] font-semibold text-white">Personal</span>
+              </div>
+              <ChevronDown size={14} className="text-slate-400 group-hover:text-white" />
+            </button>
+          </div>
+        )}
+
+        {/* Promo Banner */}
+        {!isCollapsed && (
+          <div className="relative rounded-lg overflow-hidden h-[120px] bg-gradient-to-br from-[#1E2530] to-[#12161D] border border-slate-800 p-4 flex flex-col justify-end">
+            <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1454496522488-7a8e488e8606?q=80&w=2076&auto=format&fit=crop')] bg-cover bg-center mix-blend-overlay"></div>
+            <div className="relative z-10">
+              <h4 className="text-white font-bold text-[15px] leading-tight mb-1">Better writing<br/>brighter futures.</h4>
+              <p className="text-[10px] text-slate-300">Research. Write. Cite. Prove.</p>
             </div>
           </div>
         )}
 
-        <div className={`py-3 border-t border-slate-800/50 ${isCollapsed ? 'px-2' : 'px-3'}`}>
-          <button 
-            ref={triggerRef}
-            onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-            className={`flex items-center w-full p-2 rounded-xl hover:bg-slate-800/60 transition-colors group focus:outline-none focus:ring-2 focus:ring-gold/50 ${isCollapsed ? 'justify-center' : 'text-left'}`}
-            aria-haspopup="menu"
-            aria-expanded={isAccountMenuOpen}
-            title={isCollapsed ? userName : undefined}
-          >
-            <div className="w-9 h-9 rounded-full bg-[#EADDC6] flex items-center justify-center shrink-0 group-hover:ring-2 group-hover:ring-gold transition-all">
-              <span className="text-[#141C2B] font-bold text-[14px]">{getInitials(userName)}</span>
-            </div>
-            {!isCollapsed && (
-              <>
-                <div className="flex flex-col ml-3 overflow-hidden flex-1">
-                  <span className="text-[14px] font-bold text-white truncate" title={userName}>{userName}</span>
-                  <span className="text-[12px] text-slate-400 capitalize">{mockPlan} plan</span>
-                </div>
-                <MoreHorizontal size={18} className="text-slate-500 group-hover:text-white shrink-0 ml-2" />
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Account Popover */}
-        {isAccountMenuOpen && (
-          <div 
-            ref={menuRef}
-            className="absolute bottom-[calc(100%-8px)] left-0 w-full mb-2 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-50 text-slate-800 animate-in fade-in slide-in-from-bottom-2 duration-200"
-            role="menu"
-          >
-            <div className="p-4 border-b border-slate-100 flex items-center">
-              <div className="w-10 h-10 rounded-full bg-[#EADDC6] flex items-center justify-center shrink-0">
-                <span className="text-[#141C2B] font-bold text-[15px]">{getInitials(userName)}</span>
-              </div>
-              <div className="flex flex-col ml-3 overflow-hidden">
-                <span className="text-[15px] font-bold text-slate-900 truncate">{userName}</span>
-                <span className="text-[13px] text-slate-500 truncate">{userEmail}</span>
-              </div>
-            </div>
-
-            <div className="p-4 border-b border-slate-100">
-              <div className="text-[11px] font-bold tracking-widest text-slate-400 uppercase mb-3">PLAN</div>
-              
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[14px] font-bold text-slate-900 capitalize">{mockPlan}</span>
-                {mockPlan === 'free' && (
-                  <Link href="/account" onClick={() => setIsAccountMenuOpen(false)} className="text-[13px] font-semibold text-[#141C2B] flex items-center hover:text-gold transition-colors">
-                    Upgrade <ArrowRight size={14} className="ml-1" />
-                  </Link>
-                )}
-              </div>
-              
-              <p className="text-[13px] text-slate-500 mb-5">
-                {mockPlan === 'free' ? 'Basic access to Verba' : 'Active'}
-              </p>
-
-              <div className="mb-1 flex justify-between items-end">
-                <span className="text-[13px] font-medium text-slate-700">AI allowance</span>
-                <span className="text-[12px] font-medium text-slate-500">7 of 10 remaining</span>
-              </div>
-              <div className="w-full bg-slate-100 rounded-full h-2 mb-2 overflow-hidden">
-                <div className="bg-[#141C2B] h-full rounded-full transition-all duration-500" style={{ width: '70%' }}></div>
-              </div>
-              <div className="text-[12px] text-slate-500">
-                Resets Oct 1
-              </div>
-            </div>
-
-            <div className="p-2 border-b border-slate-100 flex flex-col space-y-0.5">
-              <Link href="/account#profile" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center justify-between px-3 py-2 text-[14px] font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors">
-                Account settings <ArrowRight size={14} className="text-slate-400" />
-              </Link>
-              <Link href="/account#billing" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center justify-between px-3 py-2 text-[14px] font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors">
-                Billing & plan <ArrowRight size={14} className="text-slate-400" />
-              </Link>
-              <Link href="/account#usage" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center justify-between px-3 py-2 text-[14px] font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors">
-                Usage <ArrowRight size={14} className="text-slate-400" />
-              </Link>
-            </div>
-
-            <div className="p-2 flex flex-col space-y-0.5">
-              <Link href="/help" onClick={() => setIsAccountMenuOpen(false)} className="flex items-center justify-between px-3 py-2 text-[14px] font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors">
-                Help & support <ArrowUpRight size={14} className="text-slate-400" />
-              </Link>
-              <form action={logout}>
-                <button type="submit" className="flex items-center w-full px-3 py-2 text-[14px] font-medium text-slate-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                  Sign out
-                </button>
-              </form>
-            </div>
+        {/* Version Footer */}
+        {!isCollapsed && (
+          <div className="mt-4 text-[10px] text-slate-500">
+            Verba v0.1.0
           </div>
         )}
       </div>

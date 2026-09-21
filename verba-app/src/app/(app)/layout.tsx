@@ -5,6 +5,8 @@ import { SidebarShell } from '@/components/SidebarShell';
 import { Playfair_Display } from 'next/font/google';
 import { createClient } from '@/lib/supabase/server';
 
+import { TopBar } from '@/components/TopBar';
+
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -19,7 +21,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar (mobile only) */}
+        {/* Top bar (global) */}
+        <div className="hidden md:block">
+          <TopBar userName={userName} />
+        </div>
         <header className="h-[64px] bg-navy flex items-center justify-between px-4 md:hidden shrink-0">
           <Link href="/dashboard" className="flex items-center">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gold">

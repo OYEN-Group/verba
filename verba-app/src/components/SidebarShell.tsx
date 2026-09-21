@@ -15,7 +15,7 @@ export function SidebarShell({ userName, userEmail }: SidebarShellProps) {
 
   return (
     <aside 
-      className={`bg-[#141C2B] border-r border-[#141C2B] flex-col hidden md:flex shrink-0 transition-all duration-300 relative ${
+      className={`bg-[#161B22] border-r border-[#161B22] flex-col hidden md:flex shrink-0 transition-all duration-300 relative ${
         isCollapsed ? 'w-[64px]' : 'w-[260px]'
       }`}
     >

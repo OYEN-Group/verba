@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { WorkspaceTab } from './WorkspaceNavigation';
+import { WorkspaceTab, WorkspaceNavigation } from './WorkspaceNavigation';
 import { ResearchTab } from './ResearchTab';
 import { CiteTab } from './CiteTab';
 import { ReviewTab } from './ReviewTab';
@@ -93,32 +93,37 @@ export function VerbaWorkspace({
 
   return (
     <aside className="w-full sm:w-[370px] bg-[#F9FAFB] border-l border-border-light shrink-0 flex flex-col h-full absolute lg:relative right-0 z-20 shadow-2xl lg:shadow-none transition-all duration-300">
-      <div className="flex items-start justify-between p-4 pb-3 shrink-0 bg-white border-b border-border-light">
-        <div className="flex flex-col">
-          <h2 className="text-[11px] font-semibold text-foreground-muted uppercase tracking-wider flex items-center gap-1.5">
-            VERBA
-          </h2>
-          <p className="text-[15px] font-medium text-[#0B1628] mt-0.5 capitalize">{activeTab}</p>
-          
-          {showContext && (
-            <div className="text-[12px] text-foreground-secondary mt-1 flex items-center leading-snug">
-              {hasSelection ? (
-                <span className="italic truncate max-w-[250px]">"{selectedPreview}..."</span>
-              ) : activeHeadingText ? (
-                <span className="truncate max-w-[250px]">§ {activeHeadingText}</span>
-              ) : (
-                <span>Whole document</span>
-              )}
-            </div>
-          )}
+      <div className="flex flex-col shrink-0 bg-white border-b border-border-light">
+        <div className="flex items-center justify-between p-4 pb-0">
+          <div className="flex items-center space-x-2">
+            <span className="text-[14px] font-semibold text-[#0B1628]">Hello, Student</span>
+            <span className="text-[16px]">👋</span>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 text-foreground-muted hover:text-[#0B1628] hover:bg-black/5 rounded transition-colors -mr-1"
+            title="Close Workspace"
+          >
+            <PanelRightClose size={16} />
+          </button>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1.5 text-foreground-muted hover:text-[#0B1628] hover:bg-black/5 rounded transition-colors -mr-1"
-          title="Close Workspace"
-        >
-          <PanelRightClose size={16} />
-        </button>
+        
+        {/* Render WorkspaceNavigation here */}
+        <div className="mt-2">
+          <WorkspaceNavigation activeTab={activeTab} onTabChange={onTabChange} />
+        </div>
+        
+        {showContext && (
+          <div className="px-4 py-2 bg-[#F9FAFB] border-t border-border-light/50 text-[12px] text-foreground-secondary flex items-center leading-snug">
+            {hasSelection ? (
+              <span className="italic truncate max-w-[250px]">"{selectedPreview}..."</span>
+            ) : activeHeadingText ? (
+              <span className="truncate max-w-[250px]">§ {activeHeadingText}</span>
+            ) : (
+              <span>Whole document</span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-hidden flex flex-col">

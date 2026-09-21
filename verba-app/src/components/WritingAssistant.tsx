@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Check, X, RefreshCw, Edit2, Loader2, ShieldCheck, Zap, Sparkles } from 'lucide-react';
+import { Check, X, RefreshCw, Edit2, Loader2, ShieldCheck, Zap, Sparkles, Eye, Search, BookOpen, BadgeCheck } from 'lucide-react';
 
 import { ContextualSelection } from './DocumentEditor';
 
@@ -184,43 +184,46 @@ export function WritingAssistant({
 
   if (!isAnalyzed) {
     return (
-      <div className="flex flex-col h-full bg-white relative">
-        <div className="flex-1 p-6 flex flex-col pt-10">
-          <p className="text-[13.5px] text-foreground-secondary mb-6">What would you like to work on?</p>
-          
-          <div className="space-y-3 flex-1">
-            <button 
-              onClick={() => onNavigateTab && onNavigateTab('review')}
-              className="w-full flex items-center justify-between text-[13px] font-medium text-[#0B1628] group hover:text-accent transition-colors"
-            >
-              <span>Review this section</span>
-              <span className="text-foreground-muted group-hover:text-accent group-hover:translate-x-1 transition-all">&rarr;</span>
+      <div className="flex flex-col h-full bg-[#F9FAFB] relative">
+        <div className="flex-1 p-6 overflow-y-auto space-y-8">
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={() => onNavigateTab && onNavigateTab('review')} className="flex flex-col items-center justify-center p-4 bg-white border border-border-light rounded-xl hover:border-accent hover:shadow-sm transition-all group">
+              <Eye className="text-foreground-secondary group-hover:text-accent mb-2" size={24} strokeWidth={1.5} />
+              <span className="text-[12px] font-medium text-[#0B1628]">Review</span>
             </button>
-            <button 
-              onClick={() => onNavigateTab && onNavigateTab('research')}
-              className="w-full flex items-center justify-between text-[13px] font-medium text-[#0B1628] group hover:text-accent transition-colors"
-            >
-              <span>Find research</span>
-              <span className="text-foreground-muted group-hover:text-accent group-hover:translate-x-1 transition-all">&rarr;</span>
+            <button onClick={() => onNavigateTab && onNavigateTab('research')} className="flex flex-col items-center justify-center p-4 bg-white border border-border-light rounded-xl hover:border-accent hover:shadow-sm transition-all group">
+              <Search className="text-foreground-secondary group-hover:text-accent mb-2" size={24} strokeWidth={1.5} />
+              <span className="text-[12px] font-medium text-[#0B1628]">Research</span>
             </button>
-            <button 
-              onClick={() => onNavigateTab && onNavigateTab('integrity')}
-              className="w-full flex items-center justify-between text-[13px] font-medium text-[#0B1628] group hover:text-accent transition-colors"
-            >
-              <span>Check citations</span>
-              <span className="text-foreground-muted group-hover:text-accent group-hover:translate-x-1 transition-all">&rarr;</span>
+            <button onClick={() => onNavigateTab && onNavigateTab('cite')} className="flex flex-col items-center justify-center p-4 bg-white border border-border-light rounded-xl hover:border-accent hover:shadow-sm transition-all group">
+              <BookOpen className="text-foreground-secondary group-hover:text-accent mb-2" size={24} strokeWidth={1.5} />
+              <span className="text-[12px] font-medium text-[#0B1628]">Cite</span>
+            </button>
+            <button onClick={() => onNavigateTab && onNavigateTab('integrity')} className="flex flex-col items-center justify-center p-4 bg-white border border-border-light rounded-xl hover:border-accent hover:shadow-sm transition-all group">
+              <BadgeCheck className="text-foreground-secondary group-hover:text-accent mb-2" size={24} strokeWidth={1.5} />
+              <span className="text-[12px] font-medium text-[#0B1628]">Integrity</span>
             </button>
           </div>
 
-          <div className="mt-auto shrink-0 relative">
-            <textarea
-              placeholder="Ask Verba about this section..."
-              className="w-full text-[13px] text-ink border border-border-light rounded px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-accent leading-relaxed bg-[#F9FAFB] resize-none pr-8"
-              rows={1}
-            />
-            <button className="absolute right-2 top-[7px] p-1 text-foreground-muted hover:text-[#0B1628] transition-colors rounded">
-              <span className="text-[12px] font-medium tracking-tight">↑</span>
-            </button>
+          <div>
+            <h4 className="text-[11px] font-semibold text-foreground-secondary uppercase tracking-wider mb-3">Document Insights</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-[13px] bg-white p-3 rounded-lg border border-border-light">
+                <span className="text-foreground-secondary">Readability Score</span>
+                <span className="font-semibold text-[#0B1628]">8.4 / 10</span>
+              </div>
+              <div className="flex justify-between items-center text-[13px] bg-white p-3 rounded-lg border border-border-light">
+                <span className="text-foreground-secondary">Citations Found</span>
+                <span className="font-semibold text-[#0B1628]">12</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-accent/5 p-4 rounded-xl border border-accent/10">
+            <p className="text-[13px] italic text-foreground-secondary leading-relaxed">
+              "Good writing is clear thinking made visible."
+            </p>
+            <p className="text-[11px] font-medium text-accent mt-2 text-right">— Bill Wheeler</p>
           </div>
         </div>
       </div>
