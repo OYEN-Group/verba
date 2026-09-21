@@ -8,7 +8,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import { EditorToolbar } from './EditorToolbar';
 import { VerbaBlockId, IssueHighlight, IssueProp } from './editor/EditorExtensions';
 import { Citation } from './editor/extensions/Citation';
-import { Sparkles, Search, ShieldCheck } from 'lucide-react';
+import { Sparkles, Search, ShieldCheck, BookOpen } from 'lucide-react';
 import Link from '@tiptap/extension-link';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
@@ -80,6 +80,7 @@ interface DocumentEditorProps {
   onAskVerba?: (selection: ContextualSelection) => void;
   onFindEvidence?: (selection: ContextualSelection) => void;
   onReviewEvidence?: (selection: ContextualSelection) => void;
+  onCite?: (selection: ContextualSelection) => void;
   onCitationClick?: (citationId: string, sourceId: string, contextText: string, rect: DOMRect) => void;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -163,6 +164,7 @@ export function DocumentEditor({
   onAskVerba,
   onFindEvidence,
   onReviewEvidence,
+  onCite,
   onCitationClick,
   onFocus,
   onBlur,
@@ -518,18 +520,18 @@ export function DocumentEditor({
                     className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-accent transition-colors"
                   >
                     <Search size={14} className="text-white" />
-                    Research
+                    Find Evidence
                   </button>
                 <div className="w-[1px] bg-[#213555]" />
                 <button
                   onClick={() => {
                     const ctx = getSelectionContext();
-                    if (ctx.blockId && onReviewEvidence) onReviewEvidence(ctx);
+                    if (ctx.blockId && onCite) onCite(ctx);
                   }}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-accent transition-colors"
                 >
-                  <ShieldCheck size={14} className="text-white" />
-                  Review Evidence
+                  <BookOpen size={14} className="text-white" />
+                  Cite
                 </button>
               </div>
             </BubbleMenu>

@@ -48,6 +48,8 @@ interface Props {
   // Integrity / Recovery Props
   onReplaceCitation?: (oldCitationId: string, candidateSource: any) => Promise<void>;
   onAddSupportingCitation?: (oldCitationId: string, candidateSource: any) => Promise<void>;
+  wordCount?: number | null;
+  sourceCount?: number;
 }
 
 export function VerbaWorkspace({
@@ -83,6 +85,8 @@ export function VerbaWorkspace({
   activeTab,
   onTabChange,
   activeHeadingText,
+  wordCount,
+  sourceCount,
 }: Props) {
 
   // Derive selection for context
@@ -147,6 +151,8 @@ export function VerbaWorkspace({
             analyzeError={analyzeError}
             onIssueCreated={onIssueCreated}
             projectContext={projectContext}
+            wordCount={wordCount}
+            sourceCount={sourceCount}
           />
         )}
         {activeTab === 'review' && (

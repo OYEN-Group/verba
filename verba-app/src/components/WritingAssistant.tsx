@@ -41,6 +41,8 @@ interface Props {
   onIssueCreated?: (issueId: string) => void;
   projectContext?: Record<string, unknown>;
   onNavigateTab?: (tab: string) => void;
+  wordCount?: number | null;
+  sourceCount?: number;
 }
 
 export function WritingAssistant({ 
@@ -54,13 +56,16 @@ export function WritingAssistant({
   onSuggestionAction, 
   isAnalyzed, 
   issues = [], 
-  onIssueSelect, 
+  onIssueSelect,
+  onAnalyze,
   issuesCount = 0, 
   docStatus = '', 
   analyzeError = null,
   onIssueCreated,
   projectContext,
-  onNavigateTab
+  onNavigateTab,
+  wordCount,
+  sourceCount
 }: Props) {
   const [loadingAlternative, setLoadingAlternative] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -185,46 +190,48 @@ export function WritingAssistant({
   if (!isAnalyzed) {
     return (
       <div className="flex flex-col h-full bg-[#F9FAFB] relative">
-        <div className="flex-1 p-6 overflow-y-auto space-y-8">
-          <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => onNavigateTab && onNavigateTab('review')} className="flex flex-col items-center justify-center p-4 bg-white border border-border-light rounded-xl hover:border-accent hover:shadow-sm transition-all group">
-              <Eye className="text-foreground-secondary group-hover:text-accent mb-2" size={24} strokeWidth={1.5} />
-              <span className="text-[12px] font-medium text-[#0B1628]">Review</span>
-            </button>
-            <button onClick={() => onNavigateTab && onNavigateTab('research')} className="flex flex-col items-center justify-center p-4 bg-white border border-border-light rounded-xl hover:border-accent hover:shadow-sm transition-all group">
-              <Search className="text-foreground-secondary group-hover:text-accent mb-2" size={24} strokeWidth={1.5} />
-              <span className="text-[12px] font-medium text-[#0B1628]">Research</span>
-            </button>
-            <button onClick={() => onNavigateTab && onNavigateTab('cite')} className="flex flex-col items-center justify-center p-4 bg-white border border-border-light rounded-xl hover:border-accent hover:shadow-sm transition-all group">
-              <BookOpen className="text-foreground-secondary group-hover:text-accent mb-2" size={24} strokeWidth={1.5} />
-              <span className="text-[12px] font-medium text-[#0B1628]">Cite</span>
-            </button>
-            <button onClick={() => onNavigateTab && onNavigateTab('integrity')} className="flex flex-col items-center justify-center p-4 bg-white border border-border-light rounded-xl hover:border-accent hover:shadow-sm transition-all group">
-              <BadgeCheck className="text-foreground-secondary group-hover:text-accent mb-2" size={24} strokeWidth={1.5} />
-              <span className="text-[12px] font-medium text-[#0B1628]">Integrity</span>
-            </button>
-          </div>
-
+        <div className="flex-1 p-6 overflow-y-auto space-y-6">
+          
           <div>
-            <h4 className="text-[11px] font-semibold text-foreground-secondary uppercase tracking-wider mb-3">Document Insights</h4>
+            <h4 className="text-[11px] font-semibold text-foreground-secondary uppercase tracking-wider mb-3">Document Overview</h4>
             <div className="space-y-2">
-              <div className="flex justify-between items-center text-[13px] bg-white p-3 rounded-lg border border-border-light">
-                <span className="text-foreground-secondary">Readability Score</span>
-                <span className="font-semibold text-[#0B1628]">8.4 / 10</span>
+              <div className="flex justify-between items-center text-[13px] bg-white p-3 rounded-lg border border-border-light shadow-sm">
+                <span className="text-foreground-secondary">Words</span>
+                <span className="font-semibold text-[#0B1628]">
+                  {wordCount !== null && wordCount !== undefined ? wordCount.toLocaleString() : '...'}
+                </span>
               </div>
-              <div className="flex justify-between items-center text-[13px] bg-white p-3 rounded-lg border border-border-light">
-                <span className="text-foreground-secondary">Citations Found</span>
-                <span className="font-semibold text-[#0B1628]">12</span>
+              <div className="flex justify-between items-center text-[13px] bg-white p-3 rounded-lg border border-border-light shadow-sm">
+                <span className="text-foreground-secondary">Sources</span>
+                <span className="font-semibold text-[#0B1628]">
+                  {sourceCount !== undefined ? sourceCount : '...'}
+                </span>
               </div>
             </div>
           </div>
 
-          <div className="bg-accent/5 p-4 rounded-xl border border-accent/10">
-            <p className="text-[13px] italic text-foreground-secondary leading-relaxed">
-              "Good writing is clear thinking made visible."
-            </p>
-            <p className="text-[11px] font-medium text-accent mt-2 text-right">— Bill Wheeler</p>
+          <hr className="border-border-light" />
+
+          <div>
+            <h4 className="text-[14px] font-medium text-[#0B1628] mb-1">Continue writing</h4>
+            <p className="text-[13px] text-foreground-secondary mb-3">What are you working through?</p>
+            
+            <div className="relative">
+              <textarea
+                placeholder="Ask Verba..."
+                className="w-full text-[13px] bg-white border border-border-light rounded-lg p-3 pr-10 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-none min-h-[80px]"
+                readOnly
+                onClick={() => onAnalyze()}
+              />
+              <button 
+                onClick={() => onAnalyze()}
+                className="absolute bottom-3 right-3 w-6 h-6 rounded-md bg-accent text-white flex items-center justify-center hover:bg-accent-hover transition-colors"
+              >
+                <Sparkles size={12} />
+              </button>
+            </div>
           </div>
+
         </div>
       </div>
     );

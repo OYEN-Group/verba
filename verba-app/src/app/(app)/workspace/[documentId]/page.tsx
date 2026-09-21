@@ -961,6 +961,14 @@ export default function WorkspacePage({ params }: { params: { documentId: string
                 setContextualSelection(null);
                 setReviewEvidenceSelection(null);
               }}
+              onCite={(sel) => {
+                setContextualSelection(sel);
+                setIsWorkspaceOpen(true);
+                setWorkspaceTab('cite');
+                setActiveIssueId(null);
+                setEvidenceSelection(null);
+                setReviewEvidenceSelection(null);
+              }}
               onReviewEvidence={(sel) => {
                 setReviewEvidenceSelection(sel);
                 setIsWorkspaceOpen(true);
@@ -979,16 +987,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           {/* Document Status Bar */}
           <div className="h-[40px] bg-white border-t border-border-light flex items-center justify-between px-6 shrink-0 text-[12px] text-foreground-secondary z-10 relative shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
             <div className="flex items-center">
-              <span>Page 1 of 14</span>
-              <span className="mx-3 text-border-light">|</span>
-              <span>{liveWordCount !== null ? `${liveWordCount.toLocaleString()} words` : '...'}</span>
-              <span className="mx-3 text-border-light">|</span>
-              <span>12 sources</span>
-              <span className="mx-3 text-border-light">|</span>
-              <span className="flex items-center">
-                8/11 claims reviewed
-                <CheckCircle size={14} className="ml-1.5 text-status-success" />
-              </span>
+              <span>{liveWordCount !== null ? `${liveWordCount.toLocaleString()} words` : 'Calculating...'}</span>
             </div>
 
             <div className="flex items-center space-x-4">
@@ -1038,6 +1037,8 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           blockId={activeIssue?.block_id || contextualSelection?.blockId || evidenceSelection?.blockId || reviewEvidenceSelection?.blockId || ''}
           paragraphText={activeBlockText || contextualSelection?.paragraphText || evidenceSelection?.paragraphText || reviewEvidenceSelection?.paragraphText || ''}
           activeHeadingText={activeHeadingId ? liveHeadings.find(h => h.id === activeHeadingId)?.text || null : null}
+          wordCount={liveWordCount}
+          sourceCount={sources.length}
           issues={issues}
           issue={activeIssue as unknown as typeof activeIssue}
           contextualSelection={contextualSelection}

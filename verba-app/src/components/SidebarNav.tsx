@@ -54,10 +54,8 @@ export function SidebarNav({ userName = 'Writer', userEmail = '', isCollapsed = 
   };
   const primaryNav = [
     { name: 'Home', href: '/dashboard', icon: Home },
-    { name: 'Documents', href: '/documents', icon: FileText },
-    { name: 'Library', href: '/library', icon: BookOpen },
-    { name: 'Folders', href: '#', icon: Folder, prefetch: false },
-    { name: 'Shared', href: '#', icon: Users, prefetch: false },
+    { name: 'Works', href: '/documents', icon: FileText },
+    { name: 'Research', href: '/library', icon: BookOpen },
   ];
   
 
@@ -82,7 +80,7 @@ export function SidebarNav({ userName = 'Writer', userEmail = '', isCollapsed = 
             <Link 
               key={item.name} 
               href={item.href} 
-              prefetch={item.prefetch}
+              prefetch={'prefetch' in item ? (item as any).prefetch : undefined}
               className={`flex items-center h-[44px] text-[15px] font-bold transition-colors rounded-xl ${isCollapsed ? 'justify-center w-[44px] mx-auto px-0' : 'px-4 py-3'} ${
                 isActive 
                   ? 'bg-navy-active text-white' 
