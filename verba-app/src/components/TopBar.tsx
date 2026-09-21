@@ -2,18 +2,25 @@
 
 import React from 'react';
 import { Search, Bell } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 interface TopBarProps {
   userName: string;
 }
 
 export function TopBar({ userName }: TopBarProps) {
+  const pathname = usePathname();
   const getInitials = (name: string) => {
     return name.charAt(0).toUpperCase();
   };
 
+  // Hide TopBar completely inside the workspace
+  if (pathname?.startsWith('/workspace')) {
+    return null;
+  }
+
   return (
-    <header className="h-[60px] bg-white border-b border-border-light flex items-center justify-between px-6 shrink-0 z-20">
+    <div className="h-[64px] bg-white border-b border-border-light flex items-center justify-between px-6 shrink-0 relative z-20">
       <div className="flex-1 max-w-[600px]">
         <div className="relative group">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted group-focus-within:text-accent transition-colors" />
@@ -45,6 +52,6 @@ export function TopBar({ userName }: TopBarProps) {
           </div>
         </div>
       </div>
-    </header>
+    </div>
   );
 }

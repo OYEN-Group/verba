@@ -96,29 +96,21 @@ export function VerbaWorkspace({
   const showContext = ['assistant', 'review', 'research', 'integrity'].includes(activeTab);
 
   return (
-    <aside className="w-full sm:w-[370px] bg-[#F9FAFB] border-l border-border-light shrink-0 flex flex-col h-full absolute lg:relative right-0 z-20 shadow-2xl lg:shadow-none transition-all duration-300">
-      <div className="flex flex-col shrink-0 bg-white border-b border-border-light">
-        <div className="flex items-center justify-between p-4 pb-0">
-          <div className="flex items-center space-x-2">
-            <span className="text-[14px] font-semibold text-[#0B1628]">Hello, Student</span>
-            <span className="text-[16px]">👋</span>
-          </div>
+    <aside className="w-full sm:w-[320px] bg-white border-l border-border-light shrink-0 flex flex-col h-full absolute lg:relative right-0 z-20 shadow-2xl lg:shadow-none transition-all duration-300">
+      <div className="flex flex-col shrink-0 bg-white border-b border-border-light p-4">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] font-bold tracking-widest text-foreground-muted uppercase">VERBA</span>
           <button
             onClick={onClose}
-            className="p-1.5 text-foreground-muted hover:text-[#0B1628] hover:bg-black/5 rounded transition-colors -mr-1"
+            className="p-1 text-foreground-muted hover:text-[#0B1628] hover:bg-black/5 rounded transition-colors -mr-1"
             title="Close Workspace"
           >
-            <PanelRightClose size={16} />
+            <PanelRightClose size={14} />
           </button>
         </div>
-        
-        {/* Render WorkspaceNavigation here */}
-        <div className="mt-2">
-          <WorkspaceNavigation activeTab={activeTab} onTabChange={onTabChange} />
-        </div>
-        
+        <h2 className="text-[18px] font-bold text-[#0B1628] capitalize">{activeTab}</h2>
         {showContext && (
-          <div className="px-4 py-2 bg-[#F9FAFB] border-t border-border-light/50 text-[12px] text-foreground-secondary flex items-center leading-snug">
+          <div className="text-[13px] text-foreground-secondary mt-1 flex items-center leading-snug">
             {hasSelection ? (
               <span className="italic truncate max-w-[250px]">"{selectedPreview}..."</span>
             ) : activeHeadingText ? (
@@ -204,6 +196,10 @@ export function VerbaWorkspace({
           />
         )}
         {activeTab === 'prove' && <ProvePanel documentId={documentId} />}
+      </div>
+
+      <div className="shrink-0 bg-white border-t border-border-light overflow-x-auto no-scrollbar">
+        <WorkspaceNavigation activeTab={activeTab} onTabChange={onTabChange} />
       </div>
     </aside>
   );

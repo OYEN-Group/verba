@@ -48,21 +48,21 @@ export function SidebarNav({ userName = 'Writer', userEmail = '' }: SidebarNavPr
 
   const primaryNav = [
     { name: 'Home', href: '/dashboard', icon: Home },
-    { name: 'Works', href: '/documents', icon: FileText },
-    { name: 'Research', href: '/library', icon: BookOpen },
-    { name: 'Sources', href: '/sources', icon: Folder },
-    { name: 'Prove', href: '/prove', icon: Shield },
+    { name: 'Documents', href: '/documents', icon: FileText },
+    { name: 'Research Library', href: '/library', icon: BookOpen },
+    { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
   return (
     <div className="flex flex-col flex-1 h-full bg-[#0B121F] text-slate-300">
-      <div className="py-4 px-2">
+      <div className="py-4 px-4">
         <button 
           onClick={() => setIsNewWorkModalOpen(true)}
-          className="flex items-center justify-center w-[40px] h-[40px] bg-gold text-white font-medium rounded-xl hover:bg-gold-hover transition-colors shadow-sm mx-auto"
+          className="flex items-center justify-center w-full h-[40px] bg-[#C29B62] text-white font-medium rounded-md hover:bg-[#C29B62]/90 transition-colors shadow-sm mx-auto"
           title="New document"
         >
-          <Plus size={18} />
+          <Plus size={16} className="mr-2" />
+          <span className="text-[14px]">New document</span>
         </button>
       </div>
       
@@ -88,17 +88,7 @@ export function SidebarNav({ userName = 'Writer', userEmail = '' }: SidebarNavPr
         })}
       </div>
 
-      <div className="mt-8 px-4">
-        <h4 className="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2">Prove</h4>
-        <div className="space-y-1">
-          <Link href="/prove/history" className="flex items-center space-x-3 w-full h-[36px] px-3 transition-colors rounded-lg text-slate-400 hover:text-white hover:bg-white/5">
-            <span className="text-[13px] pl-7">History</span>
-          </Link>
-          <Link href="/prove/development" className="flex items-center space-x-3 w-full h-[36px] px-3 transition-colors rounded-lg text-slate-400 hover:text-white hover:bg-white/5">
-            <span className="text-[13px] pl-7">Development</span>
-          </Link>
-        </div>
-      </div>
+
 
       <div className="mt-auto flex flex-col w-full px-4 pb-6 relative">
         <button 
