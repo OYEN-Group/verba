@@ -267,8 +267,8 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           <Divider />
 
           {/* Ask Verba */}
-          <button className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-[#2563EB] hover:bg-blue-50 transition-colors text-[13px] font-medium mr-2">
-            <Sparkles size={14} />
+          <button className="flex items-center space-x-1.5 px-4 h-9 rounded-lg bg-[#F0F4FF] text-[#4E75C4] hover:bg-blue-100 transition-colors text-[13px] font-bold mx-2">
+            <Sparkles size={16} />
             <span>Ask Verba</span>
           </button>
 

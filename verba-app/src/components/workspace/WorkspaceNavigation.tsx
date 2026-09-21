@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Eye, Search, BookOpen, ShieldCheck, BadgeCheck } from 'lucide-react';
+import { Sparkles, Target, BookOpen, Maximize, ShieldCheck, Shield } from 'lucide-react';
 
 export type WorkspaceTab = 'assistant' | 'review' | 'research' | 'cite' | 'integrity' | 'prove' | 'evidence';
 
@@ -11,37 +11,35 @@ interface Props {
 export function WorkspaceNavigation({ activeTab, onTabChange }: Props) {
   const tabs = [
     { id: 'assistant', label: 'Assistant', icon: Sparkles },
-    { id: 'review', label: 'Review', icon: Eye },
-    { id: 'research', label: 'Research', icon: Search },
-    { id: 'cite', label: 'Cite', icon: BookOpen },
-    { id: 'integrity', label: 'Integrity', icon: BadgeCheck },
-    { id: 'prove', label: 'PROVE', icon: ShieldCheck },
+    { id: 'research', label: 'Research', icon: Target },
+    { id: 'sources', label: 'Sources', icon: BookOpen },
+    { id: 'cite', label: 'Cite', icon: Maximize },
+    { id: 'integrity', label: 'Integrity', icon: ShieldCheck },
+    { id: 'prove', label: 'Prove', icon: Shield },
   ] as const;
 
   return (
-    <div className="flex items-center justify-center bg-[#F9FAFB] border-t border-border-light shrink-0 h-[40px] w-full z-20">
-      <div className="flex items-center space-x-1 sm:space-x-4 max-w-3xl w-full px-4 justify-between lg:justify-center h-full">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id as WorkspaceTab)}
-              className={`relative flex items-center gap-1.5 px-3 h-full transition-colors text-[12px] ${
-                isActive 
-                  ? 'text-[#0B1628] font-medium' 
-                  : 'text-foreground-secondary hover:text-[#0B1628]'
-              }`}
-            >
-              {isActive && (
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-accent" />
-              )}
-              <tab.icon size={13} className={isActive ? 'text-accent' : 'opacity-70'} />
-              <span className="hidden sm:inline">{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
+    <div className="flex items-center justify-between w-full h-[60px] z-20 px-2 pb-1">
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id as WorkspaceTab)}
+            className={`relative flex flex-col items-center justify-center gap-1.5 w-full h-full transition-colors text-[11px] font-medium ${
+              isActive 
+                ? 'text-[#4E75C4]' 
+                : 'text-slate-500 hover:text-[#0B1628]'
+            }`}
+          >
+            <tab.icon size={16} strokeWidth={isActive ? 2.5 : 2} />
+            <span>{tab.label}</span>
+            {isActive && (
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[2.5px] bg-[#4E75C4] rounded-t-sm" />
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }

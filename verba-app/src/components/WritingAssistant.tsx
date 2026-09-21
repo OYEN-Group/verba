@@ -187,56 +187,115 @@ export function WritingAssistant({
     );
   }
 
-  if (!isAnalyzed) {
+  if (!issue && !contextualSelection) {
     return (
       <div className="flex flex-col h-full bg-white relative">
-        <div className="flex-1 p-6 overflow-y-auto space-y-8">
+        <div className="flex-1 p-6 overflow-y-auto space-y-6">
           
-          <div className="space-y-1">
-            <div className="w-8 h-8 rounded-full bg-[#EFF6FF] flex items-center justify-center text-[#2563EB] mb-4">
-              <Sparkles size={16} />
+          <div className="flex flex-col items-center text-center space-y-2 mt-2">
+            <div className="w-12 h-12 rounded-full bg-[#F0F4FF] flex items-center justify-center text-[#4E75C4] mb-2 shadow-[0_0_15px_rgba(78,117,196,0.2)]">
+              <Sparkles size={24} />
             </div>
-            <h2 className="text-[18px] font-serif text-[#0B1628]">Good afternoon</h2>
-            <p className="text-[13px] text-foreground-secondary">How can I help with this document?</p>
+            <h2 className="text-[16px] font-bold text-[#0B1628]">Good afternoon, {projectContext?.user_name || 'mayowa'}</h2>
+            <p className="text-[13px] text-slate-500">How can I help with your writing today?</p>
           </div>
 
-          <div className="bg-white border border-border-light rounded-xl p-4 shadow-sm">
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-[#F1F5F9] flex items-center justify-center text-[#64748B] mt-0.5">
-                <FileText size={16} />
+          <div className="relative mt-6">
+            <input
+              type="text"
+              placeholder="Ask Verba anything..."
+              className="w-full text-[13px] bg-white border border-border-light rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-[#4E75C4] focus:ring-1 focus:ring-[#4E75C4] shadow-sm transition-all"
+              onClick={() => onAnalyze()}
+              readOnly
+            />
+            <button 
+              onClick={() => onAnalyze()}
+              className="absolute top-1/2 -translate-y-1/2 right-2 w-7 h-7 rounded-lg bg-[#CBD5E1] text-white flex items-center justify-center hover:bg-[#4E75C4] transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <button className="flex flex-col items-start p-3 bg-white border border-border-light rounded-xl hover:border-[#4E75C4] hover:shadow-sm transition-all text-left">
+              <div className="w-6 h-6 rounded-md bg-[#F0F4FF] text-[#4E75C4] flex items-center justify-center mb-2">
+                <FileText size={14} />
               </div>
-              <div className="flex flex-col">
-                <span className="text-[11px] font-medium text-[#2563EB] uppercase tracking-wider mb-1">You're working on</span>
-                <span className="text-[14px] font-medium text-[#0B1628]">
-                  {projectContext?.title as string || 'Untitled Document'}
-                </span>
-                <span className="text-[12px] text-foreground-secondary mb-2">
-                  {projectContext?.chapter as string || 'Document'}
-                </span>
-                <div className="flex items-center space-x-2 text-[11px] text-foreground-muted font-medium">
-                  <span>{wordCount !== null && wordCount !== undefined ? wordCount.toLocaleString() : '...'} words</span>
-                  <span className="w-1 h-1 rounded-full bg-border-light" />
-                  <span>{sourceCount !== undefined ? sourceCount : '...'} sources</span>
+              <span className="text-[12px] font-bold text-[#0B1628] mb-0.5">Explain</span>
+              <span className="text-[10px] text-slate-500 leading-tight">Get a clearer<br/>understanding</span>
+            </button>
+            
+            <button className="flex flex-col items-start p-3 bg-white border border-border-light rounded-xl hover:border-[#4E75C4] hover:shadow-sm transition-all text-left">
+              <div className="w-6 h-6 rounded-md bg-[#F3E8FF] text-[#9333EA] flex items-center justify-center mb-2">
+                <Edit2 size={14} />
+              </div>
+              <span className="text-[12px] font-bold text-[#0B1628] mb-0.5">Improve</span>
+              <span className="text-[10px] text-slate-500 leading-tight">Strengthen your writing</span>
+            </button>
+
+            <button className="flex flex-col items-start p-3 bg-white border border-border-light rounded-xl hover:border-[#4E75C4] hover:shadow-sm transition-all text-left">
+              <div className="w-6 h-6 rounded-md bg-[#ECFDF5] text-[#10B981] flex items-center justify-center mb-2">
+                <Search size={14} />
+              </div>
+              <span className="text-[12px] font-bold text-[#0B1628] mb-0.5">Find Evidence</span>
+              <span className="text-[10px] text-slate-500 leading-tight">Search for supporting<br/>sources</span>
+            </button>
+
+            <button className="flex flex-col items-start p-3 bg-white border border-border-light rounded-xl hover:border-[#4E75C4] hover:shadow-sm transition-all text-left">
+              <div className="w-6 h-6 rounded-md bg-[#FFF7ED] text-[#F97316] flex items-center justify-center mb-2">
+                <BookOpen size={14} />
+              </div>
+              <span className="text-[12px] font-bold text-[#0B1628] mb-0.5">Cite</span>
+              <span className="text-[10px] text-slate-500 leading-tight">Insert or manage<br/>citations</span>
+            </button>
+          </div>
+          
+          <div className="mt-8 pt-6 border-t border-border-light">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-[13px] font-bold text-[#0B1628] flex items-center">
+                Context <svg className="ml-1 opacity-50" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
+              </h4>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-[11px] text-slate-500">Selected text (1 paragraph)</span>
+                  <button className="text-[11px] text-[#4E75C4] font-medium hover:underline">Clear</button>
                 </div>
+                <p className="text-[12px] text-slate-600 bg-[#F8FAFC] p-3 rounded-lg border border-border-light italic line-clamp-3">
+                  "Gas flaring has remained one of the country's most persistent energy challenges, driven by inadequate infrastructure, regulatory gaps, and economic disincentives..."
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between py-1 border-b border-border-light/50">
+                <div className="flex items-center space-x-2">
+                  <span className="w-4 h-4 flex items-center justify-center border border-slate-300 rounded-full text-slate-400">
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+                  </span>
+                  <span className="text-[12px] font-medium text-[#0B1628]">Relevant sources</span>
+                  <span className="bg-[#E2E8F0] text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-bold">3</span>
+                </div>
+                <svg className="opacity-50" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+
+              <div className="flex items-center justify-between py-1 border-b border-border-light/50">
+                <div className="flex items-center space-x-2">
+                  <span className="w-4 h-4 flex items-center justify-center border border-slate-300 rounded-full text-slate-400">
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+                  </span>
+                  <span className="text-[12px] font-medium text-[#0B1628]">Related topics</span>
+                  <span className="bg-[#E2E8F0] text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-bold">5</span>
+                </div>
+                <svg className="opacity-50" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
               </div>
             </div>
-          </div>
 
-          <div>
-            <h4 className="text-[13px] font-bold text-[#0B1628] mb-3">Ask Verba</h4>
-            <div className="relative">
-              <textarea
-                placeholder="What are you working through?"
-                className="w-full text-[13px] bg-white border border-border-light rounded-xl p-4 pr-12 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-none min-h-[120px] shadow-sm"
-                readOnly
-                onClick={() => onAnalyze()}
-              />
-              <button 
-                onClick={() => onAnalyze()}
-                className="absolute bottom-4 right-4 w-8 h-8 rounded-lg bg-[#9ca3af] text-white flex items-center justify-center hover:bg-accent transition-colors shadow-sm"
-              >
-                <ArrowRight size={16} />
-              </button>
+            <div className="mt-6 flex items-start gap-2 bg-[#FFFbeb] p-3 rounded-lg border border-[#FDE68A]">
+              <span className="text-[#D97706] mt-0.5">💡</span>
+              <p className="text-[11px] text-[#92400E] leading-relaxed">
+                <span className="font-bold">Tip:</span> Select text in your document to get contextual help, find evidence, or add citations.
+              </p>
             </div>
           </div>
           
