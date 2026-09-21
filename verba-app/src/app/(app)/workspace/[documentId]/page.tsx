@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import {
   MoreHorizontal, Play, Square, Settings2, FileText, ChevronRight, X,
   PanelRightClose, PanelRightOpen, ChevronDown, CloudOff, Cloud, Save, Sparkles, History,
-  Loader2, CheckCircle, Maximize, Minimize, List as ListIcon, Home, Share, UploadCloud
+  Loader2, CheckCircle, Maximize, Minimize, List as ListIcon, Home, Share, UploadCloud, BookOpen
 } from 'lucide-react';
 import { VerbaWorkspace } from '@/components/workspace/VerbaWorkspace';
 import { CitationInspector } from '@/components/workspace/CitationInspector';
