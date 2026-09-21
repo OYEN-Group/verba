@@ -13,15 +13,12 @@ interface SidebarNavProps {
   isCollapsed?: boolean;
 }
 
-export function SidebarNav({ userName = 'Writer', userEmail = '', isCollapsed = false }: SidebarNavProps) {
+export function SidebarNav({ userName = 'Writer', userEmail = '' }: SidebarNavProps) {
   const pathname = usePathname();
   const [isNewWorkModalOpen, setIsNewWorkModalOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-
-  // Mock plan data for Phase A
-  const mockPlan = 'free'; // 'free' or 'professional'
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -34,13 +31,11 @@ export function SidebarNav({ userName = 'Writer', userEmail = '', isCollapsed = 
         setIsAccountMenuOpen(false);
       }
     }
-
     function handleEsc(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setIsAccountMenuOpen(false);
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleEsc);
     return () => {
@@ -49,31 +44,29 @@ export function SidebarNav({ userName = 'Writer', userEmail = '', isCollapsed = 
     };
   }, []);
 
-  const getInitials = (name: string) => {
-    return name.charAt(0).toUpperCase();
-  };
+  const getInitials = (name: string) => name.charAt(0).toUpperCase();
+
   const primaryNav = [
     { name: 'Home', href: '/dashboard', icon: Home },
     { name: 'Works', href: '/documents', icon: FileText },
     { name: 'Research', href: '/library', icon: BookOpen },
+    { name: 'Sources', href: '/sources', icon: Folder },
+    { name: 'Prove', href: '/prove', icon: Shield },
   ];
-  
-
 
   return (
-    <div className="flex flex-col flex-1 h-full bg-navy text-slate-300">
-      <div className={`py-6 ${isCollapsed ? 'px-2' : 'px-4'}`}>
+    <div className="flex flex-col flex-1 h-full bg-[#0B121F] text-slate-300">
+      <div className="py-4 px-2">
         <button 
           onClick={() => setIsNewWorkModalOpen(true)}
-          className={`flex items-center justify-center h-[40px] bg-gold text-white font-medium rounded-md hover:bg-gold-hover transition-colors text-[14px] shadow-sm ${isCollapsed ? 'w-[44px] mx-auto' : 'w-full'}`}
-          title={isCollapsed ? "New document" : undefined}
+          className="flex items-center justify-center w-[40px] h-[40px] bg-gold text-white font-medium rounded-xl hover:bg-gold-hover transition-colors shadow-sm mx-auto"
+          title="New document"
         >
-          <Plus size={16} className={isCollapsed ? '' : 'mr-2'} />
-          {!isCollapsed && "New document"}
+          <Plus size={18} />
         </button>
       </div>
       
-      <div className={`space-y-2 mt-2 ${isCollapsed ? 'px-2' : 'px-3'}`}>
+      <div className="space-y-3 mt-4 px-2">
         {primaryNav.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -81,52 +74,56 @@ export function SidebarNav({ userName = 'Writer', userEmail = '', isCollapsed = 
               key={item.name} 
               href={item.href} 
               prefetch={'prefetch' in item ? (item as any).prefetch : undefined}
-              className={`flex items-center h-[44px] text-[15px] font-bold transition-colors rounded-xl ${isCollapsed ? 'justify-center w-[44px] mx-auto px-0' : 'px-4 py-3'} ${
+              className={`flex items-center justify-center w-[40px] h-[40px] transition-colors rounded-xl mx-auto ${
                 isActive 
                   ? 'bg-navy-active text-white' 
-                  : 'text-slate-200 hover:text-white hover:bg-navy-hover'
+                  : 'text-slate-400 hover:text-white hover:bg-navy-hover'
               }`}
-              title={isCollapsed ? item.name : undefined}
+              title={item.name}
             >
-              <item.icon size={20} className={`shrink-0 ${isActive ? 'text-gold' : 'text-slate-400'} ${isCollapsed ? '' : 'mr-4'}`} />
-              {!isCollapsed && item.name}
+              <item.icon size={20} className={isActive ? 'text-gold' : ''} />
             </Link>
           );
         })}
       </div>
 
-      <div className="mt-auto flex flex-col w-full px-4 pb-4">
-        {/* Workspace Switcher */}
-        {!isCollapsed && (
-          <div className="mb-4">
-            <span className="text-[11px] text-slate-400 mb-1 block">Workspace</span>
-            <button className="flex items-center justify-between w-full p-2 bg-[#1A202A] rounded-md hover:bg-[#202732] transition-colors group text-left">
-              <div className="flex items-center">
-                <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center shrink-0 mr-2">
-                  <User size={12} className="text-[#161B22]" />
-                </div>
-                <span className="text-[13px] font-semibold text-white">Personal</span>
-              </div>
-              <ChevronDown size={14} className="text-slate-400 group-hover:text-white" />
-            </button>
-          </div>
-        )}
-
-        {/* Promo Banner */}
-        {!isCollapsed && (
-          <div className="relative rounded-lg overflow-hidden h-[120px] bg-gradient-to-br from-[#1E2530] to-[#12161D] border border-slate-800 p-4 flex flex-col justify-end">
-            <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1454496522488-7a8e488e8606?q=80&w=2076&auto=format&fit=crop')] bg-cover bg-center mix-blend-overlay"></div>
-            <div className="relative z-10">
-              <h4 className="text-white font-bold text-[15px] leading-tight mb-1">Better writing<br/>brighter futures.</h4>
-              <p className="text-[10px] text-slate-300">Research. Write. Cite. Prove.</p>
+      <div className="mt-auto flex flex-col items-center w-full pb-6 relative">
+        <button 
+          ref={triggerRef}
+          onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+          className="w-[36px] h-[36px] rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+          title="Account settings"
+        >
+          <span className="text-[14px] font-medium leading-none">
+            {getInitials(userName)}
+          </span>
+        </button>
+        
+        {isAccountMenuOpen && (
+          <div 
+            ref={menuRef}
+            className="absolute bottom-full left-14 mb-2 w-56 bg-[#161B22] border border-border-light rounded-lg shadow-xl overflow-hidden z-50"
+          >
+            <div className="p-4 border-b border-border-light bg-[#1E2530]">
+              <p className="text-white text-sm font-medium truncate">{userName}</p>
+              <p className="text-slate-400 text-xs truncate mt-0.5">{userEmail}</p>
             </div>
-          </div>
-        )}
-
-        {/* Version Footer */}
-        {!isCollapsed && (
-          <div className="mt-4 text-[10px] text-slate-500">
-            Verba v0.1.0
+            <div className="p-2">
+              <Link href="/settings" className="flex items-center px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-navy-hover rounded-md transition-colors" onClick={() => setIsAccountMenuOpen(false)}>
+                <Settings size={16} className="mr-2" />
+                Settings
+              </Link>
+              <button 
+                onClick={async () => {
+                  setIsAccountMenuOpen(false);
+                  await logout();
+                }}
+                className="flex items-center w-full px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-md transition-colors text-left"
+              >
+                <LogOut size={16} className="mr-2" />
+                Sign out
+              </button>
+            </div>
           </div>
         )}
       </div>

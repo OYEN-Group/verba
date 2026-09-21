@@ -902,33 +902,6 @@ export default function WorkspacePage({ params }: { params: { documentId: string
             </div>
           </div>
 
-          {/* Document Tabs */}
-          <div className="flex items-center space-x-6 text-[13px] font-medium text-foreground-secondary mt-1">
-            <button className="flex items-center space-x-2 pb-2.5 border-b-2 border-accent text-accent">
-              <FileText size={16} />
-              <span>Document</span>
-            </button>
-            <button className="flex items-center space-x-2 pb-2.5 border-b-2 border-transparent hover:text-foreground transition-colors">
-              <BookOpen size={16} />
-              <span>Project Context</span>
-            </button>
-            <button className="flex items-center space-x-2 pb-2.5 border-b-2 border-transparent hover:text-foreground transition-colors">
-              <FileText size={16} />
-              <span>Sources (12)</span>
-            </button>
-            <button className="flex items-center space-x-2 pb-2.5 border-b-2 border-transparent hover:text-foreground transition-colors">
-              <FileText size={16} />
-              <span>Citations (18)</span>
-            </button>
-            <button className="flex items-center space-x-2 pb-2.5 border-b-2 border-transparent hover:text-foreground transition-colors">
-              <Settings2 size={16} />
-              <span>Analysis</span>
-            </button>
-            <button className="flex items-center space-x-2 pb-2.5 border-b-2 border-transparent hover:text-foreground transition-colors">
-              <History size={16} />
-              <span>History</span>
-            </button>
-          </div>
         </div>
 
           <div className={`flex-1 overflow-y-auto view-mode-${viewMode}`}>
@@ -985,7 +958,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           </div>
 
           {/* Document Status Bar */}
-          <div className="h-[40px] bg-white border-t border-border-light flex items-center justify-between px-6 shrink-0 text-[12px] text-foreground-secondary z-10 relative shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
+          <div className="h-[32px] bg-transparent flex items-center justify-between px-6 shrink-0 text-[11px] font-medium text-foreground-secondary z-10 relative">
             <div className="flex items-center">
               <span>{liveWordCount !== null ? `${liveWordCount.toLocaleString()} words` : 'Calculating...'}</span>
             </div>
@@ -1027,8 +1000,8 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           </div>
       </div>
 
-      {/* 4. Right Panel: Verba Workspace */}
-      {!isFocusMode && isWorkspaceOpen && (
+      {/* 4. Right Panel: Verba Workspace or Slim Rail */}
+      {!isFocusMode && isWorkspaceOpen ? (
         <VerbaWorkspace
           documentId={params.documentId}
           onClose={() => setIsWorkspaceOpen(false)}
@@ -1253,6 +1226,16 @@ export default function WorkspacePage({ params }: { params: { documentId: string
             }
           }}
         />
+      ) : (
+        <aside className="w-[48px] bg-[#0B121F] border-l border-[#0B121F] shrink-0 flex flex-col h-full right-0 z-20 items-center py-4 relative group">
+          <button 
+            onClick={() => setIsWorkspaceOpen(true)}
+            className="w-8 h-8 rounded hover:bg-[#1A2333] transition-colors flex items-center justify-center text-slate-400 hover:text-white"
+            title="Open Verba"
+          >
+            <Sparkles size={18} />
+          </button>
+        </aside>
       )}
 
       {/* Citation Inspector Overlay */}

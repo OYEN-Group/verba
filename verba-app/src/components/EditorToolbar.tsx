@@ -255,35 +255,15 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           </ToolbarButton>
         </div>
 
-        <Divider />
 
-        {/* Alignment */}
-        <div className="flex items-center space-x-0.5">
-          <ToolbarButton isActive={editor.isActive({ textAlign: 'left' })} onClick={() => setAlign('left')} title="Align Left">
-            <AlignLeft size={15} />
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive({ textAlign: 'center' })} onClick={() => setAlign('center')} title="Align Center">
-            <AlignCenter size={15} />
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive({ textAlign: 'right' })} onClick={() => setAlign('right')} title="Align Right">
-            <AlignRight size={15} />
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive({ textAlign: 'justify' })} onClick={() => setAlign('justify')} title="Justify">
-            <AlignJustify size={15} />
-          </ToolbarButton>
-        </div>
 
         <Divider />
 
         {/* Academic Actions */}
         <div className="flex items-center space-x-2">
-          <button className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md bg-accent/10 text-accent hover:bg-accent/20 transition-colors text-[13px] font-medium">
+          <button className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-foreground-secondary hover:text-foreground hover:bg-black/5 transition-colors text-[13px] font-medium">
             <Quote size={14} />
             <span>Cite</span>
-          </button>
-          <button className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md border border-border-light text-foreground-secondary hover:text-foreground hover:bg-black/5 transition-colors text-[13px] font-medium">
-            <Search size={14} />
-            <span>Review Evidence</span>
           </button>
         </div>
 

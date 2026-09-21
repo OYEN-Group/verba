@@ -193,42 +193,43 @@ export function WritingAssistant({
         <div className="flex-1 p-6 overflow-y-auto space-y-6">
           
           <div>
-            <h4 className="text-[11px] font-semibold text-foreground-secondary uppercase tracking-wider mb-3">Document Overview</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center text-[13px] bg-white p-3 rounded-lg border border-border-light shadow-sm">
-                <span className="text-foreground-secondary">Words</span>
-                <span className="font-semibold text-[#0B1628]">
-                  {wordCount !== null && wordCount !== undefined ? wordCount.toLocaleString() : '...'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-[13px] bg-white p-3 rounded-lg border border-border-light shadow-sm">
-                <span className="text-foreground-secondary">Sources</span>
-                <span className="font-semibold text-[#0B1628]">
-                  {sourceCount !== undefined ? sourceCount : '...'}
-                </span>
-              </div>
+            <h3 className="text-[14px] font-bold text-[#0B1628] uppercase tracking-widest mb-4">Verba</h3>
+            
+            <p className="text-[13px] text-foreground-secondary mb-3 font-medium">What are you working through?</p>
+            
+            <div className="relative">
+              <textarea
+                placeholder="Ask Verba..."
+                className="w-full text-[13px] bg-white border border-border-light rounded-lg p-3 pr-10 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-none min-h-[100px] shadow-sm"
+                readOnly
+                onClick={() => onAnalyze()}
+              />
+              <button 
+                onClick={() => onAnalyze()}
+                className="absolute bottom-3 right-3 w-7 h-7 rounded-md bg-accent text-white flex items-center justify-center hover:bg-accent-hover transition-colors shadow-sm"
+              >
+                <Sparkles size={14} />
+              </button>
             </div>
           </div>
 
           <hr className="border-border-light" />
 
           <div>
-            <h4 className="text-[14px] font-medium text-[#0B1628] mb-1">Continue writing</h4>
-            <p className="text-[13px] text-foreground-secondary mb-3">What are you working through?</p>
-            
-            <div className="relative">
-              <textarea
-                placeholder="Ask Verba..."
-                className="w-full text-[13px] bg-white border border-border-light rounded-lg p-3 pr-10 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-none min-h-[80px]"
-                readOnly
-                onClick={() => onAnalyze()}
-              />
-              <button 
-                onClick={() => onAnalyze()}
-                className="absolute bottom-3 right-3 w-6 h-6 rounded-md bg-accent text-white flex items-center justify-center hover:bg-accent-hover transition-colors"
-              >
-                <Sparkles size={12} />
-              </button>
+            <h4 className="text-[11px] font-semibold text-foreground-secondary uppercase tracking-wider mb-3">Current work</h4>
+            <div className="space-y-1">
+              <div className="flex items-center text-[13px] text-foreground-secondary">
+                <span className="font-semibold text-[#0B1628] mr-1.5 w-10">
+                  {wordCount !== null && wordCount !== undefined ? wordCount.toLocaleString() : '...'}
+                </span>
+                words
+              </div>
+              <div className="flex items-center text-[13px] text-foreground-secondary">
+                <span className="font-semibold text-[#0B1628] mr-1.5 w-10">
+                  {sourceCount !== undefined ? sourceCount : '...'}
+                </span>
+                sources
+              </div>
             </div>
           </div>
 
