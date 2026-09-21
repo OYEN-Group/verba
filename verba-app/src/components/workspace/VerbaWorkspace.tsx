@@ -7,7 +7,7 @@ import { ProvePanel } from './ProvePanel';
 import { CitationIntegrityTab } from './CitationIntegrityTab';
 import { ReviewEvidencePanel } from './ReviewEvidencePanel';
 import { WritingAssistant, Issue } from '../WritingAssistant';
-import { PanelRightClose } from 'lucide-react';
+import { PanelRightClose, Sparkles, X } from 'lucide-react';
 import { ContextualSelection } from '../DocumentEditor';
 
 interface Props {
