@@ -66,7 +66,7 @@ export function SidebarNav({ userName = 'Writer', userEmail = '' }: SidebarNavPr
         </button>
       </div>
       
-      <div className="space-y-3 mt-4 px-2">
+      <div className="space-y-1 mt-6 px-4">
         {primaryNav.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -74,30 +74,60 @@ export function SidebarNav({ userName = 'Writer', userEmail = '' }: SidebarNavPr
               key={item.name} 
               href={item.href} 
               prefetch={'prefetch' in item ? (item as any).prefetch : undefined}
-              className={`flex items-center justify-center w-[40px] h-[40px] transition-colors rounded-xl mx-auto ${
+              className={`flex items-center space-x-3 w-full h-[40px] px-3 transition-colors rounded-lg relative ${
                 isActive 
-                  ? 'bg-navy-active text-white' 
-                  : 'text-slate-400 hover:text-white hover:bg-navy-hover'
+                  ? 'bg-white/10 text-white font-medium' 
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
-              title={item.name}
             >
-              <item.icon size={20} className={isActive ? 'text-gold' : ''} />
+              {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#C59E60] rounded-r-md" />}
+              <item.icon size={18} className={isActive ? 'text-[#C59E60]' : 'text-slate-400'} />
+              <span className="text-[13px]">{item.name}</span>
             </Link>
           );
         })}
       </div>
 
-      <div className="mt-auto flex flex-col items-center w-full pb-6 relative">
+      <div className="mt-8 px-4">
+        <h4 className="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2">Prove</h4>
+        <div className="space-y-1">
+          <Link href="/prove/history" className="flex items-center space-x-3 w-full h-[36px] px-3 transition-colors rounded-lg text-slate-400 hover:text-white hover:bg-white/5">
+            <span className="text-[13px] pl-7">History</span>
+          </Link>
+          <Link href="/prove/development" className="flex items-center space-x-3 w-full h-[36px] px-3 transition-colors rounded-lg text-slate-400 hover:text-white hover:bg-white/5">
+            <span className="text-[13px] pl-7">Development</span>
+          </Link>
+        </div>
+      </div>
+
+      <div className="mt-auto flex flex-col w-full px-4 pb-6 relative">
         <button 
           ref={triggerRef}
           onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-          className="w-[36px] h-[36px] rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
-          title="Account settings"
+          className="flex items-center space-x-3 w-full p-3 rounded-xl hover:bg-white/5 transition-colors text-left"
         >
-          <span className="text-[14px] font-medium leading-none">
-            {getInitials(userName)}
-          </span>
+          <div className="w-8 h-8 rounded-full bg-[#8CA4CA] flex items-center justify-center text-[#0B1628] shrink-0">
+            <span className="text-[13px] font-bold leading-none">
+              {getInitials(userName)}
+            </span>
+          </div>
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-[13px] font-medium text-white truncate">{userName}</span>
+            <span className="text-[11px] text-slate-400 truncate">Student Plan</span>
+          </div>
         </button>
+        
+        <div className="flex flex-col space-y-1 mt-2">
+          <Link href="/settings" className="flex items-center space-x-3 px-3 h-[36px] rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors">
+            <Settings size={16} />
+            <span className="text-[13px]">Settings</span>
+          </Link>
+          <Link href="/help" className="flex items-center space-x-3 px-3 h-[36px] rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors">
+            <HelpCircle size={16} />
+            <span className="text-[13px]">Help & Resources</span>
+          </Link>
+        </div>
+
         
         {isAccountMenuOpen && (
           <div 

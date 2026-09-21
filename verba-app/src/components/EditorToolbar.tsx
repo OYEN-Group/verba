@@ -38,7 +38,8 @@ import {
   Search,
   Link2,
   Quote,
-  MoreHorizontal
+  MoreHorizontal,
+  Sparkles
 } from 'lucide-react';
 
 interface EditorToolbarProps {
@@ -199,84 +200,89 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 
 
   return (
-    <div className="flex flex-col bg-white border-b border-border-light sticky top-0 z-10 w-full shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
-      <div className="flex items-center px-4 py-2 min-h-[48px] w-full overflow-x-auto no-scrollbar">
-        
-        {/* Text Style */}
-        <select 
-          value={editor.isActive('heading', { level: 1 }) ? 'h1' : editor.isActive('heading', { level: 2 }) ? 'h2' : editor.isActive('heading', { level: 3 }) ? 'h3' : 'p'}
-          onChange={(e) => {
-            if (e.target.value === 'p') editor.chain().focus().setParagraph().run();
-            else if (e.target.value === 'h1') editor.chain().focus().toggleHeading({ level: 1 }).run();
-            else if (e.target.value === 'h2') editor.chain().focus().toggleHeading({ level: 2 }).run();
-            else if (e.target.value === 'h3') editor.chain().focus().toggleHeading({ level: 3 }).run();
-          }}
-          className="text-[13px] font-medium bg-transparent border-none outline-none cursor-pointer hover:bg-black/5 rounded px-2 py-1 min-w-[100px]"
-        >
-          <option value="p">Normal text</option>
-          <option value="h1">Heading 1</option>
-          <option value="h2">Heading 2</option>
-          <option value="h3">Heading 3</option>
-        </select>
+    <div className="flex flex-col bg-white border-b border-border-light sticky top-0 z-10 w-full">
+      <div className="flex items-center px-4 py-2 min-h-[48px] w-full overflow-x-auto no-scrollbar justify-center">
+        <div className="flex items-center mx-auto space-x-1 max-w-[800px] w-full">
+          
+          {/* Text Style */}
+          <select 
+            value={editor.isActive('heading', { level: 1 }) ? 'h1' : editor.isActive('heading', { level: 2 }) ? 'h2' : editor.isActive('heading', { level: 3 }) ? 'h3' : 'p'}
+            onChange={(e) => {
+              if (e.target.value === 'p') editor.chain().focus().setParagraph().run();
+              else if (e.target.value === 'h1') editor.chain().focus().toggleHeading({ level: 1 }).run();
+              else if (e.target.value === 'h2') editor.chain().focus().toggleHeading({ level: 2 }).run();
+              else if (e.target.value === 'h3') editor.chain().focus().toggleHeading({ level: 3 }).run();
+            }}
+            className="text-[13px] font-medium text-[#0B1628] bg-transparent border-none outline-none cursor-pointer hover:bg-black/5 rounded px-2 py-1.5 min-w-[100px]"
+          >
+            <option value="p">Paragraph</option>
+            <option value="h1">Heading 1</option>
+            <option value="h2">Heading 2</option>
+            <option value="h3">Heading 3</option>
+          </select>
 
-        <Divider />
+          <Divider />
 
-        {/* Basic Formatting */}
-        <div className="flex items-center space-x-0.5">
-          <ToolbarButton isActive={editor.isActive('bold')} onClick={toggleBold} title="Bold (Ctrl+B)">
-            <Bold size={15} />
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive('italic')} onClick={toggleItalic} title="Italic (Ctrl+I)">
-            <Italic size={15} />
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive('underline')} onClick={toggleUnderline} title="Underline (Ctrl+U)">
-            <Underline size={15} />
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive('link')} onClick={toggleLink} title="Insert Link">
-            <Link2 size={15} />
-          </ToolbarButton>
-        </div>
+          {/* Basic Formatting */}
+          <div className="flex items-center space-x-0.5">
+            <ToolbarButton isActive={editor.isActive('bold')} onClick={toggleBold} title="Bold (Ctrl+B)">
+              <Bold size={15} />
+            </ToolbarButton>
+            <ToolbarButton isActive={editor.isActive('italic')} onClick={toggleItalic} title="Italic (Ctrl+I)">
+              <Italic size={15} />
+            </ToolbarButton>
+            <ToolbarButton isActive={editor.isActive('underline')} onClick={toggleUnderline} title="Underline (Ctrl+U)">
+              <Underline size={15} />
+            </ToolbarButton>
+          </div>
 
-        <Divider />
+          <Divider />
 
-        {/* Lists & Indentation */}
-        <div className="flex items-center space-x-0.5">
-          <ToolbarButton isActive={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} title="Bullet List">
-            <List size={15} />
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="Numbered List">
-            <ListOrdered size={15} />
-          </ToolbarButton>
-          <ToolbarButton onClick={() => editor.chain().focus().liftListItem('listItem').run()} disabled={!editor.can().liftListItem('listItem')} title="Decrease Indent">
-            <Outdent size={15} />
-          </ToolbarButton>
-          <ToolbarButton onClick={() => editor.chain().focus().sinkListItem('listItem').run()} disabled={!editor.can().sinkListItem('listItem')} title="Increase Indent">
-            <Indent size={15} />
-          </ToolbarButton>
-        </div>
+          {/* Lists */}
+          <div className="flex items-center space-x-0.5">
+            <ToolbarButton isActive={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} title="Bullet List">
+              <List size={15} />
+            </ToolbarButton>
+            <ToolbarButton isActive={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="Numbered List">
+              <ListOrdered size={15} />
+            </ToolbarButton>
+          </div>
 
+          <Divider />
 
+          {/* Academic Actions */}
+          <div className="flex items-center space-x-1">
+            <ToolbarButton isActive={editor.isActive('link')} onClick={toggleLink} title="Insert Link">
+              <Link2 size={15} />
+            </ToolbarButton>
+            <button className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-foreground-secondary hover:text-foreground hover:bg-black/5 transition-colors text-[13px] font-medium">
+              <span className="font-serif text-[16px] leading-none mb-0.5">“</span>
+            </button>
+            <button className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-foreground-secondary hover:text-foreground hover:bg-black/5 transition-colors text-[13px] font-medium">
+              <Quote size={14} />
+              <span>Cite</span>
+            </button>
+          </div>
 
-        <Divider />
+          <Divider />
 
-        {/* Academic Actions */}
-        <div className="flex items-center space-x-2">
-          <button className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-foreground-secondary hover:text-foreground hover:bg-black/5 transition-colors text-[13px] font-medium">
-            <Quote size={14} />
-            <span>Cite</span>
+          {/* Ask Verba */}
+          <button className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-[#2563EB] hover:bg-blue-50 transition-colors text-[13px] font-medium mr-2">
+            <Sparkles size={14} />
+            <span>Ask Verba</span>
           </button>
-        </div>
 
-        <div className="flex-1" />
+          <div className="flex-1" />
 
-        {/* Right Actions */}
-        <div className="flex items-center space-x-2 shrink-0">
-          <button onClick={() => setShowFindReplace(!showFindReplace)} className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${showFindReplace ? 'bg-accent/10 text-accent' : 'text-foreground-secondary hover:bg-black/5 hover:text-foreground'}`} title="Find & Replace (Ctrl+F)">
-            <Search size={16} />
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center rounded-md text-foreground-secondary hover:bg-black/5 hover:text-foreground transition-colors">
-            <MoreHorizontal size={16} />
-          </button>
+          {/* Right Actions */}
+          <div className="flex items-center space-x-1 shrink-0">
+            <button onClick={() => setShowFindReplace(!showFindReplace)} className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${showFindReplace ? 'bg-accent/10 text-accent' : 'text-foreground-secondary hover:bg-black/5 hover:text-foreground'}`} title="Find & Replace (Ctrl+F)">
+              <Search size={16} />
+            </button>
+            <button className="w-8 h-8 flex items-center justify-center rounded-md text-foreground-secondary hover:bg-black/5 hover:text-foreground transition-colors">
+              <MoreHorizontal size={16} />
+            </button>
+          </div>
         </div>
       </div>
 

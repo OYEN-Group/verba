@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Check, X, RefreshCw, Edit2, Loader2, ShieldCheck, Zap, Sparkles, Eye, Search, BookOpen, BadgeCheck } from 'lucide-react';
+import { Check, X, RefreshCw, Edit2, Loader2, ShieldCheck, Zap, Sparkles, Eye, Search, BookOpen, BadgeCheck, FileText, ArrowRight } from 'lucide-react';
 
 import { ContextualSelection } from './DocumentEditor';
 
@@ -189,50 +189,57 @@ export function WritingAssistant({
 
   if (!isAnalyzed) {
     return (
-      <div className="flex flex-col h-full bg-[#F9FAFB] relative">
-        <div className="flex-1 p-6 overflow-y-auto space-y-6">
+      <div className="flex flex-col h-full bg-white relative">
+        <div className="flex-1 p-6 overflow-y-auto space-y-8">
           
+          <div className="space-y-1">
+            <div className="w-8 h-8 rounded-full bg-[#EFF6FF] flex items-center justify-center text-[#2563EB] mb-4">
+              <Sparkles size={16} />
+            </div>
+            <h2 className="text-[18px] font-serif text-[#0B1628]">Good afternoon</h2>
+            <p className="text-[13px] text-foreground-secondary">How can I help with this document?</p>
+          </div>
+
+          <div className="bg-white border border-border-light rounded-xl p-4 shadow-sm">
+            <div className="flex items-start space-x-3">
+              <div className="w-8 h-8 rounded-lg bg-[#F1F5F9] flex items-center justify-center text-[#64748B] mt-0.5">
+                <FileText size={16} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] font-medium text-[#2563EB] uppercase tracking-wider mb-1">You're working on</span>
+                <span className="text-[14px] font-medium text-[#0B1628]">
+                  {projectContext?.title as string || 'Untitled Document'}
+                </span>
+                <span className="text-[12px] text-foreground-secondary mb-2">
+                  {projectContext?.chapter as string || 'Document'}
+                </span>
+                <div className="flex items-center space-x-2 text-[11px] text-foreground-muted font-medium">
+                  <span>{wordCount !== null && wordCount !== undefined ? wordCount.toLocaleString() : '...'} words</span>
+                  <span className="w-1 h-1 rounded-full bg-border-light" />
+                  <span>{sourceCount !== undefined ? sourceCount : '...'} sources</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div>
-            <h3 className="text-[14px] font-bold text-[#0B1628] uppercase tracking-widest mb-4">Verba</h3>
-            
-            <p className="text-[13px] text-foreground-secondary mb-3 font-medium">What are you working through?</p>
-            
+            <h4 className="text-[13px] font-bold text-[#0B1628] mb-3">Ask Verba</h4>
             <div className="relative">
               <textarea
-                placeholder="Ask Verba..."
-                className="w-full text-[13px] bg-white border border-border-light rounded-lg p-3 pr-10 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-none min-h-[100px] shadow-sm"
+                placeholder="What are you working through?"
+                className="w-full text-[13px] bg-white border border-border-light rounded-xl p-4 pr-12 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent resize-none min-h-[120px] shadow-sm"
                 readOnly
                 onClick={() => onAnalyze()}
               />
               <button 
                 onClick={() => onAnalyze()}
-                className="absolute bottom-3 right-3 w-7 h-7 rounded-md bg-accent text-white flex items-center justify-center hover:bg-accent-hover transition-colors shadow-sm"
+                className="absolute bottom-4 right-4 w-8 h-8 rounded-lg bg-[#9ca3af] text-white flex items-center justify-center hover:bg-accent transition-colors shadow-sm"
               >
-                <Sparkles size={14} />
+                <ArrowRight size={16} />
               </button>
             </div>
           </div>
-
-          <hr className="border-border-light" />
-
-          <div>
-            <h4 className="text-[11px] font-semibold text-foreground-secondary uppercase tracking-wider mb-3">Current work</h4>
-            <div className="space-y-1">
-              <div className="flex items-center text-[13px] text-foreground-secondary">
-                <span className="font-semibold text-[#0B1628] mr-1.5 w-10">
-                  {wordCount !== null && wordCount !== undefined ? wordCount.toLocaleString() : '...'}
-                </span>
-                words
-              </div>
-              <div className="flex items-center text-[13px] text-foreground-secondary">
-                <span className="font-semibold text-[#0B1628] mr-1.5 w-10">
-                  {sourceCount !== undefined ? sourceCount : '...'}
-                </span>
-                sources
-              </div>
-            </div>
-          </div>
-
+          
         </div>
       </div>
     );
