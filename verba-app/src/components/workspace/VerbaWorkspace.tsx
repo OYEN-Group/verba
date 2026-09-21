@@ -96,30 +96,30 @@ export function VerbaWorkspace({
   const showContext = ['assistant', 'review', 'research', 'integrity'].includes(activeTab);
 
   return (
-    <aside className="w-full sm:w-[320px] bg-white border-l border-border-light shrink-0 flex flex-col h-full absolute lg:relative right-0 z-20 shadow-2xl lg:shadow-none transition-all duration-300">
-      <div className="flex flex-col shrink-0 bg-white border-b border-border-light p-4">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-bold tracking-widest text-foreground-muted uppercase">VERBA</span>
+    <aside className="w-full sm:w-[400px] bg-white border border-border-light rounded-xl flex flex-col h-full absolute lg:relative right-6 top-6 z-20 shadow-[0_8px_30px_rgb(0,0,0,0.08)] lg:shadow-none transition-all duration-300 overflow-hidden" style={{ height: 'calc(100vh - 120px)' }}>
+      <div className="flex flex-col shrink-0 bg-white p-5 pb-0">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start space-x-3">
+            <div className="mt-1">
+              <Sparkles size={20} className="text-[#4E75C4]" />
+            </div>
+            <div>
+              <h2 className="text-[18px] font-bold text-[#0B1628]">Verba Workspace</h2>
+              <p className="text-[13px] text-slate-500 mt-0.5">Everything you need, right here.</p>
+            </div>
+          </div>
           <button
             onClick={onClose}
-            className="p-1 text-foreground-muted hover:text-[#0B1628] hover:bg-black/5 rounded transition-colors -mr-1"
+            className="p-1.5 text-slate-400 hover:text-[#0B1628] hover:bg-black/5 rounded-md transition-colors"
             title="Close Workspace"
           >
-            <PanelRightClose size={14} />
+            <X size={18} strokeWidth={2.5} />
           </button>
         </div>
-        <h2 className="text-[18px] font-bold text-[#0B1628] capitalize">{activeTab}</h2>
-        {showContext && (
-          <div className="text-[13px] text-foreground-secondary mt-1 flex items-center leading-snug">
-            {hasSelection ? (
-              <span className="italic truncate max-w-[250px]">"{selectedPreview}..."</span>
-            ) : activeHeadingText ? (
-              <span className="truncate max-w-[250px]">§ {activeHeadingText}</span>
-            ) : (
-              <span>Whole document</span>
-            )}
-          </div>
-        )}
+
+        <div className="overflow-x-auto no-scrollbar mt-2 border-b border-border-light -mx-5 px-5">
+          <WorkspaceNavigation activeTab={activeTab} onTabChange={onTabChange} />
+        </div>
       </div>
 
       <div className="flex-1 overflow-hidden flex flex-col">
@@ -196,10 +196,6 @@ export function VerbaWorkspace({
           />
         )}
         {activeTab === 'prove' && <ProvePanel documentId={documentId} />}
-      </div>
-
-      <div className="shrink-0 bg-white border-t border-border-light overflow-x-auto no-scrollbar">
-        <WorkspaceNavigation activeTab={activeTab} onTabChange={onTabChange} />
       </div>
     </aside>
   );
