@@ -842,7 +842,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
             <ChevronRight size={14} className="mx-2 opacity-50" />
             <span className="hover:text-foreground transition-colors cursor-pointer">Natural Gas Research</span>
             <ChevronRight size={14} className="mx-2 opacity-50" />
-            <span className="text-foreground">{activeHeadingText || 'Chapter One'}</span>
+            <span className="text-foreground">Chapter One</span>
           </div>
           <div className="flex items-center space-x-5">
             <button className="text-foreground-secondary hover:text-foreground transition-colors">
