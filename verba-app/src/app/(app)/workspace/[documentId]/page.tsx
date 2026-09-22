@@ -838,7 +838,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
       )}
 
       {/* 3. Center Panel: Document Canvas */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#F6F8FB] relative">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#F6F8FB] overflow-hidden">
         {/* Row 1: Workspace Header */}
         <div className="bg-white border-b border-[#F0F4F8] flex items-center justify-between px-6 py-2 shrink-0 z-20 w-full min-h-[56px]">
           <div className="flex flex-col justify-center">
@@ -911,7 +911,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           </div>
         </div>
 
-          <div className={`flex-1 flex flex-col min-w-0 view-mode-${viewMode}`}>
+          <div className={`flex-1 flex flex-col min-w-0 overflow-hidden view-mode-${viewMode}`}>
           <DocumentEditor
               initialBlocks={initialEditorJson ? undefined : initialBlocks}
               initialEditorJson={initialEditorJson}

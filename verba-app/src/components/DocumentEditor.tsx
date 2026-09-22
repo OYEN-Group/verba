@@ -446,7 +446,7 @@ export function DocumentEditor({
   };
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 bg-[#F6F8FB] relative">
+    <div className="flex-1 flex flex-col min-w-0 bg-[#F6F8FB] overflow-hidden">
       {/* Document Toolbar - sits above scroll area, not sticky */}
       <div className="shrink-0 z-20 w-full">
         <EditorToolbar editor={editor} />
