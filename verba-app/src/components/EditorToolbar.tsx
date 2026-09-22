@@ -207,7 +207,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 
 
   return (
-    <div className="flex flex-col bg-white border-b border-[#E2E8F0] sticky top-0 z-10 w-full transition-all text-[#475569]">
+    <div className="flex flex-col bg-white border-b border-[#E2E8F0] z-10 w-full transition-all text-[#475569]">
       {/* Row 2: Menu / Actions */}
       <div className="flex items-center justify-between px-6 py-0.5 border-b border-[#F0F4F8] min-h-[34px]">
         <div className="flex items-center space-x-1 -ml-2 text-[13px]">
