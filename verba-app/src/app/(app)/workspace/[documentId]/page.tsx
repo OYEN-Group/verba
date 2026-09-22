@@ -198,6 +198,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   // Document Renaming State
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
+  const [workTitle, setWorkTitle] = useState<string | null>(null);
 
   const editorRef = useRef<Editor | null>(null);
   const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -272,17 +273,20 @@ export default function WorkspacePage({ params }: { params: { documentId: string
 
       // Fetch Citation Data if connected to a Work
       if (docData.work_id) {
-        // Fetch Work to get citation_style from context
+        // Fetch Work to get citation_style from context and work title
         const { data: workData } = await supabase
           .from('works')
-          .select('context')
+          .select('title, context')
           .eq('id', docData.work_id)
           .single();
         
-        if (workData?.context) {
-          setProjectContext(workData.context);
-          if (workData.context.citation_style) {
-            setCitationStyle(workData.context.citation_style);
+        if (workData) {
+          setWorkTitle(workData.title);
+          if (workData.context) {
+            setProjectContext(workData.context as Record<string, unknown>);
+            if ((workData.context as any).citation_style) {
+              setCitationStyle((workData.context as any).citation_style);
+            }
           }
         }
 
@@ -850,9 +854,9 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               <div className="flex items-center text-[12px] font-medium text-[#7C889C] mb-0.5">
                 <Link href="/dashboard" className="hover:text-slate-800 transition-colors">Works</Link>
                 <ChevronRight size={12} className="mx-1.5 opacity-50" />
-                <span className="hover:text-slate-800 transition-colors cursor-pointer">Natural Gas Research</span>
+                <span className="hover:text-slate-800 transition-colors cursor-pointer truncate max-w-[150px]" title={workTitle || 'Untitled Work'}>{workTitle || 'Untitled Work'}</span>
                 <ChevronRight size={12} className="mx-1.5 opacity-50" />
-                <span>Chapter One</span>
+                <span className="truncate max-w-[150px]" title={doc.title || 'Untitled Document'}>{doc.title || 'Untitled Document'}</span>
               </div>
               <div className="flex items-center space-x-2 text-[#0B1628]">
                 {isRenaming ? (
