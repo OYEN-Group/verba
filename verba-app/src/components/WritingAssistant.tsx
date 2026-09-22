@@ -196,7 +196,7 @@ export function WritingAssistant({
             <div className="w-12 h-12 rounded-full bg-[#F0F4FF] flex items-center justify-center text-[#4E75C4] mb-2 shadow-[0_0_15px_rgba(78,117,196,0.2)]">
               <Sparkles size={24} />
             </div>
-            <h2 className="text-[16px] font-bold text-[#0B1628]">Good afternoon, {projectContext?.user_name || 'mayowa'}</h2>
+            <h2 className="text-[16px] font-bold text-[#0B1628]">Good afternoon, {(projectContext?.user_name as string) || 'mayowa'}</h2>
             <p className="text-[13px] text-slate-500">How can I help with your writing today?</p>
           </div>
 

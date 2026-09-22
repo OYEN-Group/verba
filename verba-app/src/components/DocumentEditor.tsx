@@ -448,37 +448,17 @@ export function DocumentEditor({
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-[#F6F8FB] relative overflow-hidden">
       {/* Document Toolbar (Sticky Header) */}
-      <div className="sticky top-0 z-20 w-full bg-white shadow-sm shrink-0">
+      <div className="sticky top-0 z-20 w-full shrink-0">
         <EditorToolbar editor={editor} />
       </div>
 
       {/* Scrollable Document Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-8 md:px-12 md:py-12 flex justify-center items-start scroll-smooth w-full">
-        <div className="flex flex-col items-center origin-top transition-transform duration-200" style={{ transform: `scale(${scale})`, marginBottom: scale < 1 ? `-${a4MinHeight * (1 - scale)}px` : '32px' }}>
+      <div className="flex-1 overflow-y-auto px-4 py-8 md:px-12 md:py-16 flex justify-center items-start scroll-smooth w-full">
+        <div className="flex flex-col items-center origin-top transition-transform duration-200 w-full" style={{ transform: `scale(${scale})` }}>
           
-          {/* Visual Ruler (Decorative) */}
           <div 
-            className="hidden md:block w-full h-6 mb-2 relative opacity-50 select-none"
-            style={{ width: `${a4Width}px` }}
-          >
-            {/* Major tick marks (cm/inches conceptual) */}
-            <div className="absolute inset-x-0 bottom-0 h-2" style={{ background: 'repeating-linear-gradient(90deg, transparent, transparent 49px, #94a3b8 49px, #94a3b8 50px)' }} />
-            {/* Minor tick marks */}
-            <div className="absolute inset-x-0 bottom-0 h-1" style={{ background: 'repeating-linear-gradient(90deg, transparent, transparent 9px, #cbd5e1 9px, #cbd5e1 10px)' }} />
-            
-            {/* Indent markers (visual only) */}
-            <div className="absolute bottom-0 w-3 h-3 bg-white border border-[#94a3b8] cursor-pointer" style={{ left: '96px', clipPath: 'polygon(50% 100%, 0 0, 100% 0)' }} />
-            <div className="absolute bottom-0 w-3 h-3 bg-white border border-[#94a3b8] cursor-pointer" style={{ left: '96px', transform: 'translateY(100%)', clipPath: 'polygon(50% 0, 0 100%, 100% 100%)' }} />
-            <div className="absolute bottom-0 w-3 h-3 bg-white border border-[#94a3b8] cursor-pointer" style={{ right: '96px', transform: 'translateY(100%)', clipPath: 'polygon(50% 0, 0 100%, 100% 100%)' }} />
-          </div>
-
-          <div
-            className="bg-white shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#E5EAF0] p-10 sm:p-16 md:p-24 pb-32 mb-32"
-            style={{
-              width: `${a4Width}px`,
-              minHeight: `${a4MinHeight}px`,
-            }}
-          onClick={(e) => {
+            className="bg-white shadow-sm border border-black/5 rounded-sm p-10 sm:p-16 md:p-20 pb-32 mb-32 w-full max-w-[850px] min-h-[1100px]"
+            onClick={(e) => {
             const target = e.target as HTMLElement;
             const citationNode = target.closest('[data-citation-id]');
             if (citationNode && onCitationClick) {

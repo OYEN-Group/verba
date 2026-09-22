@@ -16,7 +16,7 @@ export function SidebarShell({ userName, userEmail }: SidebarShellProps) {
   return (
     <aside 
       className={`bg-[#0B121F] border-r border-[#0B121F] flex-col hidden md:flex shrink-0 relative z-20 transition-all duration-300 ease-in-out ${
-        isCollapsed ? 'w-[80px]' : 'w-[280px]'
+        isCollapsed ? 'w-[60px]' : 'w-[200px]'
       }`}
     >
       {/* Header Area */}

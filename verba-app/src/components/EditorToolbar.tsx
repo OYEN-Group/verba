@@ -200,9 +200,9 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 
 
   return (
-    <div className="flex flex-col bg-white border-b border-border-light sticky top-0 z-10 w-full">
-      <div className="flex items-center px-4 py-2 min-h-[48px] w-full overflow-x-auto no-scrollbar justify-center">
-        <div className="flex items-center mx-auto space-x-1 max-w-[800px] w-full">
+    <div className="flex bg-white/80 backdrop-blur-md border-b border-border-light sticky top-0 z-10 w-full justify-center transition-all">
+      <div className="flex items-center px-4 py-1.5 min-h-[44px] w-full max-w-[800px] overflow-x-auto no-scrollbar">
+        <div className="flex items-center space-x-1 w-full">
           
           {/* Text Style */}
           <select 
@@ -213,9 +213,9 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
               else if (e.target.value === 'h2') editor.chain().focus().toggleHeading({ level: 2 }).run();
               else if (e.target.value === 'h3') editor.chain().focus().toggleHeading({ level: 3 }).run();
             }}
-            className="text-[13px] font-medium text-[#0B1628] bg-transparent border-none outline-none cursor-pointer hover:bg-black/5 rounded px-2 py-1.5 min-w-[100px]"
+            className="text-[13px] font-medium text-slate-700 bg-transparent border-none outline-none cursor-pointer hover:bg-black/5 rounded px-2 py-1 min-w-[90px]"
           >
-            <option value="p">Paragraph</option>
+            <option value="p">Normal</option>
             <option value="h1">Heading 1</option>
             <option value="h2">Heading 2</option>
             <option value="h3">Heading 3</option>
@@ -226,13 +226,13 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           {/* Basic Formatting */}
           <div className="flex items-center space-x-0.5">
             <ToolbarButton isActive={editor.isActive('bold')} onClick={toggleBold} title="Bold (Ctrl+B)">
-              <Bold size={15} />
+              <Bold size={14} />
             </ToolbarButton>
             <ToolbarButton isActive={editor.isActive('italic')} onClick={toggleItalic} title="Italic (Ctrl+I)">
-              <Italic size={15} />
+              <Italic size={14} />
             </ToolbarButton>
             <ToolbarButton isActive={editor.isActive('underline')} onClick={toggleUnderline} title="Underline (Ctrl+U)">
-              <Underline size={15} />
+              <Underline size={14} />
             </ToolbarButton>
           </div>
 
@@ -241,24 +241,21 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           {/* Lists */}
           <div className="flex items-center space-x-0.5">
             <ToolbarButton isActive={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} title="Bullet List">
-              <List size={15} />
+              <List size={14} />
             </ToolbarButton>
             <ToolbarButton isActive={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="Numbered List">
-              <ListOrdered size={15} />
+              <ListOrdered size={14} />
             </ToolbarButton>
           </div>
 
           <Divider />
 
           {/* Academic Actions */}
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-0.5">
             <ToolbarButton isActive={editor.isActive('link')} onClick={toggleLink} title="Insert Link">
-              <Link2 size={15} />
+              <Link2 size={14} />
             </ToolbarButton>
-            <button className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-foreground-secondary hover:text-foreground hover:bg-black/5 transition-colors text-[13px] font-medium">
-              <span className="font-serif text-[16px] leading-none mb-0.5">“</span>
-            </button>
-            <button className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-foreground-secondary hover:text-foreground hover:bg-black/5 transition-colors text-[13px] font-medium">
+            <button className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-black/5 transition-colors text-[13px] font-medium">
               <Quote size={14} />
               <span>Cite</span>
             </button>
@@ -267,8 +264,8 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           <Divider />
 
           {/* Ask Verba */}
-          <button className="flex items-center space-x-1.5 px-4 h-9 rounded-lg bg-[#F0F4FF] text-[#4E75C4] hover:bg-blue-100 transition-colors text-[13px] font-bold mx-2">
-            <Sparkles size={16} />
+          <button className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#F0F4FF] text-[#4E75C4] hover:bg-blue-100 transition-colors text-[13px] font-semibold mx-1">
+            <Sparkles size={14} />
             <span>Ask Verba</span>
           </button>
 
@@ -276,11 +273,11 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 
           {/* Right Actions */}
           <div className="flex items-center space-x-1 shrink-0">
-            <button onClick={() => setShowFindReplace(!showFindReplace)} className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${showFindReplace ? 'bg-accent/10 text-accent' : 'text-foreground-secondary hover:bg-black/5 hover:text-foreground'}`} title="Find & Replace (Ctrl+F)">
-              <Search size={16} />
+            <button onClick={() => setShowFindReplace(!showFindReplace)} className={`w-7 h-7 flex items-center justify-center rounded-md transition-colors ${showFindReplace ? 'bg-blue-50 text-blue-600' : 'text-slate-400 hover:bg-black/5 hover:text-slate-700'}`} title="Find & Replace (Ctrl+F)">
+              <Search size={14} />
             </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-md text-foreground-secondary hover:bg-black/5 hover:text-foreground transition-colors">
-              <MoreHorizontal size={16} />
+            <button className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:bg-black/5 hover:text-slate-700 transition-colors">
+              <MoreHorizontal size={14} />
             </button>
           </div>
         </div>

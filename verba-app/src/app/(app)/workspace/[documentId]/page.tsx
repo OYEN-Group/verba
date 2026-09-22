@@ -190,7 +190,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   const [isFocusMode, setIsFocusMode] = useState(false);
   const [isOutlineOpen, setIsOutlineOpen] = useState(false);
   const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(true);
-  const [workspaceTab, setWorkspaceTab] = useState<'assistant' | 'review' | 'research' | 'cite' | 'integrity' | 'evidence' | 'prove'>('assistant');
+  const [workspaceTab, setWorkspaceTab] = useState<'assistant' | 'review' | 'research' | 'cite' | 'integrity' | 'evidence' | 'prove' | 'sources'>('assistant');
   const [viewMode, setViewMode] = useState<'web' | 'print'>('print');
   const [zoomLevel, setZoomLevel] = useState(100);
   const [showZoomMenu, setShowZoomMenu] = useState(false);
@@ -835,91 +835,52 @@ export default function WorkspacePage({ params }: { params: { documentId: string
 
       {/* 3. Center Panel: Document Canvas */}
       <div className="flex-1 flex flex-col min-w-0 bg-[#F6F8FB] relative">
-        {/* Workspace Top Bar */}
-        <div className="h-[56px] bg-white border-b border-border-light flex items-center justify-between px-8 shrink-0 z-20 w-full">
-          <div className="flex items-center text-[13px] text-foreground-secondary font-medium">
-            <Link href="/dashboard" className="hover:text-foreground transition-colors">Works</Link>
-            <ChevronRight size={14} className="mx-2 opacity-50" />
-            <span className="hover:text-foreground transition-colors cursor-pointer">Natural Gas Research</span>
-            <ChevronRight size={14} className="mx-2 opacity-50" />
-            <span className="text-foreground">Chapter One</span>
-          </div>
-          <div className="flex items-center space-x-5">
-            <button className="text-foreground-secondary hover:text-foreground transition-colors">
-              <Settings2 size={18} />
-            </button>
-            <div className="w-8 h-8 rounded-full bg-[#4E75C4] flex items-center justify-center text-white text-[13px] font-bold">
-              M
-            </div>
-          </div>
-        </div>
-
-        {/* Document Header */}
-        <div className="bg-white flex flex-col pt-5 px-8 shrink-0 z-10 w-full relative border-b border-border-light pb-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <FileText size={24} className="text-[#0B1628]" strokeWidth={2.5} />
-              {isRenaming ? (
-                <input
-                  autoFocus
-                  className="font-bold text-[22px] text-[#0B1628] bg-white border border-accent rounded px-2 outline-none min-w-[200px]"
-                  value={renameValue}
-                  onChange={(e) => setRenameValue(e.target.value)}
-                  onBlur={handleRenameSubmit}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleRenameSubmit();
-                    if (e.key === 'Escape') setIsRenaming(false);
-                  }}
-                />
-              ) : (
-                <h1 
-                  className="text-[22px] font-bold text-[#0B1628] truncate max-w-[400px] cursor-text hover:bg-black/5 px-1 -ml-1 rounded transition-colors"
-                  onClick={() => {
-                    setRenameValue(doc.original_filename || `${doc.title}.docx`);
-                    setIsRenaming(true);
-                  }}
-                  title="Click to rename"
-                >
-                  {doc.title}
-                </h1>
-              )}
-              <span className="px-3 py-1 bg-[#F0F4FF] text-[#4E75C4] rounded-full text-[12px] font-bold ml-2">
-                {displayWordCount} words
+        {/* Workspace Thin Header */}
+        <div className="h-[48px] bg-[#F6F8FB] border-b border-border-light flex items-center justify-between px-6 shrink-0 z-20 w-full">
+          <div className="flex items-center text-[13px] font-medium text-slate-500">
+            <Link href="/dashboard" className="hover:text-slate-800 transition-colors">Works</Link>
+            <ChevronRight size={14} className="mx-1.5 opacity-50" />
+            {isRenaming ? (
+              <input
+                autoFocus
+                className="font-medium text-[13px] text-slate-800 bg-white border border-border-light rounded px-2 py-0.5 outline-none min-w-[200px]"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onBlur={handleRenameSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleRenameSubmit();
+                  if (e.key === 'Escape') setIsRenaming(false);
+                }}
+              />
+            ) : (
+              <span 
+                className="text-slate-800 hover:text-black cursor-text truncate max-w-[400px] transition-colors"
+                onClick={() => {
+                  setRenameValue(doc.original_filename || `${doc.title}.docx`);
+                  setIsRenaming(true);
+                }}
+                title="Click to rename"
+              >
+                {doc.title || 'Untitled Document'}
               </span>
+            )}
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center text-[12px] text-slate-400 font-medium">
+              {saveStatus === 'saving' ? (
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-2 animate-pulse" />
+              ) : saveStatus === 'unsaved' || saveStatus === 'failed' ? (
+                <div className="w-1.5 h-1.5 rounded-full bg-red-400 mr-2" />
+              ) : (
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2" />
+              )}
+              <span>{saveStatus === 'saving' ? 'Saving...' : saveStatus === 'unsaved' ? 'Unsaved changes' : 'Saved'}</span>
             </div>
-            
-            <div className="flex items-center space-x-5">
-              <div className="flex items-center -space-x-2 mr-2">
-                <div className="w-8 h-8 rounded-full bg-[#4E75C4] border-2 border-white flex items-center justify-center text-white text-[11px] font-bold relative z-30">M</div>
-                <div className="w-8 h-8 rounded-full bg-[#E8EDF9] border-2 border-white flex items-center justify-center text-[#4E75C4] text-[11px] font-bold relative z-20">A</div>
-                <div className="w-8 h-8 rounded-full bg-[#F3F4F6] border-2 border-white flex items-center justify-center text-slate-500 text-[11px] font-bold relative z-10">+2</div>
-              </div>
 
-              <button className="text-foreground-secondary hover:text-foreground transition-colors p-1">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-              </button>
-
-              <div className="flex items-center text-[12px] text-slate-500 font-medium px-2 border-l border-border-light pl-5">
-                {saveStatus === 'saving' ? (
-                  <div className="w-2 h-2 rounded-full bg-amber-400 mr-2 animate-pulse" />
-                ) : saveStatus === 'unsaved' || saveStatus === 'failed' ? (
-                  <div className="w-2 h-2 rounded-full bg-red-400 mr-2" />
-                ) : (
-                  <div className="w-2 h-2 rounded-full bg-status-success mr-2" />
-                )}
-                <span>{saveStatus === 'saving' ? 'Saving...' : saveStatus === 'unsaved' ? 'Unsaved changes' : 'Saved 2 minutes ago'}</span>
-                <ChevronDown size={14} className="ml-1.5 opacity-70" />
-              </div>
-              
-              <button className="flex items-center space-x-1.5 px-4 h-9 rounded-lg bg-[#0B121F] text-white text-[13px] font-medium hover:bg-[#1A2333] transition-colors shadow-sm">
-                <span>Export</span>
-                <ChevronDown size={14} className="opacity-70 ml-1" />
-              </button>
-
-              <button className="flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors p-1">
-                <MoreHorizontal size={20} />
-              </button>
-            </div>
+            <button className="text-slate-400 hover:text-slate-700 transition-colors">
+              <MoreHorizontal size={18} />
+            </button>
           </div>
         </div>
 
@@ -1253,10 +1214,10 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           }}
         />
       ) : (
-        <aside className="w-[48px] bg-[#0B121F] border-l border-[#0B121F] shrink-0 flex flex-col h-full right-0 z-20 items-center py-4 relative group">
+        <aside className="w-[48px] bg-white border-l border-border-light shrink-0 flex flex-col h-full right-0 z-20 items-center py-4 relative group">
           <button 
             onClick={() => setIsWorkspaceOpen(true)}
-            className="w-8 h-8 rounded hover:bg-[#1A2333] transition-colors flex items-center justify-center text-slate-400 hover:text-white"
+            className="w-8 h-8 rounded hover:bg-black/5 transition-colors flex items-center justify-center text-slate-400 hover:text-[#4E75C4]"
             title="Open Verba"
           >
             <Sparkles size={18} />

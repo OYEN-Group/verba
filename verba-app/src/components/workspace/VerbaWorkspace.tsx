@@ -96,7 +96,7 @@ export function VerbaWorkspace({
   const showContext = ['assistant', 'review', 'research', 'integrity'].includes(activeTab);
 
   return (
-    <aside className="w-full sm:w-[400px] bg-white border border-border-light rounded-xl flex flex-col h-full absolute lg:relative right-6 top-6 z-20 shadow-[0_8px_30px_rgb(0,0,0,0.08)] lg:shadow-none transition-all duration-300 overflow-hidden" style={{ height: 'calc(100vh - 120px)' }}>
+    <aside className="w-[320px] bg-white border-l border-border-light flex flex-col h-full shrink-0 absolute xl:relative right-0 z-20 transition-all duration-300 shadow-xl xl:shadow-none">
       <div className="flex flex-col shrink-0 bg-white p-5 pb-0">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-start space-x-3">
@@ -104,8 +104,8 @@ export function VerbaWorkspace({
               <Sparkles size={20} className="text-[#4E75C4]" />
             </div>
             <div>
-              <h2 className="text-[18px] font-bold text-[#0B1628]">Verba Workspace</h2>
-              <p className="text-[13px] text-slate-500 mt-0.5">Everything you need, right here.</p>
+              <h2 className="text-[16px] font-bold text-[#0B1628]">VERBA</h2>
+              <p className="text-[12px] text-slate-500 mt-0.5">Contextual intelligence</p>
             </div>
           </div>
           <button
@@ -166,7 +166,7 @@ export function VerbaWorkspace({
             onInsertCitation={onInsertCitation}
           />
         )}
-        {activeTab === 'cite' && (
+        {(activeTab === 'cite' || activeTab === 'sources') && (
           <CiteTab 
             documentId={documentId} 
             workId={workId} 

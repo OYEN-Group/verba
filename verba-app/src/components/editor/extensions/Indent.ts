@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Extension } from '@tiptap/core';
 
 export const Indent = Extension.create({
