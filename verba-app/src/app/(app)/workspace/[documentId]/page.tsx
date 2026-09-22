@@ -4,7 +4,7 @@ import Link from 'next/link';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import {
-  MoreHorizontal, Play, Square, Settings2, FileText, ChevronRight, X,
+  MoreHorizontal, Play, Square, Settings2, FileText, ChevronRight, X, Edit2,
   PanelRightClose, PanelRightOpen, ChevronDown, CloudOff, Cloud, Save, Sparkles, History,
   Loader2, CheckCircle, Maximize, Minimize, List as ListIcon, Home, Share, UploadCloud, BookOpen
 } from 'lucide-react';
@@ -835,50 +835,89 @@ export default function WorkspacePage({ params }: { params: { documentId: string
 
       {/* 3. Center Panel: Document Canvas */}
       <div className="flex-1 flex flex-col min-w-0 bg-[#F6F8FB] relative">
-        {/* Workspace Thin Header */}
-        <div className="h-[48px] bg-[#F6F8FB] border-b border-border-light flex items-center justify-between px-6 shrink-0 z-20 w-full">
-          <div className="flex items-center text-[13px] font-medium text-slate-500">
-            <Link href="/dashboard" className="hover:text-slate-800 transition-colors">Works</Link>
-            <ChevronRight size={14} className="mx-1.5 opacity-50" />
-            {isRenaming ? (
-              <input
-                autoFocus
-                className="font-medium text-[13px] text-slate-800 bg-white border border-border-light rounded px-2 py-0.5 outline-none min-w-[200px]"
-                value={renameValue}
-                onChange={(e) => setRenameValue(e.target.value)}
-                onBlur={handleRenameSubmit}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleRenameSubmit();
-                  if (e.key === 'Escape') setIsRenaming(false);
-                }}
-              />
-            ) : (
-              <span 
-                className="text-slate-800 hover:text-black cursor-text truncate max-w-[400px] transition-colors"
-                onClick={() => {
-                  setRenameValue(doc.original_filename || `${doc.title}.docx`);
-                  setIsRenaming(true);
-                }}
-                title="Click to rename"
-              >
-                {doc.title || 'Untitled Document'}
-              </span>
-            )}
+        {/* Row 1: Workspace Header */}
+        <div className="bg-white border-b border-[#F0F4F8] flex items-center justify-between px-6 py-2.5 shrink-0 z-20 w-full">
+          <div className="flex items-start space-x-3">
+            <div className="mt-0.5">
+              <div className="w-8 h-9 border-2 border-[#8E9BB0] rounded-sm flex flex-col justify-center items-center relative">
+                <div className="w-4 h-0.5 bg-[#8E9BB0] mb-1" />
+                <div className="w-4 h-0.5 bg-[#8E9BB0] mb-1" />
+                <div className="w-3 h-0.5 bg-[#8E9BB0] mr-1" />
+                <div className="absolute top-0 right-0 w-2.5 h-2.5 border-l-2 border-b-2 border-white bg-[#8E9BB0]" style={{ clipPath: 'polygon(100% 0, 0 0, 0 100%)' }} />
+              </div>
+            </div>
+            <div className="flex flex-col justify-center">
+              <div className="flex items-center text-[12px] font-medium text-[#7C889C] mb-0.5">
+                <Link href="/dashboard" className="hover:text-slate-800 transition-colors">Works</Link>
+                <ChevronRight size={12} className="mx-1.5 opacity-50" />
+                <span className="hover:text-slate-800 transition-colors cursor-pointer">Natural Gas Research</span>
+                <ChevronRight size={12} className="mx-1.5 opacity-50" />
+                <span>Chapter One</span>
+              </div>
+              <div className="flex items-center space-x-2 text-[#0B1628]">
+                {isRenaming ? (
+                  <input
+                    autoFocus
+                    className="font-bold text-[16px] text-slate-900 bg-white border border-border-light rounded px-1 py-0.5 outline-none min-w-[300px]"
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onBlur={handleRenameSubmit}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleRenameSubmit();
+                      if (e.key === 'Escape') setIsRenaming(false);
+                    }}
+                  />
+                ) : (
+                  <h1 
+                    className="text-[16px] font-bold cursor-text hover:bg-black/5 rounded transition-colors truncate max-w-[500px]"
+                    onClick={() => {
+                      setRenameValue(doc.original_filename || `${doc.title}.docx`);
+                      setIsRenaming(true);
+                    }}
+                    title="Click to rename"
+                  >
+                    {doc.title || 'Untitled Document'}
+                  </h1>
+                )}
+                <button 
+                  className="text-[#7C889C] hover:text-[#0B1628] transition-colors p-1"
+                  onClick={() => {
+                    setRenameValue(doc.original_filename || `${doc.title}.docx`);
+                    setIsRenaming(true);
+                  }}
+                >
+                  <Edit2 size={14} strokeWidth={2.5} />
+                </button>
+              </div>
+            </div>
           </div>
           
           <div className="flex items-center space-x-4">
-            <div className="flex items-center text-[12px] text-slate-400 font-medium">
-              {saveStatus === 'saving' ? (
-                <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-2 animate-pulse" />
-              ) : saveStatus === 'unsaved' || saveStatus === 'failed' ? (
-                <div className="w-1.5 h-1.5 rounded-full bg-red-400 mr-2" />
-              ) : (
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2" />
-              )}
-              <span>{saveStatus === 'saving' ? 'Saving...' : saveStatus === 'unsaved' ? 'Unsaved changes' : 'Saved'}</span>
-            </div>
+            {saveStatus === 'unsaved' || saveStatus === 'failed' ? (
+              <div className="flex items-center px-3 py-1 bg-[#FFF1F2] text-[#F43F5E] rounded-full text-[13px] font-medium mr-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#F43F5E] mr-2" />
+                Unsaved changes
+              </div>
+            ) : saveStatus === 'saving' ? (
+              <div className="flex items-center px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[13px] font-medium mr-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-2 animate-pulse" />
+                Saving...
+              </div>
+            ) : null}
 
-            <button className="text-slate-400 hover:text-slate-700 transition-colors">
+            <button 
+              className="flex items-center space-x-1.5 bg-[#0B1628] hover:bg-[#15233B] text-white px-4 h-9 rounded-md text-[13px] font-medium transition-colors"
+            >
+              <Save size={14} />
+              <span>Save</span>
+            </button>
+
+            <button className="flex items-center space-x-1 text-[#0B1628] hover:bg-black/5 px-2 h-9 rounded-md text-[14px] font-medium transition-colors">
+              <span>Export</span>
+              <ChevronDown size={14} className="opacity-70" />
+            </button>
+
+            <button className="text-[#0B1628] hover:bg-black/5 p-1 rounded-md transition-colors ml-2">
               <MoreHorizontal size={18} />
             </button>
           </div>
