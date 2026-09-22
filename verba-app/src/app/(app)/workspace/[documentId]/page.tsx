@@ -781,7 +781,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   return (
     <>
     <CitationProvider sources={sources} style={citationStyle} documentCitations={documentCitations}>
-    <div className="flex flex-col h-screen h-[100dvh] overflow-hidden bg-[#F6F8FB]">
+    <div className="flex flex-col h-full w-full overflow-hidden bg-[#F6F8FB]">
       <div className="flex flex-1 overflow-hidden relative">
         {/* 2. Left Panel: Document Outline */}
         {!isFocusMode && isOutlineOpen && (
@@ -911,8 +911,8 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           </div>
         </div>
 
-          <div className={`flex-1 overflow-y-auto view-mode-${viewMode}`}>
-            <DocumentEditor
+          <div className={`flex-1 flex flex-col min-w-0 view-mode-${viewMode}`}>
+          <DocumentEditor
               initialBlocks={initialEditorJson ? undefined : initialBlocks}
               initialEditorJson={initialEditorJson}
               initialSections={doc.parsed_content.sections}
