@@ -781,7 +781,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   return (
     <>
     <CitationProvider sources={sources} style={citationStyle} documentCitations={documentCitations}>
-    <div className="flex flex-col absolute inset-0 overflow-hidden bg-[#F6F8FB]">
+    <div className="flex flex-col h-full overflow-hidden bg-[#F6F8FB]">
       <div className="flex flex-1 overflow-hidden relative">
         {/* 2. Left Panel: Document Outline */}
         {!isFocusMode && isOutlineOpen && (

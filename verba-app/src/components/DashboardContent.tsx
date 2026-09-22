@@ -45,7 +45,7 @@ export function DashboardContent({ documents, userName }: Props) {
   const greeting = userName ? `Good afternoon, ${userName}.` : 'Welcome back.';
 
   return (
-    <div className="flex flex-col min-h-full bg-background-secondary">
+    <div className="flex flex-col h-full overflow-y-auto bg-background-secondary">
       {/* Top Utility Bar */}
       <div className="h-[64px] border-b border-border-light bg-white flex items-center justify-between px-8 shrink-0 sticky top-0 z-10">
         <div className="relative w-full max-w-[420px]">
