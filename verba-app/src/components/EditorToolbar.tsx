@@ -272,11 +272,6 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           </div>
         </div>
         <div className="flex items-center space-x-4">
-          <button className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#EEF2FF] text-[#4F46E5] hover:bg-[#E0E7FF] transition-colors text-[13px] font-semibold">
-            <Sparkles size={14} />
-            <span>Ask Verba</span>
-          </button>
-          <div className="w-[1px] h-4 bg-[#E2E8F0]" />
           <button onClick={() => setShowFindReplace(!showFindReplace)} className="flex items-center space-x-1.5 text-[13px] font-medium hover:text-[#0F172A] transition-colors text-[#475569]">
             <Search size={14} />
             <span>Find (Ctrl + F)</span>

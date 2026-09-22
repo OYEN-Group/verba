@@ -921,8 +921,13 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               <ChevronDown size={14} className="opacity-70" />
             </button>
 
-            <button className="text-[#0B1628] hover:bg-black/5 p-1 rounded-md transition-colors ml-2">
-              <MoreHorizontal size={18} />
+            <button 
+              onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors ml-2 ${isWorkspaceOpen ? 'bg-[#EEF2FF] text-[#4F46E5]' : 'text-[#0B1628] hover:bg-black/5'}`}
+            >
+              <Sparkles size={14} className={isWorkspaceOpen ? 'text-[#4F46E5]' : 'opacity-70'} />
+              <span>Verba</span>
+              {isWorkspaceOpen ? <PanelRightClose size={14} className="ml-1 opacity-70" /> : <PanelRightOpen size={14} className="ml-1 opacity-70" />}
             </button>
           </div>
         </div>

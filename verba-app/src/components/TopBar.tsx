@@ -14,8 +14,8 @@ export function TopBar({ userName }: TopBarProps) {
     return name.charAt(0).toUpperCase();
   };
 
-  // Hide TopBar completely inside the workspace
-  if (pathname?.startsWith('/workspace')) {
+  // Hide TopBar completely inside the workspace or work development areas
+  if (pathname?.startsWith('/workspace') || pathname?.startsWith('/work/')) {
     return null;
   }
 
