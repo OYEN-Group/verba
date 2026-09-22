@@ -207,14 +207,13 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 
 
   return (
-    <div className="flex flex-col bg-white border-b border-[#F0F4F8] sticky top-0 z-10 w-full transition-all text-[#475569] shadow-sm">
-      
+    <div className="flex flex-col bg-white border-b border-[#E2E8F0] sticky top-0 z-10 w-full transition-all text-[#475569]">
       {/* Row 2: Menu / Actions */}
-      <div className="flex items-center justify-between px-6 py-1 border-b border-[#F0F4F8] min-h-[36px]">
-        <div className="flex items-center space-x-1 text-[13px] font-medium">
+      <div className="flex items-center justify-between px-6 py-0.5 border-b border-[#F0F4F8] min-h-[34px]">
+        <div className="flex items-center space-x-1 -ml-2 text-[13px]">
           {/* File Menu */}
           <div className="relative group">
-            <button className="px-3 py-1 bg-[#EEF2FF] text-[#4F46E5] rounded transition-colors cursor-pointer">File</button>
+            <button className="px-2 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">File</button>
             <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-md py-1 w-48 z-50">
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', {'key': 's', 'ctrlKey': true}))}>Save (Ctrl+S)</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5">Export</button>
@@ -222,7 +221,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           </div>
           {/* Edit Menu */}
           <div className="relative group">
-            <button className="px-3 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">Edit</button>
+            <button className="px-2 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">Edit</button>
             <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-md py-1 w-48 z-50">
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => editor.chain().focus().undo().run()}>Undo (Ctrl+Z)</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => editor.chain().focus().redo().run()}>Redo (Ctrl+Y)</button>
@@ -233,7 +232,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           </div>
           {/* Insert Menu */}
           <div className="relative group">
-            <button className="px-3 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">Insert</button>
+            <button className="px-2 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">Insert</button>
             <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-md py-1 w-48 z-50">
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={insertTable}>Table</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={handleImageUpload}>Image</button>
@@ -246,7 +245,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           </div>
           {/* Format Menu */}
           <div className="relative group">
-            <button className="px-3 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">Format</button>
+            <button className="px-2 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">Format</button>
             <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-md py-1 w-48 z-50 max-h-[300px] overflow-y-auto">
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5 font-bold" onClick={toggleBold}>Bold</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5 italic" onClick={toggleItalic}>Italic</button>
@@ -264,7 +263,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           </div>
           {/* References Menu */}
           <div className="relative group">
-            <button className="px-3 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">References</button>
+            <button className="px-2 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">References</button>
             <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-md py-1 w-48 z-50">
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5">Add Citation</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5">Find Evidence</button>
@@ -280,8 +279,8 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
       </div>
 
       {/* Row 3: Formatting */}
-      <div className="flex items-center px-6 py-1.5 border-b border-[#F0F4F8] min-h-[42px] overflow-x-auto no-scrollbar space-x-1">
-        <div className="flex items-center space-x-0.5 shrink-0">
+      <div className="flex items-center px-6 py-1 min-h-[38px] overflow-x-auto no-scrollbar space-x-1">
+        <div className="flex items-center space-x-0.5 shrink-0 -ml-1.5">
           <ToolbarButton onClick={() => editor.chain().focus().undo().run()} title="Undo (Ctrl+Z)" disabled={!editor.can().undo()}>
             <Undo size={14} className="opacity-70" />
           </ToolbarButton>
@@ -461,55 +460,15 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
             <Eraser size={14} />
           </ToolbarButton>
         </div>
-      </div>
+        <div className="w-[1px] h-5 bg-[#E2E8F0] mx-2 shrink-0" />
 
-      {/* Row 4: Quick Insert / Advanced */}
-      <div className="flex items-center px-6 py-1.5 min-h-[40px] overflow-x-auto no-scrollbar space-x-1 text-[#475569]">
-        <div className="flex items-center space-x-2 text-[12px] font-medium shrink-0">
-          <button className="flex items-center space-x-1.5 hover:bg-black/5 px-2 py-1 rounded transition-colors" onClick={insertTable} title="Insert Table">
-            <TableIcon size={14} />
-            <span>Table</span>
-          </button>
-          <button className="flex items-center space-x-1.5 hover:bg-black/5 px-2 py-1 rounded transition-colors" onClick={handleImageUpload} title="Insert Image">
-            <ImageIcon size={14} />
-            <span>Image</span>
-          </button>
-          <button className={`flex items-center space-x-1.5 hover:bg-black/5 px-2 py-1 rounded transition-colors ${editor.isActive('link') ? 'bg-black/5 text-[#0F172A]' : ''}`} onClick={toggleLink} title="Insert Link (Ctrl+K)">
-            <Link2 size={14} />
-            <span>Link</span>
-          </button>
-          <button className={`flex items-center space-x-1.5 hover:bg-black/5 px-2 py-1 rounded transition-colors ${editor.isActive('blockquote') ? 'bg-black/5 text-[#0F172A]' : ''}`} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="Insert Quote">
-            <Quote size={14} />
-            <span>Quote</span>
-          </button>
-        </div>
+        <button className="flex items-center space-x-1.5 hover:bg-black/5 px-2 py-1 rounded transition-colors text-[13px] font-medium text-[#475569]">
+          <span>Cite</span>
+        </button>
 
-        <div className="w-[1px] h-5 bg-[#E2E8F0] mx-3 shrink-0" />
-
-        <div className="flex items-center space-x-2 text-[12px] font-medium shrink-0">
-          <button className="flex items-center space-x-1.5 hover:bg-black/5 px-2 py-1 rounded transition-colors" onClick={() => editor.chain().focus().setPageBreak().run()} title="Insert Page Break">
-            <Minus size={14} />
-            <span>Page Break</span>
-          </button>
-        </div>
-
-        <div className="w-[1px] h-5 bg-[#E2E8F0] mx-3 shrink-0" />
-
-        <div className="flex items-center space-x-2 text-[12px] font-medium shrink-0">
-          <button className="flex items-center space-x-1.5 hover:bg-black/5 px-2 py-1 rounded transition-colors" title="Insert Equation" onClick={() => (editor.chain().focus() as any).insertMathEquation().run()}>
-            <Sigma size={14} />
-            <span>Equation</span>
-          </button>
-        </div>
-
-        <div className="w-[1px] h-5 bg-[#E2E8F0] mx-3 shrink-0" />
-
-        <div className="flex items-center space-x-2 text-[12px] font-medium shrink-0">
-          <button className={`flex items-center space-x-1.5 hover:bg-black/5 px-2 py-1 rounded transition-colors ${editor.isActive('citation') ? 'bg-black/5 text-[#0F172A]' : ''}`} title="Cite" onClick={() => {}}>
-            <Quote size={14} />
-            <span>Cite</span>
-          </button>
-        </div>
+        <button className="flex items-center justify-center w-7 h-7 hover:bg-black/5 rounded transition-colors text-[#475569] ml-1">
+          <MoreHorizontal size={14} />
+        </button>
       </div>
 
       {/* Find & Replace Floating Dialog */}

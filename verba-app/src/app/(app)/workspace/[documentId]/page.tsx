@@ -840,63 +840,42 @@ export default function WorkspacePage({ params }: { params: { documentId: string
       {/* 3. Center Panel: Document Canvas */}
       <div className="flex-1 flex flex-col min-w-0 bg-[#F6F8FB] relative">
         {/* Row 1: Workspace Header */}
-        <div className="bg-white border-b border-[#F0F4F8] flex items-center justify-between px-6 py-2.5 shrink-0 z-20 w-full">
-          <div className="flex items-start space-x-3">
-            <div className="mt-0.5">
-              <div className="w-8 h-9 border-2 border-[#8E9BB0] rounded-sm flex flex-col justify-center items-center relative">
-                <div className="w-4 h-0.5 bg-[#8E9BB0] mb-1" />
-                <div className="w-4 h-0.5 bg-[#8E9BB0] mb-1" />
-                <div className="w-3 h-0.5 bg-[#8E9BB0] mr-1" />
-                <div className="absolute top-0 right-0 w-2.5 h-2.5 border-l-2 border-b-2 border-white bg-[#8E9BB0]" style={{ clipPath: 'polygon(100% 0, 0 0, 0 100%)' }} />
-              </div>
+        <div className="bg-white border-b border-[#F0F4F8] flex items-center justify-between px-6 py-2 shrink-0 z-20 w-full min-h-[56px]">
+          <div className="flex flex-col justify-center">
+            <div className="flex items-center text-[11px] font-medium text-[#94A3B8] mb-[2px] leading-tight">
+              <Link href="/dashboard" className="hover:text-slate-800 transition-colors">Works</Link>
+              <span className="mx-1 opacity-50">/</span>
+              <span className="hover:text-slate-800 transition-colors cursor-pointer truncate max-w-[150px]" title={workTitle || 'Untitled Work'}>{workTitle || 'Untitled Work'}</span>
             </div>
-            <div className="flex flex-col justify-center">
-              <div className="flex items-center text-[12px] font-medium text-[#7C889C] mb-0.5">
-                <Link href="/dashboard" className="hover:text-slate-800 transition-colors">Works</Link>
-                <ChevronRight size={12} className="mx-1.5 opacity-50" />
-                <span className="hover:text-slate-800 transition-colors cursor-pointer truncate max-w-[150px]" title={workTitle || 'Untitled Work'}>{workTitle || 'Untitled Work'}</span>
-                <ChevronRight size={12} className="mx-1.5 opacity-50" />
-                <span className="truncate max-w-[150px]" title={doc.title || 'Untitled Document'}>{doc.title || 'Untitled Document'}</span>
-              </div>
-              <div className="flex items-center space-x-2 text-[#0B1628]">
-                {isRenaming ? (
-                  <input
-                    autoFocus
-                    className="font-bold text-[16px] text-slate-900 bg-white border border-border-light rounded px-1 py-0.5 outline-none min-w-[300px]"
-                    value={renameValue}
-                    onChange={(e) => setRenameValue(e.target.value)}
-                    onBlur={handleRenameSubmit}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleRenameSubmit();
-                      if (e.key === 'Escape') setIsRenaming(false);
-                    }}
-                  />
-                ) : (
-                  <h1 
-                    className="text-[16px] font-bold cursor-text hover:bg-black/5 rounded transition-colors truncate max-w-[500px]"
-                    onClick={() => {
-                      setRenameValue(doc.original_filename || `${doc.title}.docx`);
-                      setIsRenaming(true);
-                    }}
-                    title="Click to rename"
-                  >
-                    {doc.title || 'Untitled Document'}
-                  </h1>
-                )}
-                <button 
-                  className="text-[#7C889C] hover:text-[#0B1628] transition-colors p-1"
+            <div className="flex items-center space-x-2 text-[#0B1628]">
+              {isRenaming ? (
+                <input
+                  autoFocus
+                  className="font-semibold text-[15px] text-slate-900 bg-white border border-border-light rounded px-1 py-0.5 outline-none min-w-[300px]"
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  onBlur={handleRenameSubmit}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleRenameSubmit();
+                    if (e.key === 'Escape') setIsRenaming(false);
+                  }}
+                />
+              ) : (
+                <h1 
+                  className="text-[15px] font-semibold cursor-text hover:bg-black/5 rounded transition-colors truncate max-w-[500px] leading-tight"
                   onClick={() => {
                     setRenameValue(doc.original_filename || `${doc.title}.docx`);
                     setIsRenaming(true);
                   }}
+                  title="Click to rename"
                 >
-                  <Edit2 size={14} strokeWidth={2.5} />
-                </button>
-              </div>
+                  {doc.title || 'Untitled Document'}
+                </h1>
+              )}
             </div>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             {saveStatus === 'unsaved' || saveStatus === 'failed' ? (
               <div className="flex items-center px-3 py-1 bg-[#FFF1F2] text-[#F43F5E] rounded-full text-[13px] font-medium mr-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#F43F5E] mr-2" />

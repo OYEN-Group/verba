@@ -114,8 +114,6 @@ html, body {
 
 .view-mode-print {
   background-color: #F6F8FB;
-  padding-top: 2rem;
-  padding-bottom: 2rem;
   min-height: 100%;
 }
 
