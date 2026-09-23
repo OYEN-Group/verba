@@ -169,8 +169,29 @@ html, body {
 /* Wide: Top/Bottom 1 inch, Left/Right 2 inches ≈ 192px */
 .view-mode-print .verba-section[data-margins="wide"] { padding: 96px 192px; }
 
-/* Web Layout (Default Mode) overrides */
+/* ─── Web Layout (Default Mode) overrides ─── */
 .view-mode-web .verba-section {
   width: 100%;
-  padding: 1rem 0;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+/* ─── Print Mode: card is transparent — verba-sections are the actual pages ─── */
+.view-mode-print .verba-editor-card {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+}
+
+/* ─── Editor Placeholder (empty document, no Placeholder extension needed) ─── */
+.ProseMirror > .verba-section:first-child:last-child > p:first-child:last-child:empty::before {
+  content: 'Start writing\2026';
+  color: #B8C4CF;
+  pointer-events: none;
+  float: left;
+  height: 0;
+  font-style: normal;
 }

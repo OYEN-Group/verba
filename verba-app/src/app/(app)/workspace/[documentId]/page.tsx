@@ -856,7 +856,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
       )}
 
       {/* 3. Center Panel: Document Canvas */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#F6F8FB] overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#F4F5F7] overflow-hidden">
         {/* Row 1: Workspace Header */}
         <div className="bg-white border-b border-[#F0F4F8] flex items-center justify-between px-6 py-2 shrink-0 z-20 w-full min-h-[56px]">
           <div className="flex flex-col justify-center">

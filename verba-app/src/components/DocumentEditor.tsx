@@ -446,18 +446,20 @@ export function DocumentEditor({
   };
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 bg-[#F6F8FB] overflow-hidden">
+    <div className="flex-1 flex flex-col min-w-0 bg-[#F4F5F7] overflow-hidden">
       {/* Document Toolbar - sits above scroll area, not sticky */}
       <div className="shrink-0 z-20 w-full">
         <EditorToolbar editor={editor} />
       </div>
 
       {/* Scrollable Document Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-8 md:px-12 md:py-16 flex justify-center items-start scroll-smooth w-full">
+      {/* Workspace background surrounds the manuscript — py-8 keeps 32px breathing room above page */}
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-8 flex justify-center items-start scroll-smooth w-full">
         <div className="flex flex-col items-center origin-top transition-transform duration-200 w-full" style={{ transform: `scale(${scale})` }}>
           
+          {/* verba-editor-card: CSS targeted by .view-mode-print to become transparent (sections are pages) */}
           <div 
-            className="bg-white shadow-sm border border-black/5 rounded-sm p-10 sm:p-16 md:p-20 pb-32 mb-32 w-full max-w-[850px] min-h-[1100px]"
+            className="verba-editor-card bg-white border border-[#E2E6EC] rounded-none shadow-[0_1px_3px_rgba(0,0,0,0.07)] w-full max-w-[820px] min-h-[1100px] mb-8 px-10 pt-14 pb-16 md:px-20 md:pt-[72px] md:pb-20"
             onClick={(e) => {
             const target = e.target as HTMLElement;
             const citationNode = target.closest('[data-citation-id]');
