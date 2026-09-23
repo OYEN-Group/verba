@@ -453,13 +453,13 @@ export function DocumentEditor({
       </div>
 
       {/* Scrollable Document Area */}
-      {/* Workspace background surrounds the manuscript — py-8 keeps 32px breathing room above page */}
-      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-8 flex justify-center items-start scroll-smooth w-full">
+      {/* Workspace background: py-5 = 20px breathing room above page; px-6 = 24px each side */}
+      <div className="flex-1 overflow-y-auto px-6 py-5 flex justify-center items-start scroll-smooth w-full">
         <div className="flex flex-col items-center origin-top transition-transform duration-200 w-full" style={{ transform: `scale(${scale})` }}>
           
           {/* verba-editor-card: CSS targeted by .view-mode-print to become transparent (sections are pages) */}
           <div 
-            className="verba-editor-card bg-white border border-[#E2E6EC] rounded-none shadow-[0_1px_3px_rgba(0,0,0,0.07)] w-full max-w-[820px] min-h-[1100px] mb-8 px-10 pt-14 pb-16 md:px-20 md:pt-[72px] md:pb-20"
+            className="verba-editor-card bg-white border border-[#E2E6EC] rounded-none shadow-[0_1px_3px_rgba(0,0,0,0.07)] w-full max-w-[920px] min-h-[1100px] mb-8 px-10 pt-12 pb-14 md:px-16 md:pt-[60px] md:pb-[72px]"
             onClick={(e) => {
             const target = e.target as HTMLElement;
             const citationNode = target.closest('[data-citation-id]');

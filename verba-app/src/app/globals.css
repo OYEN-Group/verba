@@ -169,12 +169,20 @@ html, body {
 /* Wide: Top/Bottom 1 inch, Left/Right 2 inches ≈ 192px */
 .view-mode-print .verba-section[data-margins="wide"] { padding: 96px 192px; }
 
-/* ─── Web Layout (Default Mode) overrides ─── */
+/* ─── Web Layout: card is borderless continuous surface — sections own the constraint ─── */
+.view-mode-web .verba-editor-card {
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+}
+
+/* Sections provide internal document margins; max-width matches card to eliminate contradiction */
 .view-mode-web .verba-section {
   width: 100%;
-  max-width: 900px;
+  max-width: 920px;
   margin: 0 auto;
-  padding: 2rem 0;
+  padding: 1.5rem 64px;
 }
 
 /* ─── Print Mode: card is transparent — verba-sections are the actual pages ─── */
