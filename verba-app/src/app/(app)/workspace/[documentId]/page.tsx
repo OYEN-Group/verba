@@ -914,10 +914,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               <span>Save</span>
             </button>
 
-            <button className="flex items-center space-x-1 text-[#0B1628] hover:bg-black/5 px-2 h-9 rounded-md text-[14px] font-medium transition-colors">
-              <span>Export</span>
-              <ChevronDown size={14} className="opacity-70" />
-            </button>
+
 
             <button 
               onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}

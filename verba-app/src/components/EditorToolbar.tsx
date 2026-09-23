@@ -216,7 +216,6 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
             <button className="px-2 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">File</button>
             <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-md py-1 w-48 z-50">
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', {'key': 's', 'ctrlKey': true}))}>Save (Ctrl+S)</button>
-              <button className="w-full text-left px-4 py-1.5 hover:bg-black/5">Export</button>
             </div>
           </div>
           {/* Edit Menu */}
@@ -468,9 +467,6 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           <span>Cite</span>
         </button>
 
-        <button className="flex items-center justify-center w-7 h-7 hover:bg-black/5 rounded transition-colors text-[#475569] ml-1">
-          <MoreHorizontal size={14} />
-        </button>
       </div>
 
       {/* Find & Replace Floating Dialog */}

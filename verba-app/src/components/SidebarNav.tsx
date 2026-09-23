@@ -130,29 +130,7 @@ export function SidebarNav({ userName = 'Writer', userEmail = '', isCollapsed = 
         })}
       </div>
       
-      {/* Prove Navigation */}
-      <div className={`mb-[24px] ${isCollapsed ? 'px-2 space-y-[2px] flex flex-col items-center' : 'px-3 space-y-[2px]'}`}>
-        {!isCollapsed && (
-          <div className="px-3 mb-[8px]">
-            <span className="text-[10px] font-semibold text-[#64748B] tracking-[0.1em]">PROVE</span>
-          </div>
-        )}
-        <Link 
-          href="/prove" 
-          title={isCollapsed ? 'Prove' : undefined}
-          className={`flex items-center transition-colors rounded-[6px] relative ${
-            pathname === '/prove'
-              ? 'bg-[#162032] text-white font-medium'
-              : 'text-[#94A3B8] hover:text-white hover:bg-white/5'
-          } ${isCollapsed ? 'w-10 h-10 justify-center' : 'w-full h-[34px] px-3 space-x-3'}`}
-        >
-          {pathname === '/prove' && !isCollapsed && (
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-[#4E75C4] rounded-r" />
-          )}
-          <Shield size={16} strokeWidth={pathname === '/prove' ? 2.5 : 2} className={pathname === '/prove' ? 'text-[#4E75C4]' : ''} />
-          {!isCollapsed && <span className="text-[13px]">Prove</span>}
-        </Link>
-      </div>
+      {/* Prove Navigation — hidden until /prove route is implemented */}
 
       {/* Recent Works */}
       {!isCollapsed && recentWorks.length > 0 && (
