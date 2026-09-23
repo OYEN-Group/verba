@@ -453,6 +453,24 @@ export default function WorkspacePage({ params }: { params: { documentId: string
     return () => window.removeEventListener('click', closeInspector);
   }, []);
 
+  // Listen for toolbar events dispatched by EditorToolbar
+  useEffect(() => {
+    const openCite = () => {
+      setIsWorkspaceOpen(true);
+      setWorkspaceTab('cite');
+    };
+    const findEvidence = () => {
+      setIsWorkspaceOpen(true);
+      setWorkspaceTab('research');
+    };
+    window.addEventListener('verba:open-cite', openCite);
+    window.addEventListener('verba:find-evidence', findEvidence);
+    return () => {
+      window.removeEventListener('verba:open-cite', openCite);
+      window.removeEventListener('verba:find-evidence', findEvidence);
+    };
+  }, []);
+
   const [liveCharacterCount, setLiveCharacterCount] = useState<number | null>(null);
 
   // ─── Editor onUpdate callback ─────────────────────────────────────────────
@@ -889,6 +907,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
             ) : null}
 
             <button 
+              onClick={triggerManualSave}
               className="flex items-center space-x-1.5 bg-[#0B1628] hover:bg-[#15233B] text-white px-4 h-9 rounded-md text-[13px] font-medium transition-colors"
             >
               <Save size={14} />
@@ -973,9 +992,12 @@ export default function WorkspacePage({ params }: { params: { documentId: string
             </div>
 
             <div className="flex items-center space-x-6">
-              <button className="flex items-center space-x-1.5 hover:text-foreground transition-colors">
+              <button
+                onClick={() => setViewMode(v => v === 'print' ? 'web' : 'print')}
+                className="flex items-center space-x-1.5 hover:text-foreground transition-colors"
+              >
                 <FileText size={14} />
-                <span>Page View</span>
+                <span>{viewMode === 'print' ? 'Print View' : 'Web View'}</span>
                 <ChevronDown size={14} className="opacity-70 ml-1" />
               </button>
               
@@ -987,7 +1009,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
                 ) : (
                   <div className="w-1.5 h-1.5 rounded-full bg-status-success mr-2" />
                 )}
-                <span>{saveStatus === 'saving' ? 'Saving...' : saveStatus === 'unsaved' ? 'Unsaved changes' : 'Saved 2 minutes ago'}</span>
+                <span>{saveStatus === 'saving' ? 'Saving...' : saveStatus === 'unsaved' || saveStatus === 'failed' ? 'Unsaved changes' : 'Saved'}</span>
               </div>
 
               {/* Zoom Control */}
