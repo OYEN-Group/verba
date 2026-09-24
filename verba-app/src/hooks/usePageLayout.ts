@@ -13,6 +13,7 @@ import {
 export interface PageLayoutResult {
   pageCount: number;
   pageModel: PageModel;
+  currentPage: number;
 }
 
 /**
@@ -34,10 +35,12 @@ export function usePageLayout(
   scrollContainerRef: React.RefObject<HTMLDivElement | null>,
 ): PageLayoutResult {
   const [pageCount, setPageCount] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [pageModel, setPageModel] = useState<PageModel>(DEFAULT_PAGE_MODEL);
 
   const rafRef     = useRef<number>(0);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const pageMapRef  = useRef<Map<number, number>>(new Map());
 
   const clearPagination = useCallback(() => {
     if (!editor) return;
@@ -49,7 +52,9 @@ export function usePageLayout(
       );
     } catch { /* view destroyed */ }
     setPageCount(1);
+    setCurrentPage(1);
     setPageModel(DEFAULT_PAGE_MODEL);
+    pageMapRef.current.clear();
   }, [editor]);
 
   const runLayout = useCallback(() => {
@@ -78,6 +83,7 @@ export function usePageLayout(
     let currentPageHeight  = 0;
     let newPageCount       = 1;
     let isFirstContentBlock = true;
+    const newPageMap = new Map<number, number>();
 
     doc.descendants((node, pos, parent) => {
       // Descend into doc and section nodes
@@ -118,6 +124,7 @@ export function usePageLayout(
           newPageCount += extraPages;
           currentPageHeight = excess % usableHeight || usableHeight;
         }
+        newPageMap.set(pos, newPageCount);
         return false;
       }
 
@@ -153,6 +160,7 @@ export function usePageLayout(
           newPageCount += extraPages;
           currentPageHeight = excess % usableHeight || usableHeight;
         }
+        newPageMap.set(pos, newPageCount);
       } else {
         // Block fits — accumulate height.
         currentPageHeight += naturalHeight;
@@ -164,6 +172,7 @@ export function usePageLayout(
           newPageCount += extraPages;
           currentPageHeight = excess % usableHeight || usableHeight;
         }
+        newPageMap.set(pos, newPageCount);
       }
 
       return false; // Do not recurse into block children
@@ -181,8 +190,38 @@ export function usePageLayout(
       );
     } catch { /* view destroyed */ }
 
+    pageMapRef.current = newPageMap;
     setPageCount(newPageCount);
+    updateCurrentPage(newPageMap);
   }, [editor, viewMode, clearPagination]);
+
+  const updateCurrentPage = useCallback((map = pageMapRef.current) => {
+    if (!editor) return;
+    const { $from } = editor.state.selection;
+    let blockPos = 0;
+    for (let i = $from.depth; i > 0; i--) {
+      const node = $from.node(i);
+      if (node.isBlock && $from.node(i - 1)?.type.name === 'section') {
+        blockPos = $from.before(i);
+        break;
+      }
+    }
+    
+    // Fallback: if block not perfectly found, find closest preceding block in map
+    if (!map.has(blockPos)) {
+       let closest = 1;
+       let maxPos = -1;
+       for (const [p, pg] of map.entries()) {
+         if (p <= $from.pos && p > maxPos) {
+           maxPos = p;
+           closest = pg;
+         }
+       }
+       setCurrentPage(closest);
+    } else {
+       setCurrentPage(map.get(blockPos) || 1);
+    }
+  }, [editor]);
 
   const scheduleLayout = useCallback(() => {
     clearTimeout(debounceRef.current);
@@ -197,13 +236,15 @@ export function usePageLayout(
   useEffect(() => {
     if (!editor) return;
     editor.on('update', scheduleLayout);
+    editor.on('selectionUpdate', () => updateCurrentPage());
     scheduleLayout(); // initial layout pass on mount
     return () => {
       editor.off('update', scheduleLayout);
+      editor.off('selectionUpdate');
       clearTimeout(debounceRef.current);
       cancelAnimationFrame(rafRef.current);
     };
-  }, [editor, scheduleLayout]);
+  }, [editor, scheduleLayout, updateCurrentPage]);
 
   // Clear when switching to web view
   useEffect(() => {
@@ -222,5 +263,5 @@ export function usePageLayout(
     return () => obs.disconnect();
   }, [scrollContainerRef, scheduleLayout]);
 
-  return { pageCount, pageModel };
+  return { pageCount, pageModel, currentPage };
 }

@@ -41,7 +41,23 @@ export function getUsableHeight(model: PageModel): number {
 export function getPageModelFromSectionAttrs(attrs: Record<string, unknown>): PageModel {
   const pageSize = (attrs?.pageSize as string) || 'A4';
   const margins  = (attrs?.margins  as string) || 'normal';
-  return PAGE_MODELS[pageSize]?.[margins] ?? DEFAULT_PAGE_MODEL;
+  const orientation = (attrs?.orientation as string) || 'portrait';
+  
+  const baseModel = PAGE_MODELS[pageSize]?.[margins] ?? DEFAULT_PAGE_MODEL;
+  
+  if (orientation === 'landscape') {
+    return {
+      ...baseModel,
+      pageWidth: baseModel.pageHeight,
+      pageHeight: baseModel.pageWidth,
+      marginTop: baseModel.marginLeft,
+      marginBottom: baseModel.marginRight,
+      marginLeft: baseModel.marginTop,
+      marginRight: baseModel.marginBottom,
+    };
+  }
+  
+  return baseModel;
 }
 
 export const PageLayout = Extension.create({

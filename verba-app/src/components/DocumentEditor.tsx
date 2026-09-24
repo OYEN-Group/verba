@@ -6,6 +6,7 @@ import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
 import { EditorToolbar } from './EditorToolbar';
+import { DocumentRuler } from './workspace/DocumentRuler';
 import { VerbaBlockId, IssueHighlight, IssueProp } from './editor/EditorExtensions';
 import { Citation } from './editor/extensions/Citation';
 import { Sparkles, Search, ShieldCheck, BookOpen } from 'lucide-react';
@@ -23,7 +24,7 @@ import { Figure } from './editor/extensions/Figure';
 import { Section } from './editor/extensions/Section';
 import { PageBreak } from './editor/extensions/PageBreak';
 import { LineHeight } from './editor/extensions/LineHeight';
-import { Indent } from './editor/extensions/Indent';
+import { ParagraphFormat } from './editor/extensions/ParagraphFormat';
 import FontFamily from '@tiptap/extension-font-family';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
@@ -88,6 +89,7 @@ interface DocumentEditorProps {
   onBlur?: () => void;
   viewMode?: 'print' | 'web';
   onPageCountChange?: (count: number) => void;
+  onCurrentPageChange?: (page: number) => void;
 }
 
 /**
@@ -174,6 +176,7 @@ export function DocumentEditor({
   onBlur,
   viewMode = 'web',
   onPageCountChange,
+  onCurrentPageChange,
 }: DocumentEditorProps) {
   const [mounted, setMounted] = useState(false);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
@@ -219,7 +222,7 @@ export function DocumentEditor({
       Highlight.configure({ multicolor: true }),
       FontSize,
       LineHeight,
-      Indent,
+      ParagraphFormat,
       CharacterCount,
       MathEquation,
       SearchAndReplace.configure({
@@ -405,14 +408,19 @@ export function DocumentEditor({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor]);
 
-  const { pageCount, pageModel } = usePageLayout(editor, viewMode, scrollContainerRef);
-
+  const { pageCount, pageModel, currentPage } = usePageLayout(editor, viewMode, scrollContainerRef);
 
   useEffect(() => {
     if (onPageCountChange) {
       onPageCountChange(pageCount);
     }
   }, [pageCount, onPageCountChange]);
+
+  useEffect(() => {
+    if (onCurrentPageChange) {
+      onCurrentPageChange(currentPage);
+    }
+  }, [currentPage, onCurrentPageChange]);
 
   if (!editor) {
     return null;
@@ -497,6 +505,10 @@ export function DocumentEditor({
             }
           `}} />
           
+          {viewMode === 'print' && (
+            <DocumentRuler editor={editor} pageModel={pageModel} zoomLevel={zoomLevel} />
+          )}
+
           {/* verba-editor-card: CSS targeted by .view-mode-print to become transparent (sections are pages) */}
           <div 
             className="verba-editor-card bg-white border border-[#E2E6EC] rounded-none shadow-[0_1px_3px_rgba(0,0,0,0.07)] w-full mb-8"
