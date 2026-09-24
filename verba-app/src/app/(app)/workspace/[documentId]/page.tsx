@@ -859,18 +859,20 @@ export default function WorkspacePage({ params }: { params: { documentId: string
       {/* 3. Center Panel: Document Canvas */}
       <div className="flex-1 flex flex-col min-w-0 bg-[#F4F5F7] overflow-hidden">
         {/* Row 1: Workspace Header */}
-        <div className="bg-white border-b border-[#F0F4F8] flex items-center justify-between px-6 py-2 shrink-0 z-20 w-full min-h-[56px]">
-          <div className="flex flex-col justify-center">
-            <div className="flex items-center text-[11px] font-medium text-[#94A3B8] mb-[2px] leading-tight">
-              <Link href="/dashboard" className="hover:text-slate-800 transition-colors">Works</Link>
-              <span className="mx-1 opacity-50">/</span>
-              <span className="hover:text-slate-800 transition-colors cursor-pointer truncate max-w-[150px]" title={workTitle || 'Untitled Work'}>{workTitle || 'Untitled Work'}</span>
+        <div className="bg-white border-b border-[#F0F4F8] flex items-center justify-between px-6 shrink-0 z-20 w-full h-[48px]">
+          <div className="flex items-center">
+            <div className="flex items-center text-[12px] font-medium text-foreground-muted mr-3">
+              <Link href="/dashboard" className="hover:text-foreground transition-colors">Works</Link>
+              <span className="mx-1.5 opacity-40">/</span>
+              <span className="hover:text-foreground transition-colors cursor-pointer truncate max-w-[150px]" title={workTitle || 'Untitled Work'}>{workTitle || 'Untitled Work'}</span>
+              <span className="mx-1.5 opacity-40">/</span>
             </div>
-            <div className="flex items-center space-x-2 text-[#0B1628]">
+            
+            <div className="flex items-center text-[#0B1628]">
               {isRenaming ? (
                 <input
                   autoFocus
-                  className="font-semibold text-[15px] text-slate-900 bg-white border border-border-light rounded px-1 py-0.5 outline-none min-w-[300px]"
+                  className="font-semibold text-[14px] text-slate-900 bg-white border border-accent rounded px-1.5 py-0.5 outline-none min-w-[300px]"
                   value={renameValue}
                   onChange={(e) => setRenameValue(e.target.value)}
                   onBlur={handleRenameSubmit}
@@ -881,7 +883,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
                 />
               ) : (
                 <h1 
-                  className="text-[15px] font-semibold cursor-text hover:bg-black/5 rounded transition-colors truncate max-w-[500px] leading-tight"
+                  className="text-[14px] font-semibold cursor-text hover:bg-black/5 rounded px-1.5 py-0.5 -ml-1.5 transition-colors truncate max-w-[500px]"
                   onClick={() => {
                     setRenameValue(doc.original_filename || `${doc.title}.docx`);
                     setIsRenaming(true);
@@ -896,34 +898,33 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           
           <div className="flex items-center space-x-3">
             {saveStatus === 'unsaved' || saveStatus === 'failed' ? (
-              <div className="flex items-center px-3 py-1 bg-[#FFF1F2] text-[#F43F5E] rounded-full text-[13px] font-medium mr-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#F43F5E] mr-2" />
+              <div className="flex items-center text-[12px] text-[#F43F5E] font-medium mr-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#F43F5E] mr-1.5" />
                 Unsaved changes
               </div>
             ) : saveStatus === 'saving' ? (
-              <div className="flex items-center px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[13px] font-medium mr-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-2 animate-pulse" />
+              <div className="flex items-center text-[12px] text-amber-600 font-medium mr-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 animate-pulse" />
                 Saving...
               </div>
             ) : null}
 
-            <button 
-              onClick={triggerManualSave}
-              className="flex items-center space-x-1.5 bg-[#0B1628] hover:bg-[#15233B] text-white px-4 h-9 rounded-md text-[13px] font-medium transition-colors"
-            >
-              <Save size={14} />
-              <span>Save</span>
-            </button>
-
-
+            {saveStatus === 'failed' && (
+              <button 
+                onClick={triggerManualSave}
+                className="flex items-center space-x-1 border border-border-light hover:bg-black/5 text-foreground px-3 h-[28px] rounded text-[12px] font-medium transition-colors"
+              >
+                <Save size={13} />
+                <span>Retry Save</span>
+              </button>
+            )}
 
             <button 
               onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors ml-2 ${isWorkspaceOpen ? 'bg-[#EEF2FF] text-[#4F46E5]' : 'text-[#0B1628] hover:bg-black/5'}`}
+              className={`flex items-center space-x-1.5 px-3 h-[28px] rounded text-[12px] font-medium transition-colors ${isWorkspaceOpen ? 'bg-accent/10 text-accent' : 'border border-border-light hover:bg-black/5 text-foreground'}`}
             >
-              <Sparkles size={14} className={isWorkspaceOpen ? 'text-[#4F46E5]' : 'opacity-70'} />
-              <span>Verba</span>
-              {isWorkspaceOpen ? <PanelRightClose size={14} className="ml-1 opacity-70" /> : <PanelRightOpen size={14} className="ml-1 opacity-70" />}
+              <Sparkles size={13} className={isWorkspaceOpen ? 'text-accent' : 'opacity-70'} />
+              <span>Verba Intelligence</span>
             </button>
           </div>
         </div>
@@ -935,7 +936,11 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               initialSections={doc.parsed_content.sections}
               isEditable={!isRenaming}
               zoomLevel={zoomLevel}
+              setZoomLevel={setZoomLevel}
               viewMode={viewMode}
+              setViewMode={setViewMode}
+              isFocusMode={isFocusMode}
+              setIsFocusMode={setIsFocusMode}
               onPageCountChange={setPageCount}
               issues={issues}
               selectedIssueId={activeIssueId}
@@ -984,8 +989,8 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           </div>
 
           {/* Document Status Bar */}
-          <div className="h-[40px] bg-white border-t border-border-light flex items-center justify-between px-8 shrink-0 text-[12px] text-foreground-secondary z-10 relative">
-            <div className="flex items-center space-x-3">
+          <div className="h-[30px] bg-white border-t border-border-light flex items-center justify-between px-6 shrink-0 text-[11px] text-foreground-muted z-10 relative font-medium">
+            <div className="flex items-center space-x-4">
               <span>{pageCount} {pageCount === 1 ? 'page' : 'pages'}</span>
               <span className="w-px h-3 bg-border-light" />
               <span>{liveWordCount !== null ? `${liveWordCount.toLocaleString()} words` : 'Calculating...'}</span>
@@ -993,47 +998,23 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               <span>{documentCitations.length} sources</span>
             </div>
 
-            <div className="flex items-center space-x-6">
-              <button
-                onClick={() => setViewMode(v => v === 'print' ? 'web' : 'print')}
-                className="flex items-center space-x-1.5 hover:text-foreground transition-colors"
-              >
-                <FileText size={14} />
-                <span>{viewMode === 'print' ? 'Print View' : 'Web View'}</span>
-                <ChevronDown size={14} className="opacity-70 ml-1" />
-              </button>
-              
-              <div className="flex items-center font-medium">
-                {saveStatus === 'saving' ? (
-                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-2 animate-pulse" />
-                ) : saveStatus === 'unsaved' || saveStatus === 'failed' ? (
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-400 mr-2" />
-                ) : (
-                  <div className="w-1.5 h-1.5 rounded-full bg-status-success mr-2" />
-                )}
-                <span>{saveStatus === 'saving' ? 'Saving...' : saveStatus === 'unsaved' || saveStatus === 'failed' ? 'Unsaved changes' : 'Saved'}</span>
-              </div>
-
-              {/* Zoom Control */}
-              <button
-                className="flex items-center space-x-1.5 hover:text-foreground transition-colors"
-                onClick={() => {
-                  const idx = zoomOptions.indexOf(zoomLevel);
-                  if (idx < zoomOptions.length - 1) setZoomLevel(zoomOptions[idx + 1]);
-                  else setZoomLevel(zoomOptions[0]);
-                }}
-              >
-                <span>{zoomLevel}%</span>
-                <ChevronDown size={14} className="opacity-70 ml-1" />
-              </button>
-
-              <button
-                onClick={() => setIsFocusMode(!isFocusMode)}
-                className="flex items-center justify-center hover:text-foreground transition-colors"
-                title="Focus Mode (Esc to exit)"
-              >
-                {isFocusMode ? <Minimize size={14} /> : <Maximize size={14} />}
-              </button>
+            <div className="flex items-center">
+              {saveStatus === 'saving' ? (
+                <div className="flex items-center text-amber-500">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5 animate-pulse" />
+                  Saving...
+                </div>
+              ) : saveStatus === 'unsaved' || saveStatus === 'failed' ? (
+                <div className="flex items-center text-[#F43F5E]">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#F43F5E] mr-1.5" />
+                  Unsaved changes
+                </div>
+              ) : (
+                <div className="flex items-center text-status-success opacity-80">
+                  <div className="w-1.5 h-1.5 rounded-full bg-status-success mr-1.5" />
+                  Saved
+                </div>
+              )}
             </div>
           </div>
       </div>

@@ -72,7 +72,6 @@ interface DocumentEditorProps {
   /** Tiptap JSON from editor_state — takes priority over initialBlocks */
   initialEditorJson?: TiptapJson | null;
   isEditable?: boolean;
-  zoomLevel?: number;
   issues?: IssueProp[];
   selectedIssueId?: string | null;
   onIssueSelect?: (issueId: string | null) => void;
@@ -87,6 +86,11 @@ interface DocumentEditorProps {
   onFocus?: () => void;
   onBlur?: () => void;
   viewMode?: 'print' | 'web';
+  setViewMode?: (mode: 'print' | 'web') => void;
+  zoomLevel?: number;
+  setZoomLevel?: (level: number) => void;
+  isFocusMode?: boolean;
+  setIsFocusMode?: (focus: boolean) => void;
   onPageCountChange?: (count: number) => void;
 }
 
@@ -173,6 +177,10 @@ export function DocumentEditor({
   onFocus,
   onBlur,
   viewMode = 'web',
+  setViewMode,
+  setZoomLevel,
+  isFocusMode = false,
+  setIsFocusMode,
   onPageCountChange,
 }: DocumentEditorProps) {
   const [mounted, setMounted] = useState(false);
@@ -465,14 +473,22 @@ export function DocumentEditor({
     <div className="flex-1 flex flex-col min-w-0 bg-[#F4F5F7] overflow-hidden">
       {/* Document Toolbar - sits above scroll area, not sticky */}
       <div className="shrink-0 z-20 w-full">
-        <EditorToolbar editor={editor} />
+        <EditorToolbar 
+          editor={editor} 
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          zoomLevel={zoomLevel}
+          setZoomLevel={setZoomLevel}
+          isFocusMode={isFocusMode}
+          setIsFocusMode={setIsFocusMode}
+        />
       </div>
 
       {/* Scrollable Document Area */}
-      {/* Workspace background: py-5 = 20px breathing room above page; px-6 = 24px each side */}
+      {/* Workspace background: pt-[24px] = 24px breathing room above page; px-6 = 24px each side */}
       <div 
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto px-6 py-5 flex justify-center items-start scroll-smooth w-full"
+        className="flex-1 overflow-y-auto px-6 pt-[24px] pb-12 flex justify-center items-start scroll-smooth w-full"
       >
         <div className="flex flex-col items-center origin-top transition-transform duration-200 w-full" style={{ transform: `scale(${scale})` }}>
           

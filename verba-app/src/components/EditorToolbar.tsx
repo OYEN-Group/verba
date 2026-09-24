@@ -46,16 +46,33 @@ import {
   Image as ImageIcon,
   Minus,
   Omega,
-  ArrowUpDown
+  ArrowUpDown,
+  Maximize,
+  Minimize,
+  FileText
 } from 'lucide-react';
 
 interface EditorToolbarProps {
   editor: Editor;
+  viewMode?: 'print' | 'web';
+  setViewMode?: (mode: 'print' | 'web') => void;
+  zoomLevel?: number;
+  setZoomLevel?: (level: number) => void;
+  isFocusMode?: boolean;
+  setIsFocusMode?: (focus: boolean) => void;
 }
 
 type Tab = 'home' | 'insert' | 'layout' | 'academic';
 
-export function EditorToolbar({ editor }: EditorToolbarProps) {
+export function EditorToolbar({ 
+  editor,
+  viewMode = 'web',
+  setViewMode,
+  zoomLevel = 100,
+  setZoomLevel,
+  isFocusMode = false,
+  setIsFocusMode
+}: EditorToolbarProps) {
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [showFindReplace, setShowFindReplace] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -207,21 +224,21 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 
 
   return (
-    <div className="flex flex-col bg-white border-b border-[#E2E8F0] z-10 w-full transition-all text-[#475569]">
+    <div className="flex flex-col bg-[#F6F8FB] border-b border-[#E2E8F0] z-10 w-full transition-all text-[#475569] shadow-sm">
       {/* Row 2: Menu / Actions */}
-      <div className="flex items-center justify-between px-6 py-0.5 border-b border-[#F0F4F8] min-h-[34px]">
-        <div className="flex items-center space-x-1 -ml-2 text-[13px]">
+      <div className="flex items-center justify-between px-6 py-0 min-h-[30px] bg-white">
+        <div className="flex items-center space-x-1 -ml-3 text-[12px] font-medium">
           {/* File Menu */}
           <div className="relative group">
-            <button className="px-2 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">File</button>
-            <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-md py-1 w-48 z-50">
+            <button className="px-3 py-1.5 hover:bg-black/5 rounded-t transition-colors cursor-pointer text-[#475569]">File</button>
+            <div className="absolute left-0 top-full hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-b rounded-tr py-1 w-48 z-50">
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', {'key': 's', 'ctrlKey': true}))}>Save (Ctrl+S)</button>
             </div>
           </div>
           {/* Edit Menu */}
           <div className="relative group">
-            <button className="px-2 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">Edit</button>
-            <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-md py-1 w-48 z-50">
+            <button className="px-3 py-1.5 hover:bg-black/5 rounded-t transition-colors cursor-pointer text-[#475569]">Edit</button>
+            <div className="absolute left-0 top-full hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-b rounded-tr py-1 w-48 z-50">
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => editor.chain().focus().undo().run()}>Undo (Ctrl+Z)</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => editor.chain().focus().redo().run()}>Redo (Ctrl+Y)</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => editor.chain().focus().selectAll().run()}>Select All</button>
@@ -231,21 +248,20 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           </div>
           {/* Insert Menu */}
           <div className="relative group">
-            <button className="px-2 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">Insert</button>
-            <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-md py-1 w-48 z-50">
+            <button className="px-3 py-1.5 hover:bg-black/5 rounded-t transition-colors cursor-pointer text-[#475569]">Insert</button>
+            <div className="absolute left-0 top-full hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-b rounded-tr py-1 w-48 z-50">
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={insertTable}>Table</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={handleImageUpload}>Image</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={toggleLink}>Link</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => editor.chain().focus().toggleBlockquote().run()}>Quote</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => editor.chain().focus().setPageBreak().run()}>Page Break</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => (editor.chain().focus() as any).insertMathEquation().run()}>Equation</button>
-              <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => window.dispatchEvent(new CustomEvent('verba:open-cite'))}>Citation</button>
             </div>
           </div>
           {/* Format Menu */}
           <div className="relative group">
-            <button className="px-2 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">Format</button>
-            <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-md py-1 w-48 z-50 max-h-[300px] overflow-y-auto">
+            <button className="px-3 py-1.5 hover:bg-black/5 rounded-t transition-colors cursor-pointer text-[#475569]">Format</button>
+            <div className="absolute left-0 top-full hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-b rounded-tr py-1 w-48 z-50 max-h-[300px] overflow-y-auto">
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5 font-bold" onClick={toggleBold}>Bold</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5 italic" onClick={toggleItalic}>Italic</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5 underline" onClick={toggleUnderline}>Underline</button>
@@ -262,211 +278,261 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           </div>
           {/* References Menu */}
           <div className="relative group">
-            <button className="px-2 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">References</button>
-            <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-md py-1 w-48 z-50">
+            <button className="px-3 py-1.5 hover:bg-black/5 rounded-t transition-colors cursor-pointer text-[#475569]">References</button>
+            <div className="absolute left-0 top-full hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-b rounded-tr py-1 w-48 z-50">
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => window.dispatchEvent(new CustomEvent('verba:open-cite'))}>Add Citation</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => window.dispatchEvent(new CustomEvent('verba:find-evidence'))}>Find Evidence</button>
             </div>
           </div>
         </div>
         <div className="flex items-center space-x-4">
-          <button onClick={() => setShowFindReplace(!showFindReplace)} className="flex items-center space-x-1.5 text-[13px] font-medium hover:text-[#0F172A] transition-colors text-[#475569]">
-            <Search size={14} />
+          <button onClick={() => setShowFindReplace(!showFindReplace)} className="flex items-center space-x-1.5 text-[12px] hover:text-[#0F172A] transition-colors text-[#475569]">
+            <Search size={13} />
             <span>Find (Ctrl + F)</span>
           </button>
         </div>
       </div>
 
-      {/* Row 3: Formatting */}
-      <div className="flex items-center px-6 py-1 min-h-[38px] overflow-x-auto no-scrollbar space-x-1">
-        <div className="flex items-center space-x-0.5 shrink-0 -ml-1.5">
-          <ToolbarButton onClick={() => editor.chain().focus().undo().run()} title="Undo (Ctrl+Z)" disabled={!editor.can().undo()}>
-            <Undo size={14} className="opacity-70" />
-          </ToolbarButton>
-          <ToolbarButton onClick={() => editor.chain().focus().redo().run()} title="Redo (Ctrl+Y)" disabled={!editor.can().redo()}>
-            <Redo size={14} className="opacity-70" />
-          </ToolbarButton>
+      {/* Row 3: Formatting Ribbon */}
+      <div className="flex items-center justify-between px-6 py-1.5 min-h-[44px] bg-[#F8FAFC]">
+        <div className="flex items-center overflow-x-auto no-scrollbar space-x-1 flex-1">
+          {/* Undo Redo */}
+          <div className="flex items-center space-x-0.5 shrink-0 -ml-1">
+            <ToolbarButton onClick={() => editor.chain().focus().undo().run()} title="Undo (Ctrl+Z)" disabled={!editor.can().undo()}>
+              <Undo size={15} className="opacity-70" />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => editor.chain().focus().redo().run()} title="Redo (Ctrl+Y)" disabled={!editor.can().redo()}>
+              <Redo size={15} className="opacity-70" />
+            </ToolbarButton>
+          </div>
+
+          <Divider />
+
+          {/* Style, Font, Size */}
+          <div className="flex items-center space-x-1.5 text-[12px] shrink-0">
+            <div className="relative group">
+              <select 
+                value={editor.isActive('heading', { level: 1 }) ? 'h1' : editor.isActive('heading', { level: 2 }) ? 'h2' : editor.isActive('heading', { level: 3 }) ? 'h3' : 'p'}
+                onChange={(e) => {
+                  if (e.target.value === 'p') editor.chain().focus().setParagraph().run();
+                  else if (e.target.value === 'h1') editor.chain().focus().toggleHeading({ level: 1 }).run();
+                  else if (e.target.value === 'h2') editor.chain().focus().toggleHeading({ level: 2 }).run();
+                  else if (e.target.value === 'h3') editor.chain().focus().toggleHeading({ level: 3 }).run();
+                }}
+                className="appearance-none bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] rounded px-2 h-[26px] pr-6 min-w-[90px] outline-none cursor-pointer text-[#0F172A]"
+              >
+                <option value="p">Normal</option>
+                <option value="h1">Heading 1</option>
+                <option value="h2">Heading 2</option>
+                <option value="h3">Heading 3</option>
+              </select>
+              <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
+            </div>
+
+            <div className="relative group">
+              <select 
+                value={editor.getAttributes('textStyle').fontFamily || 'Inter'}
+                onChange={(e) => editor.chain().focus().setFontFamily(e.target.value).run()}
+                className="appearance-none bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] rounded px-2 h-[26px] pr-6 w-[125px] outline-none cursor-pointer text-[#0F172A]"
+              >
+                <option value="Inter">Inter</option>
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Courier New">Courier</option>
+                <option value="Georgia">Georgia</option>
+              </select>
+              <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
+            </div>
+
+            <div className="relative group">
+              <select 
+                value={editor.getAttributes('textStyle').fontSize || '12'}
+                onChange={(e) => editor.chain().focus().setFontSize(e.target.value).run()}
+                className="appearance-none bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] rounded px-2 h-[26px] pr-6 w-[60px] outline-none cursor-pointer text-[#0F172A]"
+              >
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="14">14</option>
+                <option value="16">16</option>
+                <option value="18">18</option>
+                <option value="20">20</option>
+                <option value="24">24</option>
+              </select>
+              <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* Text Decoration */}
+          <div className="flex items-center space-x-0.5 text-[#0F172A] shrink-0">
+            <ToolbarButton isActive={editor.isActive('bold')} onClick={toggleBold} title="Bold (Ctrl+B)">
+              <span className="font-serif font-bold text-[15px]">B</span>
+            </ToolbarButton>
+            <ToolbarButton isActive={editor.isActive('italic')} onClick={toggleItalic} title="Italic (Ctrl+I)">
+              <span className="font-serif italic text-[15px]">I</span>
+            </ToolbarButton>
+            <ToolbarButton isActive={editor.isActive('underline')} onClick={toggleUnderline} title="Underline (Ctrl+U)">
+              <span className="font-serif underline text-[15px]">U</span>
+            </ToolbarButton>
+            <ToolbarButton isActive={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()} title="Strikethrough">
+              <span className="font-serif line-through text-[15px]">ab</span>
+            </ToolbarButton>
+            <ToolbarButton isActive={editor.isActive('subscript')} onClick={toggleSubscript} title="Subscript">
+              <span className="font-serif text-[14px]">x₂</span>
+            </ToolbarButton>
+            <ToolbarButton isActive={editor.isActive('superscript')} onClick={toggleSuperscript} title="Superscript">
+              <span className="font-serif text-[14px]">x²</span>
+            </ToolbarButton>
+          </div>
+
+          <Divider />
+
+          {/* Colors */}
+          <div className="flex items-center space-x-1 shrink-0 relative">
+            <ToolbarButton title="Text Color" onClick={() => {
+              const color = window.prompt('Color (hex or name):', editor.getAttributes('textStyle').color || '#000000');
+              if (color) editor.chain().focus().setColor(color).run();
+            }}>
+              <div className="flex flex-col items-center mt-1">
+                <span className="font-serif text-[14px] leading-none text-[#0F172A]">A</span>
+                <div className="w-[14px] h-[3px] mt-[2px]" style={{ backgroundColor: editor.getAttributes('textStyle').color || '#000000' }} />
+              </div>
+            </ToolbarButton>
+            <ToolbarButton title="Highlight Color" onClick={() => {
+              const color = window.prompt('Highlight Color (hex or name):', editor.getAttributes('highlight').color || '#FFFF00');
+              if (color) editor.chain().focus().setHighlight({ color }).run();
+            }}>
+              <div className="flex flex-col items-center mt-0.5">
+                <Highlighter size={14} className="text-[#0F172A]" />
+                <div className="w-[14px] h-[3px] mt-[2px]" style={{ backgroundColor: editor.getAttributes('highlight').color || '#FFFF00' }} />
+              </div>
+            </ToolbarButton>
+          </div>
+
+          <Divider />
+
+          {/* Alignment & Lists & Indent */}
+          <div className="flex items-center space-x-0.5 text-[#0F172A] shrink-0">
+            <ToolbarButton isActive={editor.isActive({ textAlign: 'left' })} onClick={() => setAlign('left')} title="Align Left">
+              <AlignLeft size={15} />
+            </ToolbarButton>
+            <ToolbarButton isActive={editor.isActive({ textAlign: 'center' })} onClick={() => setAlign('center')} title="Align Center">
+              <AlignCenter size={15} />
+            </ToolbarButton>
+            <ToolbarButton isActive={editor.isActive({ textAlign: 'right' })} onClick={() => setAlign('right')} title="Align Right">
+              <AlignRight size={15} />
+            </ToolbarButton>
+            <ToolbarButton isActive={editor.isActive({ textAlign: 'justify' })} onClick={() => setAlign('justify')} title="Justify">
+              <AlignJustify size={15} />
+            </ToolbarButton>
+            
+            <div className="w-[1px] h-[16px] bg-[#E2E8F0] mx-1" />
+
+            <ToolbarButton isActive={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} title="Bullet List">
+              <List size={15} />
+            </ToolbarButton>
+            <ToolbarButton isActive={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="Numbered List">
+              <ListOrdered size={15} />
+            </ToolbarButton>
+
+            <div className="w-[1px] h-[16px] bg-[#E2E8F0] mx-1" />
+
+            <ToolbarButton onClick={() => (editor.chain().focus() as any).outdent().run()} title="Decrease Indent" disabled={!(editor.can() as any).outdent?.()}>
+              <Outdent size={15} />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => (editor.chain().focus() as any).indent().run()} title="Increase Indent" disabled={!(editor.can() as any).indent?.()}>
+              <Indent size={15} />
+            </ToolbarButton>
+          </div>
+
+          <Divider />
+
+          {/* Line Spacing */}
+          <div className="flex items-center space-x-0.5 text-[#0F172A] shrink-0 relative">
+            <div className="relative group flex items-center">
+              <div className="absolute left-2 pointer-events-none opacity-70 text-[#0F172A]">
+                <ArrowUpDown size={14} />
+              </div>
+              <select 
+                value={editor.getAttributes('paragraph').lineHeight || '1.5'}
+                onChange={(e) => editor.chain().focus().setLineHeight(e.target.value).run()}
+                className="appearance-none bg-transparent hover:bg-black/5 rounded pl-7 pr-6 py-1 outline-none cursor-pointer h-[26px] text-[12px]"
+                title="Line Spacing"
+              >
+                <option value="1.0">1.0</option>
+                <option value="1.15">1.15</option>
+                <option value="1.5">1.5</option>
+                <option value="2.0">2.0</option>
+              </select>
+              <ChevronDown size={12} className="absolute right-2 opacity-50 pointer-events-none" />
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* Insert: Table Image Link Quote Equation Cite */}
+          <div className="flex items-center space-x-0.5 text-[#0F172A] shrink-0">
+            <ToolbarButton onClick={insertTable} title="Insert Table">
+              <TableIcon size={15} />
+            </ToolbarButton>
+            <ToolbarButton onClick={handleImageUpload} title="Insert Image">
+              <ImageIcon size={15} />
+            </ToolbarButton>
+            <ToolbarButton onClick={toggleLink} title="Insert Link">
+              <Link2 size={15} />
+            </ToolbarButton>
+            <ToolbarButton isActive={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="Quote">
+              <Quote size={15} />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => (editor.chain().focus() as any).insertMathEquation().run()} title="Equation">
+              <Sigma size={15} />
+            </ToolbarButton>
+            
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('verba:open-cite'))}
+              className="flex items-center ml-1 space-x-1 hover:bg-[#EEF2FF] hover:text-[#4F46E5] px-2 h-[26px] rounded transition-colors text-[12px] font-medium text-accent">
+              <span>Cite</span>
+            </button>
+          </div>
         </div>
 
-        <div className="w-[1px] h-5 bg-[#E2E8F0] mx-2 shrink-0" />
-
-        <div className="flex items-center space-x-2 text-[13px] shrink-0">
-          <div className="relative group">
-            <select 
-              value={editor.isActive('heading', { level: 1 }) ? 'h1' : editor.isActive('heading', { level: 2 }) ? 'h2' : editor.isActive('heading', { level: 3 }) ? 'h3' : 'p'}
-              onChange={(e) => {
-                if (e.target.value === 'p') editor.chain().focus().setParagraph().run();
-                else if (e.target.value === 'h1') editor.chain().focus().toggleHeading({ level: 1 }).run();
-                else if (e.target.value === 'h2') editor.chain().focus().toggleHeading({ level: 2 }).run();
-                else if (e.target.value === 'h3') editor.chain().focus().toggleHeading({ level: 3 }).run();
+        {/* VIEW CONTROLS (Right side of ribbon) */}
+        {setViewMode && setZoomLevel && (
+          <div className="flex items-center space-x-1 shrink-0 ml-4 border-l border-border-light pl-4 text-[12px] text-foreground-secondary">
+            <button
+              className="flex items-center space-x-1 hover:bg-black/5 px-2 h-[26px] rounded transition-colors"
+              onClick={() => {
+                const zoomOptions = [75, 90, 100, 110, 125, 150];
+                const idx = zoomOptions.indexOf(zoomLevel);
+                if (idx < zoomOptions.length - 1) setZoomLevel(zoomOptions[idx + 1]);
+                else setZoomLevel(zoomOptions[0]);
               }}
-              className="appearance-none bg-transparent border-none rounded px-2 py-1 pr-6 min-w-[90px] hover:bg-black/5 outline-none cursor-pointer"
+              title="Zoom Level"
             >
-              <option value="p">Normal</option>
-              <option value="h1">Heading 1</option>
-              <option value="h2">Heading 2</option>
-              <option value="h3">Heading 3</option>
-            </select>
-            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
-          </div>
+              <span className="min-w-[36px] text-center">{zoomLevel}%</span>
+            </button>
 
-          <div className="relative group">
-            <select 
-              value={editor.getAttributes('textStyle').fontFamily || 'Inter'}
-              onChange={(e) => editor.chain().focus().setFontFamily(e.target.value).run()}
-              className="appearance-none bg-transparent border-none rounded px-2 py-1 pr-6 min-w-[80px] hover:bg-black/5 outline-none cursor-pointer"
+            <button
+              onClick={() => setViewMode(viewMode === 'print' ? 'web' : 'print')}
+              className={`flex items-center justify-center w-[26px] h-[26px] rounded transition-colors ${viewMode === 'print' ? 'bg-black/10 text-foreground' : 'hover:bg-black/5'}`}
+              title="Page View"
             >
-              <option value="Inter">Inter</option>
-              <option value="Arial">Arial</option>
-              <option value="Times New Roman">Times New Roman</option>
-              <option value="Courier New">Courier</option>
-            </select>
-            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
+              <FileText size={14} />
+            </button>
+            
+            {setIsFocusMode && (
+              <button
+                onClick={() => setIsFocusMode(!isFocusMode)}
+                className={`flex items-center justify-center w-[26px] h-[26px] rounded transition-colors ${isFocusMode ? 'bg-black/10 text-foreground' : 'hover:bg-black/5'}`}
+                title="Focus Mode (Esc to exit)"
+              >
+                {isFocusMode ? <Minimize size={14} /> : <Maximize size={14} />}
+              </button>
+            )}
           </div>
-
-          <div className="relative group">
-            <select 
-              value={editor.getAttributes('textStyle').fontSize || '12'}
-              onChange={(e) => editor.chain().focus().setFontSize(e.target.value).run()}
-              className="appearance-none bg-transparent border-none rounded px-2 py-1 pr-6 min-w-[60px] hover:bg-black/5 outline-none cursor-pointer"
-            >
-              <option value="10">10</option>
-              <option value="11">11</option>
-              <option value="12">12</option>
-              <option value="14">14</option>
-              <option value="16">16</option>
-              <option value="18">18</option>
-              <option value="20">20</option>
-              <option value="24">24</option>
-            </select>
-            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
-          </div>
-        </div>
-
-        <div className="w-[1px] h-5 bg-[#E2E8F0] mx-2 shrink-0" />
-
-        <div className="flex items-center space-x-0.5 text-[#0F172A] shrink-0">
-          <ToolbarButton isActive={editor.isActive('bold')} onClick={toggleBold} title="Bold (Ctrl+B)">
-            <span className="font-serif font-bold text-[14px]">B</span>
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive('italic')} onClick={toggleItalic} title="Italic (Ctrl+I)">
-            <span className="font-serif italic text-[14px]">I</span>
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive('underline')} onClick={toggleUnderline} title="Underline (Ctrl+U)">
-            <span className="font-serif underline text-[14px]">U</span>
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()} title="Strikethrough">
-            <span className="font-serif line-through text-[14px]">S</span>
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive('subscript')} onClick={toggleSubscript} title="Subscript">
-            <span className="font-serif text-[13px]">x₂</span>
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive('superscript')} onClick={toggleSuperscript} title="Superscript">
-            <span className="font-serif text-[13px]">x²</span>
-          </ToolbarButton>
-        </div>
-
-        <div className="w-[1px] h-5 bg-[#E2E8F0] mx-2 shrink-0" />
-
-        <div className="flex items-center space-x-1 shrink-0 relative">
-          <ToolbarButton title="Text Color" onClick={() => {
-            const color = window.prompt('Color (hex or name):', editor.getAttributes('textStyle').color || '#000000');
-            if (color) editor.chain().focus().setColor(color).run();
-          }}>
-            <div className="flex flex-col items-center">
-              <span className="font-serif text-[13px] leading-none text-[#0F172A]">A</span>
-              <div className="w-3 h-0.5 mt-[1px]" style={{ backgroundColor: editor.getAttributes('textStyle').color || '#000000' }} />
-            </div>
-            <ChevronDown size={10} className="ml-1 opacity-50" />
-          </ToolbarButton>
-          <ToolbarButton title="Highlight Color" onClick={() => {
-            const color = window.prompt('Highlight Color (hex or name):', editor.getAttributes('highlight').color || '#FFFF00');
-            if (color) editor.chain().focus().setHighlight({ color }).run();
-          }}>
-            <div className="flex flex-col items-center">
-              <Highlighter size={13} className="text-[#0F172A]" />
-              <div className="w-3 h-0.5 mt-[1px]" style={{ backgroundColor: editor.getAttributes('highlight').color || '#FFFF00' }} />
-            </div>
-            <ChevronDown size={10} className="ml-1 opacity-50" />
-          </ToolbarButton>
-        </div>
-
-        <div className="w-[1px] h-5 bg-[#E2E8F0] mx-2 shrink-0" />
-
-        <div className="flex items-center space-x-0.5 text-[#0F172A] shrink-0">
-          <ToolbarButton isActive={editor.isActive({ textAlign: 'left' })} onClick={() => setAlign('left')} title="Align Left">
-            <AlignLeft size={14} />
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive({ textAlign: 'center' })} onClick={() => setAlign('center')} title="Align Center">
-            <AlignCenter size={14} />
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive({ textAlign: 'right' })} onClick={() => setAlign('right')} title="Align Right">
-            <AlignRight size={14} />
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive({ textAlign: 'justify' })} onClick={() => setAlign('justify')} title="Justify">
-            <AlignJustify size={14} />
-          </ToolbarButton>
-        </div>
-
-        <div className="w-[1px] h-5 bg-[#E2E8F0] mx-2 shrink-0" />
-
-        <div className="flex items-center space-x-0.5 text-[#0F172A] shrink-0">
-          <ToolbarButton isActive={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} title="Bullet List">
-            <List size={14} />
-          </ToolbarButton>
-          <ToolbarButton isActive={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="Numbered List">
-            <ListOrdered size={14} />
-          </ToolbarButton>
-        </div>
-
-        <div className="w-[1px] h-5 bg-[#E2E8F0] mx-2 shrink-0" />
-
-        <div className="flex items-center space-x-0.5 text-[#0F172A] shrink-0">
-          <ToolbarButton onClick={() => (editor.chain().focus() as any).outdent().run()} title="Decrease Indent" disabled={!(editor.can() as any).outdent?.()}>
-            <Outdent size={14} />
-          </ToolbarButton>
-          <ToolbarButton onClick={() => (editor.chain().focus() as any).indent().run()} title="Increase Indent" disabled={!(editor.can() as any).indent?.()}>
-            <Indent size={14} />
-          </ToolbarButton>
-        </div>
-
-        <div className="w-[1px] h-5 bg-[#E2E8F0] mx-2 shrink-0" />
-
-        <div className="flex items-center space-x-0.5 text-[#0F172A] shrink-0 relative">
-          <div className="relative group flex items-center">
-            <div className="absolute left-2 pointer-events-none opacity-70 text-[#0F172A]">
-              <ArrowUpDown size={13} />
-            </div>
-            <select 
-              value={editor.getAttributes('paragraph').lineHeight || '1.5'}
-              onChange={(e) => editor.chain().focus().setLineHeight(e.target.value).run()}
-              className="appearance-none bg-transparent border-none rounded pl-7 pr-6 py-1 hover:bg-black/5 outline-none cursor-pointer h-7"
-              title="Line Spacing"
-            >
-              <option value="1.0">1.0</option>
-              <option value="1.15">1.15</option>
-              <option value="1.5">1.5</option>
-              <option value="2.0">2.0</option>
-            </select>
-            <ChevronDown size={12} className="absolute right-2 opacity-50 pointer-events-none" />
-          </div>
-        </div>
-
-        <div className="w-[1px] h-5 bg-[#E2E8F0] mx-2 shrink-0" />
-
-        <div className="flex items-center space-x-0.5 text-[#0F172A] shrink-0">
-          <ToolbarButton onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()} title="Clear Formatting">
-            <Eraser size={14} />
-          </ToolbarButton>
-        </div>
-        <div className="w-[1px] h-5 bg-[#E2E8F0] mx-2 shrink-0" />
-
-        <button
-          onClick={() => window.dispatchEvent(new CustomEvent('verba:open-cite'))}
-          className="flex items-center space-x-1.5 hover:bg-black/5 px-2 py-1 rounded transition-colors text-[13px] font-medium text-[#475569]">
-          <span>Cite</span>
-        </button>
-
+        )}
       </div>
 
       {/* Find & Replace Floating Dialog */}
