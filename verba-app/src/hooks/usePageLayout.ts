@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Editor } from '@tiptap/react';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import {
@@ -9,24 +9,6 @@ import {
   getPageModelFromSectionAttrs,
 } from '../components/editor/extensions/PageLayout';
 
-/**
- * Read the padding-top value previously applied to a node via Decoration.node().
- * Used to subtract decoration padding from measured offsetHeight to recover natural height.
- */
-function getAppliedPaddingTop(
-  decoSet: DecorationSet,
-  pos: number,
-  nodeSize: number,
-): number {
-  const found = decoSet.find(pos, pos + nodeSize);
-  for (const deco of found) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const style: string = (deco as any).type?.attrs?.style ?? '';
-    const m = style.match(/padding-top:\s*(\d+(?:\.\d+)?)px/);
-    if (m) return parseFloat(m[1]);
-  }
-  return 0;
-}
 
 export interface PageLayoutResult {
   pageCount: number;
@@ -91,9 +73,6 @@ export function usePageLayout(
 
     const usableHeight = getUsableHeight(model);
 
-    // Read currently-applied decorations to subtract from measured heights
-    const currentDecoSet =
-      pageLayoutKey.getState(state)?.decorations ?? DecorationSet.empty;
 
     const newDecorations: Decoration[] = [];
     let currentPageHeight  = 0;
@@ -116,11 +95,11 @@ export function usePageLayout(
       } catch { return false; }
       if (!domEl || typeof domEl.offsetHeight !== 'number') return false;
 
-      // Natural height = rendered height minus any pagination padding we previously applied.
-      // getAppliedPaddingTop reads from the MAPPED decoration set so positions stay correct
-      // after document edits (ProseMirror maps decoration positions automatically).
-      const appliedPad  = getAppliedPaddingTop(currentDecoSet, pos, node.nodeSize);
-      const naturalHeight = Math.max(1, domEl.offsetHeight - appliedPad);
+      // Natural height = rendered height minus any pagination padding currently in the DOM.
+      // We read the physical DOM style rather than the Tiptap decoration set to guarantee
+      // we only subtract padding that is actually inflating offsetHeight.
+      const inlinePad = parseFloat(domEl.style.paddingTop) || 0;
+      const naturalHeight = Math.max(1, domEl.offsetHeight - inlinePad);
 
       // ── First content block: apply page 1 top margin ──────────────────────
       if (isFirstContentBlock) {
@@ -129,8 +108,16 @@ export function usePageLayout(
             style: `padding-top: ${model.marginTop}px`,
           }),
         );
-        currentPageHeight   = naturalHeight;
+        currentPageHeight = naturalHeight;
         isFirstContentBlock = false;
+
+        // Handle if the first block itself is taller than one page
+        if (currentPageHeight > usableHeight) {
+          const excess = currentPageHeight - usableHeight;
+          const extraPages = Math.ceil(excess / usableHeight);
+          newPageCount += extraPages;
+          currentPageHeight = excess % usableHeight || usableHeight;
+        }
         return false;
       }
 
@@ -159,12 +146,18 @@ export function usePageLayout(
         );
         currentPageHeight = naturalHeight;
         newPageCount++;
+
+        if (currentPageHeight > usableHeight) {
+          const excess = currentPageHeight - usableHeight;
+          const extraPages = Math.ceil(excess / usableHeight);
+          newPageCount += extraPages;
+          currentPageHeight = excess % usableHeight || usableHeight;
+        }
       } else {
         // Block fits — accumulate height.
         currentPageHeight += naturalHeight;
 
         // Handle content taller than one full usable page (e.g., very large table/image).
-        // We count the extra pages consumed without splitting the block.
         if (currentPageHeight > usableHeight) {
           const excess = currentPageHeight - usableHeight;
           const extraPages = Math.ceil(excess / usableHeight);

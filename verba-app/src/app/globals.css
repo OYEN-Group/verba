@@ -132,42 +132,6 @@ html, body {
   box-sizing: border-box;
 }
 
-/* Page Sizes (at 96 DPI) */
-/* A4 Portrait: 210 x 297 mm ≈ 794 x 1123 px */
-.view-mode-print .verba-section[data-page-size="A4"] { width: 794px; min-height: 1123px; }
-/* Letter Portrait: 8.5 x 11 in ≈ 816 x 1056 px */
-.view-mode-print .verba-section[data-page-size="Letter"] { width: 816px; min-height: 1056px; }
-
-/* Landscape Sizes */
-.view-mode-print .verba-section[data-page-size="A4"][data-orientation="landscape"] { width: 1123px; min-height: 794px; }
-.view-mode-print .verba-section[data-page-size="Letter"][data-orientation="landscape"] { width: 1056px; min-height: 816px; }
-
-/* Page Break Visual Simulation (Repeating Background Lines) */
-/* This draws a shadow/gap line to simulate physical pages in continuous DOM */
-.view-mode-print .verba-section[data-page-size="Letter"]:not([data-orientation="landscape"]) {
-  background-image: linear-gradient(to bottom, white 1046px, #e5e7eb 1046px, #f3f4f6 1050px, #e5e7eb 1056px, white 1056px);
-  background-size: 100% 1056px;
-}
-.view-mode-print .verba-section[data-page-size="A4"]:not([data-orientation="landscape"]) {
-  background-image: linear-gradient(to bottom, white 1113px, #e5e7eb 1113px, #f3f4f6 1117px, #e5e7eb 1123px, white 1123px);
-  background-size: 100% 1123px;
-}
-.view-mode-print .verba-section[data-page-size="Letter"][data-orientation="landscape"] {
-  background-image: linear-gradient(to bottom, white 806px, #e5e7eb 806px, #f3f4f6 810px, #e5e7eb 816px, white 816px);
-  background-size: 100% 816px;
-}
-.view-mode-print .verba-section[data-page-size="A4"][data-orientation="landscape"] {
-  background-image: linear-gradient(to bottom, white 784px, #e5e7eb 784px, #f3f4f6 788px, #e5e7eb 794px, white 794px);
-  background-size: 100% 794px;
-}
-
-/* Margins (Padding inside the section) */
-/* Normal: 1 inch ≈ 96px */
-.view-mode-print .verba-section[data-margins="normal"] { padding: 96px; }
-/* Narrow: 0.5 inch ≈ 48px */
-.view-mode-print .verba-section[data-margins="narrow"] { padding: 48px; }
-/* Wide: Top/Bottom 1 inch, Left/Right 2 inches ≈ 192px */
-.view-mode-print .verba-section[data-margins="wide"] { padding: 96px 192px; }
 
 /* ─── Web Layout: card is borderless continuous surface — sections own the constraint ─── */
 .view-mode-web .verba-editor-card {

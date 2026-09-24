@@ -1,4 +1,4 @@
-﻿import { Extension } from '@tiptap/core';
+import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { DecorationSet } from '@tiptap/pm/view';
 
@@ -21,14 +21,14 @@ export interface PageModel {
 
 export const PAGE_MODELS: Record<string, Record<string, PageModel>> = {
   A4: {
-    normal: { pageWidth: 794, pageHeight: 1123, pageGap: 32, marginTop: 96, marginBottom: 96, marginLeft: 96, marginRight: 96 },
-    narrow: { pageWidth: 794, pageHeight: 1123, pageGap: 32, marginTop: 48, marginBottom: 48, marginLeft: 48, marginRight: 48 },
-    wide:   { pageWidth: 794, pageHeight: 1123, pageGap: 32, marginTop: 96, marginBottom: 96, marginLeft: 192, marginRight: 192 },
+    normal: { pageWidth: 740, pageHeight: 1047, pageGap: 20, marginTop: 90, marginBottom: 90, marginLeft: 90, marginRight: 90 },
+    narrow: { pageWidth: 740, pageHeight: 1047, pageGap: 20, marginTop: 45, marginBottom: 45, marginLeft: 45, marginRight: 45 },
+    wide:   { pageWidth: 740, pageHeight: 1047, pageGap: 20, marginTop: 90, marginBottom: 90, marginLeft: 180, marginRight: 180 },
   },
   Letter: {
-    normal: { pageWidth: 816, pageHeight: 1056, pageGap: 32, marginTop: 96, marginBottom: 96, marginLeft: 96, marginRight: 96 },
-    narrow: { pageWidth: 816, pageHeight: 1056, pageGap: 32, marginTop: 48, marginBottom: 48, marginLeft: 48, marginRight: 48 },
-    wide:   { pageWidth: 816, pageHeight: 1056, pageGap: 32, marginTop: 96, marginBottom: 96, marginLeft: 192, marginRight: 192 },
+    normal: { pageWidth: 760, pageHeight: 984, pageGap: 20, marginTop: 90, marginBottom: 90, marginLeft: 90, marginRight: 90 },
+    narrow: { pageWidth: 760, pageHeight: 984, pageGap: 20, marginTop: 45, marginBottom: 45, marginLeft: 45, marginRight: 45 },
+    wide:   { pageWidth: 760, pageHeight: 984, pageGap: 20, marginTop: 90, marginBottom: 90, marginLeft: 180, marginRight: 180 },
   },
 };
 

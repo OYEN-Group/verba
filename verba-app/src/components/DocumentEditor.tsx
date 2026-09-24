@@ -405,11 +405,8 @@ export function DocumentEditor({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor]);
 
-  if (!editor) {
-    return null;
-  }
+  const { pageCount, pageModel } = usePageLayout(editor, viewMode, scrollContainerRef);
 
-  const { pageCount } = usePageLayout(editor, viewMode, scrollContainerRef);
 
   useEffect(() => {
     if (onPageCountChange) {
@@ -417,9 +414,11 @@ export function DocumentEditor({
     }
   }, [pageCount, onPageCountChange]);
 
+  if (!editor) {
+    return null;
+  }
+
   const scale = zoomLevel === 0 ? 1 : zoomLevel / 100;
-  const a4Width = 820;
-  const a4MinHeight = 1123;
 
   const getSelectionContext = () => {
     const { from, to } = editor.state.selection;
@@ -476,9 +475,39 @@ export function DocumentEditor({
       >
         <div className="flex flex-col items-center origin-top transition-transform duration-200 w-full" style={{ transform: `scale(${scale})` }}>
           
+          <style dangerouslySetInnerHTML={{ __html: `
+            .view-mode-print .verba-section {
+              width: ${pageModel.pageWidth}px;
+              min-height: ${pageModel.pageHeight}px;
+              padding-left: ${pageModel.marginLeft}px;
+              padding-right: ${pageModel.marginRight}px;
+              padding-top: 0px;
+              padding-bottom: 0px;
+              background-image: linear-gradient(
+                to bottom,
+                white 0px,
+                white ${pageModel.pageHeight}px,
+                #e5e7eb ${pageModel.pageHeight}px,
+                #f3f4f6 ${pageModel.pageHeight + 2}px,
+                #f3f4f6 ${pageModel.pageHeight + pageModel.pageGap - 2}px,
+                #e5e7eb ${pageModel.pageHeight + pageModel.pageGap}px
+              );
+              background-size: 100% ${pageModel.pageHeight + pageModel.pageGap}px;
+              background-color: transparent;
+            }
+          `}} />
+          
           {/* verba-editor-card: CSS targeted by .view-mode-print to become transparent (sections are pages) */}
           <div 
-            className="verba-editor-card bg-white border border-[#E2E6EC] rounded-none shadow-[0_1px_3px_rgba(0,0,0,0.07)] w-full max-w-[920px] min-h-[1100px] mb-8 px-10 pt-12 pb-14 md:px-16 md:pt-[60px] md:pb-[72px]"
+            className="verba-editor-card bg-white border border-[#E2E6EC] rounded-none shadow-[0_1px_3px_rgba(0,0,0,0.07)] w-full mb-8"
+            style={{ 
+               maxWidth: `${pageModel.pageWidth}px`, 
+               minHeight: `${pageModel.pageHeight}px`,
+               paddingTop: `${pageModel.marginTop}px`,
+               paddingBottom: `${pageModel.marginBottom}px`,
+               paddingLeft: `${pageModel.marginLeft}px`,
+               paddingRight: `${pageModel.marginRight}px`,
+            }}
             onClick={(e) => {
             const target = e.target as HTMLElement;
             const citationNode = target.closest('[data-citation-id]');
