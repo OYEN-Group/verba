@@ -405,10 +405,6 @@ export function DocumentEditor({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor]);
 
-  if (!editor) {
-    return null;
-  }
-
   const { pageCount } = usePageLayout(editor, viewMode, scrollContainerRef);
 
   useEffect(() => {
@@ -416,6 +412,10 @@ export function DocumentEditor({
       onPageCountChange(pageCount);
     }
   }, [pageCount, onPageCountChange]);
+
+  if (!editor) {
+    return null;
+  }
 
   const scale = zoomLevel === 0 ? 1 : zoomLevel / 100;
   const a4Width = 820;
