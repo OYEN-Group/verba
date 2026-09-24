@@ -32,6 +32,8 @@ import { FontSize } from './editor/extensions/FontSize';
 import CharacterCount from '@tiptap/extension-character-count';
 import { MathEquation } from './editor/extensions/MathEquation';
 import SearchAndReplace from '@sereneinserenade/tiptap-search-and-replace';
+import { PageLayout } from './editor/extensions/PageLayout';
+import { usePageLayout } from '@/hooks/usePageLayout';
 
 export interface ContextualSelection {
   blockId: string;
@@ -84,6 +86,8 @@ interface DocumentEditorProps {
   onCitationClick?: (citationId: string, sourceId: string, contextText: string, rect: DOMRect) => void;
   onFocus?: () => void;
   onBlur?: () => void;
+  viewMode?: 'print' | 'web';
+  onPageCountChange?: (count: number) => void;
 }
 
 /**
@@ -168,8 +172,11 @@ export function DocumentEditor({
   onCitationClick,
   onFocus,
   onBlur,
+  viewMode = 'web',
+  onPageCountChange,
 }: DocumentEditorProps) {
   const [mounted, setMounted] = useState(false);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
   const editor = useEditor({
     extensions: [
@@ -218,6 +225,7 @@ export function DocumentEditor({
       SearchAndReplace.configure({
         searchResultClass: 'search-result',
       }),
+      PageLayout,
     ],
     content: '',
     editable: isEditable,
@@ -401,6 +409,14 @@ export function DocumentEditor({
     return null;
   }
 
+  const { pageCount } = usePageLayout(editor, viewMode, scrollContainerRef);
+
+  useEffect(() => {
+    if (onPageCountChange) {
+      onPageCountChange(pageCount);
+    }
+  }, [pageCount, onPageCountChange]);
+
   const scale = zoomLevel === 0 ? 1 : zoomLevel / 100;
   const a4Width = 820;
   const a4MinHeight = 1123;
@@ -454,7 +470,10 @@ export function DocumentEditor({
 
       {/* Scrollable Document Area */}
       {/* Workspace background: py-5 = 20px breathing room above page; px-6 = 24px each side */}
-      <div className="flex-1 overflow-y-auto px-6 py-5 flex justify-center items-start scroll-smooth w-full">
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto px-6 py-5 flex justify-center items-start scroll-smooth w-full"
+      >
         <div className="flex flex-col items-center origin-top transition-transform duration-200 w-full" style={{ transform: `scale(${scale})` }}>
           
           {/* verba-editor-card: CSS targeted by .view-mode-print to become transparent (sections are pages) */}

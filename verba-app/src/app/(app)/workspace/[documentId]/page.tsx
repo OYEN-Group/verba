@@ -169,6 +169,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
 
   // Live word count (updated on every save)
   const [liveWordCount, setLiveWordCount] = useState<number | null>(null);
+  const [pageCount, setPageCount] = useState<number>(1);
   const [liveHeadings, setLiveHeadings] = useState<{ id: string; text: string; level: number }[]>([]);
   const [sectionCitationCounts, setSectionCitationCounts] = useState<Record<string, number>>({});
 
@@ -934,6 +935,8 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               initialSections={doc.parsed_content.sections}
               isEditable={!isRenaming}
               zoomLevel={zoomLevel}
+              viewMode={viewMode}
+              onPageCountChange={setPageCount}
               issues={issues}
               selectedIssueId={activeIssueId}
               onIssueSelect={selectIssue}
@@ -983,6 +986,8 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           {/* Document Status Bar */}
           <div className="h-[40px] bg-white border-t border-border-light flex items-center justify-between px-8 shrink-0 text-[12px] text-foreground-secondary z-10 relative">
             <div className="flex items-center space-x-3">
+              <span>{pageCount} {pageCount === 1 ? 'page' : 'pages'}</span>
+              <span className="w-px h-3 bg-border-light" />
               <span>{liveWordCount !== null ? `${liveWordCount.toLocaleString()} words` : 'Calculating...'}</span>
               <span className="w-px h-3 bg-border-light" />
               <span>{documentCitations.length} sources</span>
