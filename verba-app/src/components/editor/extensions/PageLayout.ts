@@ -1,4 +1,4 @@
-﻿import { Extension } from '@tiptap/core';
+import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { DecorationSet } from '@tiptap/pm/view';
 
@@ -21,14 +21,14 @@ export interface PageModel {
 
 export const PAGE_MODELS: Record<string, Record<string, PageModel>> = {
   A4: {
-    normal: { pageWidth: 794, pageHeight: 1123, pageGap: 32, marginTop: 96, marginBottom: 96, marginLeft: 96, marginRight: 96 },
-    narrow: { pageWidth: 794, pageHeight: 1123, pageGap: 32, marginTop: 48, marginBottom: 48, marginLeft: 48, marginRight: 48 },
-    wide:   { pageWidth: 794, pageHeight: 1123, pageGap: 32, marginTop: 96, marginBottom: 96, marginLeft: 192, marginRight: 192 },
+    normal: { pageWidth: 740, pageHeight: 1047, pageGap: 20, marginTop: 90, marginBottom: 90, marginLeft: 90, marginRight: 90 },
+    narrow: { pageWidth: 740, pageHeight: 1047, pageGap: 20, marginTop: 45, marginBottom: 45, marginLeft: 45, marginRight: 45 },
+    moderate: { pageWidth: 740, pageHeight: 1047, pageGap: 20, marginTop: 90, marginBottom: 90, marginLeft: 72, marginRight: 72 },
   },
   Letter: {
-    normal: { pageWidth: 816, pageHeight: 1056, pageGap: 32, marginTop: 96, marginBottom: 96, marginLeft: 96, marginRight: 96 },
-    narrow: { pageWidth: 816, pageHeight: 1056, pageGap: 32, marginTop: 48, marginBottom: 48, marginLeft: 48, marginRight: 48 },
-    wide:   { pageWidth: 816, pageHeight: 1056, pageGap: 32, marginTop: 96, marginBottom: 96, marginLeft: 192, marginRight: 192 },
+    normal: { pageWidth: 760, pageHeight: 984, pageGap: 20, marginTop: 90, marginBottom: 90, marginLeft: 90, marginRight: 90 },
+    narrow: { pageWidth: 760, pageHeight: 984, pageGap: 20, marginTop: 45, marginBottom: 45, marginLeft: 45, marginRight: 45 },
+    moderate: { pageWidth: 760, pageHeight: 984, pageGap: 20, marginTop: 90, marginBottom: 90, marginLeft: 72, marginRight: 72 },
   },
 };
 
@@ -41,7 +41,23 @@ export function getUsableHeight(model: PageModel): number {
 export function getPageModelFromSectionAttrs(attrs: Record<string, unknown>): PageModel {
   const pageSize = (attrs?.pageSize as string) || 'A4';
   const margins  = (attrs?.margins  as string) || 'normal';
-  return PAGE_MODELS[pageSize]?.[margins] ?? DEFAULT_PAGE_MODEL;
+  const orientation = (attrs?.orientation as string) || 'portrait';
+  
+  const baseModel = PAGE_MODELS[pageSize]?.[margins] ?? DEFAULT_PAGE_MODEL;
+  
+  if (orientation === 'landscape') {
+    return {
+      ...baseModel,
+      pageWidth: baseModel.pageHeight,
+      pageHeight: baseModel.pageWidth,
+      marginTop: baseModel.marginLeft,
+      marginBottom: baseModel.marginRight,
+      marginLeft: baseModel.marginTop,
+      marginRight: baseModel.marginBottom,
+    };
+  }
+  
+  return baseModel;
 }
 
 export const PageLayout = Extension.create({

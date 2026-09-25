@@ -6,7 +6,8 @@ import { createClient } from '@/lib/supabase/client';
 import {
   MoreHorizontal, Play, Square, Settings2, FileText, ChevronRight, X, Edit2,
   PanelRightClose, PanelRightOpen, ChevronDown, CloudOff, Cloud, Save, Sparkles, History,
-  Loader2, CheckCircle, Maximize, Minimize, List as ListIcon, Home, Share, UploadCloud, BookOpen
+  Loader2, CheckCircle, Maximize, Minimize, List as ListIcon, Home, Share, UploadCloud, BookOpen,
+  Minus, Plus
 } from 'lucide-react';
 import { VerbaWorkspace } from '@/components/workspace/VerbaWorkspace';
 import { CitationInspector } from '@/components/workspace/CitationInspector';
@@ -170,6 +171,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
   // Live word count (updated on every save)
   const [liveWordCount, setLiveWordCount] = useState<number | null>(null);
   const [pageCount, setPageCount] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [liveHeadings, setLiveHeadings] = useState<{ id: string; text: string; level: number }[]>([]);
   const [sectionCitationCounts, setSectionCitationCounts] = useState<Record<string, number>>({});
 
@@ -918,6 +920,14 @@ export default function WorkspacePage({ params }: { params: { documentId: string
 
 
             <button 
+              onClick={() => setIsOutlineOpen(!isOutlineOpen)}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors ml-2 ${isOutlineOpen ? 'bg-black/5 text-[#0B1628]' : 'text-foreground-secondary hover:text-[#0B1628] hover:bg-black/5'}`}
+            >
+              <ListIcon size={14} className={isOutlineOpen ? 'text-[#0B1628]' : 'opacity-70'} />
+              <span>Outline</span>
+            </button>
+
+            <button 
               onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors ml-2 ${isWorkspaceOpen ? 'bg-[#EEF2FF] text-[#4F46E5]' : 'text-[#0B1628] hover:bg-black/5'}`}
             >
@@ -937,6 +947,7 @@ export default function WorkspacePage({ params }: { params: { documentId: string
               zoomLevel={zoomLevel}
               viewMode={viewMode}
               onPageCountChange={setPageCount}
+              onCurrentPageChange={setCurrentPage}
               issues={issues}
               selectedIssueId={activeIssueId}
               onIssueSelect={selectIssue}
@@ -984,26 +995,26 @@ export default function WorkspacePage({ params }: { params: { documentId: string
           </div>
 
           {/* Document Status Bar */}
-          <div className="h-[40px] bg-white border-t border-border-light flex items-center justify-between px-8 shrink-0 text-[12px] text-foreground-secondary z-10 relative">
-            <div className="flex items-center space-x-3">
-              <span>{pageCount} {pageCount === 1 ? 'page' : 'pages'}</span>
-              <span className="w-px h-3 bg-border-light" />
-              <span>{liveWordCount !== null ? `${liveWordCount.toLocaleString()} words` : 'Calculating...'}</span>
-              <span className="w-px h-3 bg-border-light" />
-              <span>{documentCitations.length} sources</span>
+          <div className="h-[32px] bg-white border-t border-border-light flex items-center justify-between px-6 shrink-0 text-[11px] text-foreground-secondary z-10 relative select-none">
+            
+            {/* Left: Document Info */}
+            <div className="flex items-center space-x-4">
+              <span className="font-medium hover:bg-black/5 cursor-pointer px-2 py-0.5 rounded transition-colors">
+                Page {currentPage} of {pageCount}
+              </span>
+              
+              <span className="font-medium hover:bg-black/5 cursor-pointer px-2 py-0.5 rounded transition-colors">
+                {liveWordCount !== null ? `${liveWordCount.toLocaleString()} words` : 'Calculating...'}
+              </span>
+
+              {/* Language could go here in future */}
             </div>
 
-            <div className="flex items-center space-x-6">
-              <button
-                onClick={() => setViewMode(v => v === 'print' ? 'web' : 'print')}
-                className="flex items-center space-x-1.5 hover:text-foreground transition-colors"
-              >
-                <FileText size={14} />
-                <span>{viewMode === 'print' ? 'Print View' : 'Web View'}</span>
-                <ChevronDown size={14} className="opacity-70 ml-1" />
-              </button>
+            {/* Right: View & Zoom Controls */}
+            <div className="flex items-center space-x-2">
               
-              <div className="flex items-center font-medium">
+              {/* Save Status */}
+              <div className="flex items-center font-medium px-2 py-0.5 opacity-70">
                 {saveStatus === 'saving' ? (
                   <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-2 animate-pulse" />
                 ) : saveStatus === 'unsaved' || saveStatus === 'failed' ? (
@@ -1011,28 +1022,55 @@ export default function WorkspacePage({ params }: { params: { documentId: string
                 ) : (
                   <div className="w-1.5 h-1.5 rounded-full bg-status-success mr-2" />
                 )}
-                <span>{saveStatus === 'saving' ? 'Saving...' : saveStatus === 'unsaved' || saveStatus === 'failed' ? 'Unsaved changes' : 'Saved'}</span>
+                <span>{saveStatus === 'saving' ? 'Saving...' : saveStatus === 'unsaved' || saveStatus === 'failed' ? 'Unsaved' : 'Saved'}</span>
               </div>
+              
+              <span className="w-px h-3 bg-border-light mx-1" />
 
-              {/* Zoom Control */}
+              {/* View Switch */}
               <button
-                className="flex items-center space-x-1.5 hover:text-foreground transition-colors"
-                onClick={() => {
-                  const idx = zoomOptions.indexOf(zoomLevel);
-                  if (idx < zoomOptions.length - 1) setZoomLevel(zoomOptions[idx + 1]);
-                  else setZoomLevel(zoomOptions[0]);
-                }}
+                onClick={() => setViewMode(v => v === 'print' ? 'web' : 'print')}
+                className="flex items-center hover:bg-black/5 px-2 py-0.5 rounded transition-colors"
+                title="Switch View"
               >
-                <span>{zoomLevel}%</span>
-                <ChevronDown size={14} className="opacity-70 ml-1" />
+                <FileText size={13} className="mr-1.5 opacity-70" />
+                <span className="font-medium">{viewMode === 'print' ? 'Page View' : 'Web View'}</span>
               </button>
 
+              {/* Zoom Control */}
+              <div className="flex items-center hover:bg-black/5 rounded transition-colors px-1">
+                <button
+                  className="p-1 opacity-60 hover:opacity-100 disabled:opacity-30"
+                  onClick={() => {
+                    const idx = zoomOptions.indexOf(zoomLevel);
+                    if (idx > 0) setZoomLevel(zoomOptions[idx - 1]);
+                  }}
+                  disabled={zoomOptions.indexOf(zoomLevel) === 0}
+                >
+                  <Minus size={13} />
+                </button>
+                <span className="w-[42px] text-center font-medium cursor-pointer" onClick={() => setZoomLevel(100)}>
+                  {zoomLevel}%
+                </span>
+                <button
+                  className="p-1 opacity-60 hover:opacity-100 disabled:opacity-30"
+                  onClick={() => {
+                    const idx = zoomOptions.indexOf(zoomLevel);
+                    if (idx < zoomOptions.length - 1) setZoomLevel(zoomOptions[idx + 1]);
+                  }}
+                  disabled={zoomOptions.indexOf(zoomLevel) === zoomOptions.length - 1}
+                >
+                  <Plus size={13} />
+                </button>
+              </div>
+
+              {/* Focus Mode */}
               <button
                 onClick={() => setIsFocusMode(!isFocusMode)}
-                className="flex items-center justify-center hover:text-foreground transition-colors"
+                className="flex items-center justify-center hover:bg-black/5 p-1 rounded transition-colors ml-1"
                 title="Focus Mode (Esc to exit)"
               >
-                {isFocusMode ? <Minimize size={14} /> : <Maximize size={14} />}
+                {isFocusMode ? <Minimize size={13} /> : <Maximize size={13} />}
               </button>
             </div>
           </div>

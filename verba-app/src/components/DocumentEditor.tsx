@@ -6,6 +6,7 @@ import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
 import { EditorToolbar } from './EditorToolbar';
+import { DocumentRuler } from './workspace/DocumentRuler';
 import { VerbaBlockId, IssueHighlight, IssueProp } from './editor/EditorExtensions';
 import { Citation } from './editor/extensions/Citation';
 import { Sparkles, Search, ShieldCheck, BookOpen } from 'lucide-react';
@@ -23,7 +24,7 @@ import { Figure } from './editor/extensions/Figure';
 import { Section } from './editor/extensions/Section';
 import { PageBreak } from './editor/extensions/PageBreak';
 import { LineHeight } from './editor/extensions/LineHeight';
-import { Indent } from './editor/extensions/Indent';
+import { ParagraphFormat } from './editor/extensions/ParagraphFormat';
 import FontFamily from '@tiptap/extension-font-family';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
@@ -34,6 +35,7 @@ import { MathEquation } from './editor/extensions/MathEquation';
 import SearchAndReplace from '@sereneinserenade/tiptap-search-and-replace';
 import { PageLayout } from './editor/extensions/PageLayout';
 import { usePageLayout } from '@/hooks/usePageLayout';
+import { CitationPopover } from './editor/CitationPopover';
 
 export interface ContextualSelection {
   blockId: string;
@@ -88,6 +90,7 @@ interface DocumentEditorProps {
   onBlur?: () => void;
   viewMode?: 'print' | 'web';
   onPageCountChange?: (count: number) => void;
+  onCurrentPageChange?: (page: number) => void;
 }
 
 /**
@@ -174,9 +177,17 @@ export function DocumentEditor({
   onBlur,
   viewMode = 'web',
   onPageCountChange,
+  onCurrentPageChange,
 }: DocumentEditorProps) {
   const [mounted, setMounted] = useState(false);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const [showCitationPopover, setShowCitationPopover] = useState(false);
+
+  useEffect(() => {
+    const handleOpenCiteInline = () => setShowCitationPopover(true);
+    window.addEventListener('verba:open-cite-inline', handleOpenCiteInline);
+    return () => window.removeEventListener('verba:open-cite-inline', handleOpenCiteInline);
+  }, []);
 
   const editor = useEditor({
     extensions: [
@@ -219,7 +230,7 @@ export function DocumentEditor({
       Highlight.configure({ multicolor: true }),
       FontSize,
       LineHeight,
-      Indent,
+      ParagraphFormat,
       CharacterCount,
       MathEquation,
       SearchAndReplace.configure({
@@ -405,7 +416,7 @@ export function DocumentEditor({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor]);
 
-  const { pageCount } = usePageLayout(editor, viewMode, scrollContainerRef);
+  const { pageCount, pageModel, currentPage } = usePageLayout(editor, viewMode, scrollContainerRef);
 
   useEffect(() => {
     if (onPageCountChange) {
@@ -413,13 +424,17 @@ export function DocumentEditor({
     }
   }, [pageCount, onPageCountChange]);
 
+  useEffect(() => {
+    if (onCurrentPageChange) {
+      onCurrentPageChange(currentPage);
+    }
+  }, [currentPage, onCurrentPageChange]);
+
   if (!editor) {
     return null;
   }
 
   const scale = zoomLevel === 0 ? 1 : zoomLevel / 100;
-  const a4Width = 820;
-  const a4MinHeight = 1123;
 
   const getSelectionContext = () => {
     const { from, to } = editor.state.selection;
@@ -476,9 +491,43 @@ export function DocumentEditor({
       >
         <div className="flex flex-col items-center origin-top transition-transform duration-200 w-full" style={{ transform: `scale(${scale})` }}>
           
+          <style dangerouslySetInnerHTML={{ __html: `
+            .view-mode-print .verba-section {
+              width: ${pageModel.pageWidth}px;
+              min-height: ${pageModel.pageHeight}px;
+              padding-left: ${pageModel.marginLeft}px;
+              padding-right: ${pageModel.marginRight}px;
+              padding-top: 0px;
+              padding-bottom: 0px;
+              background-image: linear-gradient(
+                to bottom,
+                white 0px,
+                white ${pageModel.pageHeight}px,
+                #e5e7eb ${pageModel.pageHeight}px,
+                #f3f4f6 ${pageModel.pageHeight + 2}px,
+                #f3f4f6 ${pageModel.pageHeight + pageModel.pageGap - 2}px,
+                #e5e7eb ${pageModel.pageHeight + pageModel.pageGap}px
+              );
+              background-size: 100% ${pageModel.pageHeight + pageModel.pageGap}px;
+              background-color: transparent;
+            }
+          `}} />
+          
+          {viewMode === 'print' && (
+            <DocumentRuler editor={editor} pageModel={pageModel} zoomLevel={zoomLevel} />
+          )}
+
           {/* verba-editor-card: CSS targeted by .view-mode-print to become transparent (sections are pages) */}
           <div 
-            className="verba-editor-card bg-white border border-[#E2E6EC] rounded-none shadow-[0_1px_3px_rgba(0,0,0,0.07)] w-full max-w-[920px] min-h-[1100px] mb-8 px-10 pt-12 pb-14 md:px-16 md:pt-[60px] md:pb-[72px]"
+            className="verba-editor-card bg-white border border-[#E2E6EC] rounded-none shadow-[0_1px_3px_rgba(0,0,0,0.07)] w-full mb-8"
+            style={{ 
+               maxWidth: `${pageModel.pageWidth}px`, 
+               minHeight: `${pageModel.pageHeight}px`,
+               paddingTop: `${pageModel.marginTop}px`,
+               paddingBottom: `${pageModel.marginBottom}px`,
+               paddingLeft: `${pageModel.marginLeft}px`,
+               paddingRight: `${pageModel.marginRight}px`,
+            }}
             onClick={(e) => {
             const target = e.target as HTMLElement;
             const citationNode = target.closest('[data-citation-id]');
@@ -526,8 +575,7 @@ export function DocumentEditor({
                 <div className="w-[1px] bg-[#213555]" />
                 <button
                   onClick={() => {
-                    const ctx = getSelectionContext();
-                    if (ctx.blockId && onCite) onCite(ctx);
+                    setShowCitationPopover(true);
                   }}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-accent transition-colors"
                 >
@@ -538,6 +586,14 @@ export function DocumentEditor({
             </BubbleMenu>
           )}
           <EditorContent editor={editor} />
+          {editor && (
+            <CitationPopover 
+              editor={editor}
+              isOpen={showCitationPopover}
+              onClose={() => setShowCitationPopover(false)}
+              documentId={window.location.pathname.split('/').pop() || ''}
+            />
+          )}
         </div>
         </div>
       </div>

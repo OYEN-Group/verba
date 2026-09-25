@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Editor } from '@tiptap/react';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import {
@@ -9,28 +9,11 @@ import {
   getPageModelFromSectionAttrs,
 } from '../components/editor/extensions/PageLayout';
 
-/**
- * Read the padding-top value previously applied to a node via Decoration.node().
- * Used to subtract decoration padding from measured offsetHeight to recover natural height.
- */
-function getAppliedPaddingTop(
-  decoSet: DecorationSet,
-  pos: number,
-  nodeSize: number,
-): number {
-  const found = decoSet.find(pos, pos + nodeSize);
-  for (const deco of found) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const style: string = (deco as any).type?.attrs?.style ?? '';
-    const m = style.match(/padding-top:\s*(\d+(?:\.\d+)?)px/);
-    if (m) return parseFloat(m[1]);
-  }
-  return 0;
-}
 
 export interface PageLayoutResult {
   pageCount: number;
   pageModel: PageModel;
+  currentPage: number;
 }
 
 /**
@@ -52,10 +35,12 @@ export function usePageLayout(
   scrollContainerRef: React.RefObject<HTMLDivElement | null>,
 ): PageLayoutResult {
   const [pageCount, setPageCount] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [pageModel, setPageModel] = useState<PageModel>(DEFAULT_PAGE_MODEL);
 
   const rafRef     = useRef<number>(0);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const pageMapRef  = useRef<Map<number, number>>(new Map());
 
   const clearPagination = useCallback(() => {
     if (!editor) return;
@@ -67,7 +52,9 @@ export function usePageLayout(
       );
     } catch { /* view destroyed */ }
     setPageCount(1);
+    setCurrentPage(1);
     setPageModel(DEFAULT_PAGE_MODEL);
+    pageMapRef.current.clear();
   }, [editor]);
 
   const runLayout = useCallback(() => {
@@ -91,14 +78,12 @@ export function usePageLayout(
 
     const usableHeight = getUsableHeight(model);
 
-    // Read currently-applied decorations to subtract from measured heights
-    const currentDecoSet =
-      pageLayoutKey.getState(state)?.decorations ?? DecorationSet.empty;
 
     const newDecorations: Decoration[] = [];
     let currentPageHeight  = 0;
     let newPageCount       = 1;
     let isFirstContentBlock = true;
+    const newPageMap = new Map<number, number>();
 
     doc.descendants((node, pos, parent) => {
       // Descend into doc and section nodes
@@ -116,11 +101,11 @@ export function usePageLayout(
       } catch { return false; }
       if (!domEl || typeof domEl.offsetHeight !== 'number') return false;
 
-      // Natural height = rendered height minus any pagination padding we previously applied.
-      // getAppliedPaddingTop reads from the MAPPED decoration set so positions stay correct
-      // after document edits (ProseMirror maps decoration positions automatically).
-      const appliedPad  = getAppliedPaddingTop(currentDecoSet, pos, node.nodeSize);
-      const naturalHeight = Math.max(1, domEl.offsetHeight - appliedPad);
+      // Natural height = rendered height minus any pagination padding currently in the DOM.
+      // We read the physical DOM style rather than the Tiptap decoration set to guarantee
+      // we only subtract padding that is actually inflating offsetHeight.
+      const inlinePad = parseFloat(domEl.style.paddingTop) || 0;
+      const naturalHeight = Math.max(1, domEl.offsetHeight - inlinePad);
 
       // ── First content block: apply page 1 top margin ──────────────────────
       if (isFirstContentBlock) {
@@ -129,8 +114,17 @@ export function usePageLayout(
             style: `padding-top: ${model.marginTop}px`,
           }),
         );
-        currentPageHeight   = naturalHeight;
+        currentPageHeight = naturalHeight;
         isFirstContentBlock = false;
+
+        // Handle if the first block itself is taller than one page
+        if (currentPageHeight > usableHeight) {
+          const excess = currentPageHeight - usableHeight;
+          const extraPages = Math.ceil(excess / usableHeight);
+          newPageCount += extraPages;
+          currentPageHeight = excess % usableHeight || usableHeight;
+        }
+        newPageMap.set(pos, newPageCount);
         return false;
       }
 
@@ -159,18 +153,26 @@ export function usePageLayout(
         );
         currentPageHeight = naturalHeight;
         newPageCount++;
-      } else {
-        // Block fits — accumulate height.
-        currentPageHeight += naturalHeight;
 
-        // Handle content taller than one full usable page (e.g., very large table/image).
-        // We count the extra pages consumed without splitting the block.
         if (currentPageHeight > usableHeight) {
           const excess = currentPageHeight - usableHeight;
           const extraPages = Math.ceil(excess / usableHeight);
           newPageCount += extraPages;
           currentPageHeight = excess % usableHeight || usableHeight;
         }
+        newPageMap.set(pos, newPageCount);
+      } else {
+        // Block fits — accumulate height.
+        currentPageHeight += naturalHeight;
+
+        // Handle content taller than one full usable page (e.g., very large table/image).
+        if (currentPageHeight > usableHeight) {
+          const excess = currentPageHeight - usableHeight;
+          const extraPages = Math.ceil(excess / usableHeight);
+          newPageCount += extraPages;
+          currentPageHeight = excess % usableHeight || usableHeight;
+        }
+        newPageMap.set(pos, newPageCount);
       }
 
       return false; // Do not recurse into block children
@@ -188,8 +190,38 @@ export function usePageLayout(
       );
     } catch { /* view destroyed */ }
 
+    pageMapRef.current = newPageMap;
     setPageCount(newPageCount);
+    updateCurrentPage(newPageMap);
   }, [editor, viewMode, clearPagination]);
+
+  const updateCurrentPage = useCallback((map = pageMapRef.current) => {
+    if (!editor) return;
+    const { $from } = editor.state.selection;
+    let blockPos = 0;
+    for (let i = $from.depth; i > 0; i--) {
+      const node = $from.node(i);
+      if (node.isBlock && $from.node(i - 1)?.type.name === 'section') {
+        blockPos = $from.before(i);
+        break;
+      }
+    }
+    
+    // Fallback: if block not perfectly found, find closest preceding block in map
+    if (!map.has(blockPos)) {
+       let closest = 1;
+       let maxPos = -1;
+       for (const [p, pg] of Array.from(map.entries())) {
+         if (p <= $from.pos && p > maxPos) {
+           maxPos = p;
+           closest = pg;
+         }
+       }
+       setCurrentPage(closest);
+    } else {
+       setCurrentPage(map.get(blockPos) || 1);
+    }
+  }, [editor]);
 
   const scheduleLayout = useCallback(() => {
     clearTimeout(debounceRef.current);
@@ -204,13 +236,15 @@ export function usePageLayout(
   useEffect(() => {
     if (!editor) return;
     editor.on('update', scheduleLayout);
+    editor.on('selectionUpdate', () => updateCurrentPage());
     scheduleLayout(); // initial layout pass on mount
     return () => {
       editor.off('update', scheduleLayout);
+      editor.off('selectionUpdate');
       clearTimeout(debounceRef.current);
       cancelAnimationFrame(rafRef.current);
     };
-  }, [editor, scheduleLayout]);
+  }, [editor, scheduleLayout, updateCurrentPage]);
 
   // Clear when switching to web view
   useEffect(() => {
@@ -229,5 +263,5 @@ export function usePageLayout(
     return () => obs.disconnect();
   }, [scrollContainerRef, scheduleLayout]);
 
-  return { pageCount, pageModel };
+  return { pageCount, pageModel, currentPage };
 }
