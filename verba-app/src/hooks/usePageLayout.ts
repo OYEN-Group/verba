@@ -211,7 +211,7 @@ export function usePageLayout(
     if (!map.has(blockPos)) {
        let closest = 1;
        let maxPos = -1;
-       for (const [p, pg] of map.entries()) {
+       for (const [p, pg] of Array.from(map.entries())) {
          if (p <= $from.pos && p > maxPos) {
            maxPos = p;
            closest = pg;

@@ -920,6 +920,14 @@ export default function WorkspacePage({ params }: { params: { documentId: string
 
 
             <button 
+              onClick={() => setIsOutlineOpen(!isOutlineOpen)}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors ml-2 ${isOutlineOpen ? 'bg-black/5 text-[#0B1628]' : 'text-foreground-secondary hover:text-[#0B1628] hover:bg-black/5'}`}
+            >
+              <ListIcon size={14} className={isOutlineOpen ? 'text-[#0B1628]' : 'opacity-70'} />
+              <span>Outline</span>
+            </button>
+
+            <button 
               onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors ml-2 ${isWorkspaceOpen ? 'bg-[#EEF2FF] text-[#4F46E5]' : 'text-[#0B1628] hover:bg-black/5'}`}
             >

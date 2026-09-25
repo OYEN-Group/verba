@@ -244,7 +244,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => editor.chain().focus().toggleBlockquote().run()}>Quote</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => editor.chain().focus().setPageBreak().run()}>Page Break</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => (editor.chain().focus() as any).insertMathEquation().run()}>Equation</button>
-              <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => window.dispatchEvent(new CustomEvent('verba:open-cite'))}>Citation</button>
+              <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => window.dispatchEvent(new CustomEvent('verba:open-cite-inline'))}>Citation</button>
             </div>
           </div>
           {/* Format Menu */}
@@ -269,7 +269,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           <div className="relative group">
             <button className="px-2 py-1 hover:bg-black/5 rounded transition-colors cursor-pointer text-[#475569]">References</button>
             <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white border border-[#E2E8F0] shadow-lg rounded-md py-1 w-48 z-50">
-              <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => window.dispatchEvent(new CustomEvent('verba:open-cite'))}>Add Citation</button>
+              <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => window.dispatchEvent(new CustomEvent('verba:open-cite-inline'))}>Add Citation</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => window.dispatchEvent(new CustomEvent('verba:find-evidence'))}>Find Evidence</button>
             </div>
           </div>
@@ -458,7 +458,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         <div className="w-[1px] h-5 bg-[#E2E8F0] mx-2 shrink-0" />
 
         <button
-          onClick={() => window.dispatchEvent(new CustomEvent('verba:open-cite'))}
+          onClick={() => window.dispatchEvent(new CustomEvent('verba:open-cite-inline'))}
           className="flex items-center space-x-1.5 hover:bg-black/5 px-2 py-1 rounded transition-colors text-[13px] font-medium text-[#475569]">
           <span>Cite</span>
         </button>

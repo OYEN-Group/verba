@@ -35,6 +35,7 @@ import { MathEquation } from './editor/extensions/MathEquation';
 import SearchAndReplace from '@sereneinserenade/tiptap-search-and-replace';
 import { PageLayout } from './editor/extensions/PageLayout';
 import { usePageLayout } from '@/hooks/usePageLayout';
+import { CitationPopover } from './editor/CitationPopover';
 
 export interface ContextualSelection {
   blockId: string;
@@ -180,6 +181,13 @@ export function DocumentEditor({
 }: DocumentEditorProps) {
   const [mounted, setMounted] = useState(false);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const [showCitationPopover, setShowCitationPopover] = useState(false);
+
+  useEffect(() => {
+    const handleOpenCiteInline = () => setShowCitationPopover(true);
+    window.addEventListener('verba:open-cite-inline', handleOpenCiteInline);
+    return () => window.removeEventListener('verba:open-cite-inline', handleOpenCiteInline);
+  }, []);
 
   const editor = useEditor({
     extensions: [
@@ -567,8 +575,7 @@ export function DocumentEditor({
                 <div className="w-[1px] bg-[#213555]" />
                 <button
                   onClick={() => {
-                    const ctx = getSelectionContext();
-                    if (ctx.blockId && onCite) onCite(ctx);
+                    setShowCitationPopover(true);
                   }}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-accent transition-colors"
                 >
@@ -579,6 +586,14 @@ export function DocumentEditor({
             </BubbleMenu>
           )}
           <EditorContent editor={editor} />
+          {editor && (
+            <CitationPopover 
+              editor={editor}
+              isOpen={showCitationPopover}
+              onClose={() => setShowCitationPopover(false)}
+              documentId={window.location.pathname.split('/').pop() || ''}
+            />
+          )}
         </div>
         </div>
       </div>

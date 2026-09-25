@@ -23,12 +23,12 @@ export const PAGE_MODELS: Record<string, Record<string, PageModel>> = {
   A4: {
     normal: { pageWidth: 740, pageHeight: 1047, pageGap: 20, marginTop: 90, marginBottom: 90, marginLeft: 90, marginRight: 90 },
     narrow: { pageWidth: 740, pageHeight: 1047, pageGap: 20, marginTop: 45, marginBottom: 45, marginLeft: 45, marginRight: 45 },
-    wide:   { pageWidth: 740, pageHeight: 1047, pageGap: 20, marginTop: 90, marginBottom: 90, marginLeft: 180, marginRight: 180 },
+    moderate: { pageWidth: 740, pageHeight: 1047, pageGap: 20, marginTop: 90, marginBottom: 90, marginLeft: 72, marginRight: 72 },
   },
   Letter: {
     normal: { pageWidth: 760, pageHeight: 984, pageGap: 20, marginTop: 90, marginBottom: 90, marginLeft: 90, marginRight: 90 },
     narrow: { pageWidth: 760, pageHeight: 984, pageGap: 20, marginTop: 45, marginBottom: 45, marginLeft: 45, marginRight: 45 },
-    wide:   { pageWidth: 760, pageHeight: 984, pageGap: 20, marginTop: 90, marginBottom: 90, marginLeft: 180, marginRight: 180 },
+    moderate: { pageWidth: 760, pageHeight: 984, pageGap: 20, marginTop: 90, marginBottom: 90, marginLeft: 72, marginRight: 72 },
   },
 };
 

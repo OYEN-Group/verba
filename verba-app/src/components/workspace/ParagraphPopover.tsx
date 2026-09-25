@@ -59,42 +59,85 @@ export function ParagraphPopover({ editor }: { editor: Editor }) {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-1 bg-white border border-[#E2E8F0] shadow-lg rounded-md w-64 z-50 p-4 text-[13px] text-[#0F172A]">
+        <div className="absolute top-full right-0 mt-1 bg-white border border-[#E2E8F0] shadow-lg rounded-md w-72 z-50 p-4 text-[13px] text-[#0F172A]">
           <div className="flex justify-between items-center mb-3">
-            <h4 className="font-semibold">Paragraph Settings</h4>
+            <h4 className="font-semibold">Paragraph</h4>
             <button onClick={() => setIsOpen(false)} className="opacity-50 hover:opacity-100"><X size={14}/></button>
           </div>
           
           <div className="space-y-4">
+            <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+              <label className="text-[12px] text-[#475569]">Alignment</label>
+              <select 
+                className="w-full border border-[#E2E8F0] rounded px-2 py-1 outline-none focus:border-blue-500"
+                value={
+                  editor.isActive({ textAlign: 'left' }) ? 'left' :
+                  editor.isActive({ textAlign: 'center' }) ? 'center' :
+                  editor.isActive({ textAlign: 'right' }) ? 'right' :
+                  editor.isActive({ textAlign: 'justify' }) ? 'justify' : 'left'
+                }
+                onChange={(e) => editor.chain().focus().setTextAlign(e.target.value).run()}
+              >
+                <option value="left">Left</option>
+                <option value="center">Center</option>
+                <option value="right">Right</option>
+                <option value="justify">Justified</option>
+              </select>
+            </div>
+
             <div className="space-y-2">
-              <h5 className="font-medium text-[#475569] text-[12px] uppercase">Indentation (px)</h5>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-[11px] text-[#64748B] block mb-1">Left</label>
-                  <input type="number" value={leftIndent} onChange={(e) => applyFormat('leftIndent', Number(e.target.value))} className="w-full border border-[#E2E8F0] rounded px-2 py-1 outline-none focus:border-blue-500" />
+              <h5 className="font-medium text-[#475569] text-[12px] uppercase">Indentation</h5>
+              <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+                <label className="text-[12px] text-[#475569]">Left</label>
+                <div className="relative">
+                  <input type="number" value={leftIndent} onChange={(e) => applyFormat('leftIndent', Number(e.target.value))} className="w-full border border-[#E2E8F0] rounded px-2 py-1 outline-none focus:border-blue-500 pr-6" />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-[#64748B]">px</span>
                 </div>
-                <div>
-                  <label className="text-[11px] text-[#64748B] block mb-1">Right</label>
-                  <input type="number" value={rightIndent} onChange={(e) => applyFormat('rightIndent', Number(e.target.value))} className="w-full border border-[#E2E8F0] rounded px-2 py-1 outline-none focus:border-blue-500" />
+              </div>
+              <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+                <label className="text-[12px] text-[#475569]">Right</label>
+                <div className="relative">
+                  <input type="number" value={rightIndent} onChange={(e) => applyFormat('rightIndent', Number(e.target.value))} className="w-full border border-[#E2E8F0] rounded px-2 py-1 outline-none focus:border-blue-500 pr-6" />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-[#64748B]">px</span>
                 </div>
-                <div className="col-span-2">
-                  <label className="text-[11px] text-[#64748B] block mb-1">First Line / Hanging (use negative)</label>
-                  <input type="number" value={firstLineIndent} onChange={(e) => applyFormat('firstLineIndent', Number(e.target.value))} className="w-full border border-[#E2E8F0] rounded px-2 py-1 outline-none focus:border-blue-500" />
+              </div>
+              <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+                <label className="text-[12px] text-[#475569]">First line/Hanging</label>
+                <div className="relative">
+                  <input type="number" value={firstLineIndent} onChange={(e) => applyFormat('firstLineIndent', Number(e.target.value))} className="w-full border border-[#E2E8F0] rounded px-2 py-1 outline-none focus:border-blue-500 pr-6" />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-[#64748B]">px</span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <h5 className="font-medium text-[#475569] text-[12px] uppercase">Spacing (px)</h5>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-[11px] text-[#64748B] block mb-1">Before</label>
-                  <input type="number" value={spaceBefore} onChange={(e) => applyFormat('spaceBefore', Number(e.target.value))} className="w-full border border-[#E2E8F0] rounded px-2 py-1 outline-none focus:border-blue-500" />
+              <h5 className="font-medium text-[#475569] text-[12px] uppercase">Spacing</h5>
+              <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+                <label className="text-[12px] text-[#475569]">Before</label>
+                <div className="relative">
+                  <input type="number" value={spaceBefore} onChange={(e) => applyFormat('spaceBefore', Number(e.target.value))} className="w-full border border-[#E2E8F0] rounded px-2 py-1 outline-none focus:border-blue-500 pr-6" />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-[#64748B]">px</span>
                 </div>
-                <div>
-                  <label className="text-[11px] text-[#64748B] block mb-1">After</label>
-                  <input type="number" value={spaceAfter} onChange={(e) => applyFormat('spaceAfter', Number(e.target.value))} className="w-full border border-[#E2E8F0] rounded px-2 py-1 outline-none focus:border-blue-500" />
+              </div>
+              <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+                <label className="text-[12px] text-[#475569]">After</label>
+                <div className="relative">
+                  <input type="number" value={spaceAfter} onChange={(e) => applyFormat('spaceAfter', Number(e.target.value))} className="w-full border border-[#E2E8F0] rounded px-2 py-1 outline-none focus:border-blue-500 pr-6" />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-[#64748B]">px</span>
                 </div>
+              </div>
+              <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+                <label className="text-[12px] text-[#475569]">Line spacing</label>
+                <select 
+                  className="w-full border border-[#E2E8F0] rounded px-2 py-1 outline-none focus:border-blue-500"
+                  value={editor.getAttributes('paragraph').lineHeight || '1.5'}
+                  onChange={(e) => editor.chain().focus().setLineHeight(e.target.value).run()}
+                >
+                  <option value="1.0">1.0</option>
+                  <option value="1.15">1.15</option>
+                  <option value="1.5">1.5</option>
+                  <option value="2.0">2.0</option>
+                </select>
               </div>
             </div>
           </div>

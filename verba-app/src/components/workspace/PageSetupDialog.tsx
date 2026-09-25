@@ -10,7 +10,7 @@ interface PageSetupDialogProps {
 export function PageSetupDialog({ editor, onClose }: PageSetupDialogProps) {
   const [pageSize, setPageSize] = useState<'A4' | 'Letter'>('A4');
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
-  const [margins, setMargins] = useState<'normal' | 'narrow' | 'wide'>('normal');
+  const [margins, setMargins] = useState<'normal' | 'narrow' | 'moderate'>('normal');
 
   useEffect(() => {
     // Read current settings from the first section in the document
@@ -48,7 +48,7 @@ export function PageSetupDialog({ editor, onClose }: PageSetupDialogProps) {
               className="w-full border border-[#E2E8F0] rounded px-3 py-2 text-[14px] outline-none focus:border-blue-500"
             >
               <option value="A4">A4 (210 × 297 mm)</option>
-              <option value="Letter">Letter (8.5 × 11 in)</option>
+              <option value="Letter" disabled>Letter (Deferred)</option>
             </select>
           </div>
           
@@ -60,7 +60,7 @@ export function PageSetupDialog({ editor, onClose }: PageSetupDialogProps) {
               className="w-full border border-[#E2E8F0] rounded px-3 py-2 text-[14px] outline-none focus:border-blue-500"
             >
               <option value="portrait">Portrait</option>
-              <option value="landscape">Landscape</option>
+              <option value="landscape" disabled>Landscape (Deferred)</option>
             </select>
           </div>
 
@@ -73,7 +73,7 @@ export function PageSetupDialog({ editor, onClose }: PageSetupDialogProps) {
             >
               <option value="normal">Normal</option>
               <option value="narrow">Narrow</option>
-              <option value="wide">Wide</option>
+              <option value="moderate">Moderate</option>
             </select>
           </div>
         </div>

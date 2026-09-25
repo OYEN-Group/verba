@@ -10,7 +10,7 @@ declare module '@tiptap/core' {
       setSectionColumns: (columns: 1 | 2) => ReturnType;
       setSectionPageSize: (pageSize: 'A4' | 'Letter') => ReturnType;
       setSectionOrientation: (orientation: 'portrait' | 'landscape') => ReturnType;
-      setSectionMargins: (margins: 'normal' | 'narrow' | 'wide') => ReturnType;
+      setSectionMargins: (margins: 'normal' | 'narrow' | 'moderate') => ReturnType;
     }
   }
 }
@@ -130,7 +130,7 @@ export const Section = Node.create<SectionOptions>({
         }
         return false;
       },
-      setSectionMargins: (margins: 'normal' | 'narrow' | 'wide') => ({ tr, dispatch }) => {
+      setSectionMargins: (margins: 'normal' | 'narrow' | 'moderate') => ({ tr, dispatch }) => {
         const { selection } = tr;
         let sectionPos = -1;
         let sectionNode: any = null;
