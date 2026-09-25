@@ -145,7 +145,7 @@ export function VerbaWorkspace({
             projectContext={projectContext}
             wordCount={wordCount}
             sourceCount={sourceCount}
-            onNavigateTab={onTabChange}
+            onNavigateTab={onTabChange as (tab: string) => void}
           />
         )}
         {activeTab === 'review' && (

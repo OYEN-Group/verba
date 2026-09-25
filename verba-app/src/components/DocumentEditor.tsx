@@ -36,6 +36,10 @@ import SearchAndReplace from '@sereneinserenade/tiptap-search-and-replace';
 import { PageLayout } from './editor/extensions/PageLayout';
 import { usePageLayout } from '@/hooks/usePageLayout';
 import { CitationPopover } from './editor/CitationPopover';
+import { VerbaStyle } from './editor/extensions/VerbaStyle';
+import { TableOfContents } from './editor/extensions/TableOfContents';
+import { Caption } from './editor/extensions/Caption';
+import { CommandPalette } from './workspace/CommandPalette';
 
 export interface ContextualSelection {
   blockId: string;
@@ -218,6 +222,9 @@ export function DocumentEditor({
       Superscript,
       PageBreak,
       VerbaBlockId,
+      VerbaStyle,
+      TableOfContents,
+      Caption,
       IssueHighlight.configure({
         issues,
         selectedIssueId,
@@ -594,6 +601,7 @@ export function DocumentEditor({
               documentId={window.location.pathname.split('/').pop() || ''}
             />
           )}
+          <CommandPalette editor={editor} />
         </div>
         </div>
       </div>

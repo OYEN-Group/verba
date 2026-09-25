@@ -55,6 +55,7 @@ interface EditorToolbarProps {
 
 import { ParagraphPopover } from './workspace/ParagraphPopover';
 import { PageSetupDialog } from './workspace/PageSetupDialog';
+import { DOCUMENT_STYLES, DocumentStyle } from '@/lib/documentStyles';
 
 type Tab = 'home' | 'insert' | 'layout' | 'academic';
 
@@ -244,6 +245,9 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => editor.chain().focus().toggleBlockquote().run()}>Quote</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => editor.chain().focus().setPageBreak().run()}>Page Break</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => (editor.chain().focus() as any).insertMathEquation().run()}>Equation</button>
+              <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => editor.chain().focus().insertContent({ type: 'tableOfContents' }).run()}>Table of Contents</button>
+              <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => editor.chain().focus().insertContent({ type: 'caption', attrs: { captionType: 'figure' } }).run()}>Figure Caption</button>
+              <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => editor.chain().focus().insertContent({ type: 'caption', attrs: { captionType: 'table' } }).run()}>Table Caption</button>
               <button className="w-full text-left px-4 py-1.5 hover:bg-black/5" onClick={() => window.dispatchEvent(new CustomEvent('verba:open-cite-inline'))}>Citation</button>
             </div>
           </div>
@@ -298,19 +302,33 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         <div className="flex items-center space-x-2 text-[13px] shrink-0">
           <div className="relative group">
             <select 
-              value={editor.isActive('heading', { level: 1 }) ? 'h1' : editor.isActive('heading', { level: 2 }) ? 'h2' : editor.isActive('heading', { level: 3 }) ? 'h3' : 'p'}
+              value={(() => {
+                const attrs = editor.getAttributes('heading');
+                if (editor.isActive('blockquote')) return 'quote';
+                if (editor.isActive('heading', { level: 1 })) return attrs.verbaStyle === 'title' ? 'title' : 'h1';
+                if (editor.isActive('heading', { level: 2 })) return attrs.verbaStyle === 'subtitle' ? 'subtitle' : 'h2';
+                if (editor.isActive('heading', { level: 3 })) return 'h3';
+                return 'normal';
+              })()}
               onChange={(e) => {
-                if (e.target.value === 'p') editor.chain().focus().setParagraph().run();
-                else if (e.target.value === 'h1') editor.chain().focus().toggleHeading({ level: 1 }).run();
-                else if (e.target.value === 'h2') editor.chain().focus().toggleHeading({ level: 2 }).run();
-                else if (e.target.value === 'h3') editor.chain().focus().toggleHeading({ level: 3 }).run();
+                const styleId = e.target.value as DocumentStyle;
+                const style = DOCUMENT_STYLES[styleId];
+                if (style.tagName === 'paragraph') {
+                  editor.chain().focus().setParagraph().updateAttributes('paragraph', { verbaStyle: null }).run();
+                } else if (style.tagName === 'blockquote') {
+                  editor.chain().focus().toggleBlockquote().run();
+                } else if (style.tagName === 'heading') {
+                  editor.chain().focus()
+                    .toggleHeading({ level: style.level as any })
+                    .updateAttributes('heading', { verbaStyle: style.id === 'title' || style.id === 'subtitle' ? style.id : null })
+                    .run();
+                }
               }}
               className="appearance-none bg-transparent border-none rounded px-2 py-1 pr-6 min-w-[90px] hover:bg-black/5 outline-none cursor-pointer"
             >
-              <option value="p">Normal</option>
-              <option value="h1">Heading 1</option>
-              <option value="h2">Heading 2</option>
-              <option value="h3">Heading 3</option>
+              {Object.values(DOCUMENT_STYLES).map(style => (
+                <option key={style.id} value={style.id}>{style.name}</option>
+              ))}
             </select>
             <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
           </div>

@@ -167,3 +167,33 @@ html, body {
   height: 0;
   font-style: normal;
 }
+
+.verba-style-title { font-size: 24pt; font-weight: bold; text-align: center; margin-bottom: 24pt; }
+.verba-style-subtitle { font-size: 16pt; text-align: center; color: #555; margin-bottom: 24pt; }
+
+.ProseMirror {
+  counter-reset: figure table;
+}
+.verba-caption {
+  font-size: 10pt;
+  color: #555;
+  text-align: center;
+  margin-top: 4px;
+  margin-bottom: 16px;
+}
+.verba-caption-figure {
+  counter-increment: figure;
+}
+.verba-caption-figure::before {
+  content: "Figure " counter(figure) ": ";
+  font-weight: 600;
+  color: #0B1628;
+}
+.verba-caption-table {
+  counter-increment: table;
+}
+.verba-caption-table::before {
+  content: "Table " counter(table) ": ";
+  font-weight: 600;
+  color: #0B1628;
+}
